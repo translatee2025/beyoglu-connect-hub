@@ -1,7 +1,9 @@
-import { Calendar, MapPin, Users, Clock } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, Map } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import EventsMap from "@/components/EventsMap";
 
 const Events = () => {
   const events = [
@@ -10,6 +12,7 @@ const Events = () => {
       date: "Nov 15, 2025",
       time: "10:00 AM",
       location: "Kahve Dünyası, İstiklal",
+      coordinates: [41.0325, 28.9769] as [number, number],
       attendees: 23,
       category: "Social",
     },
@@ -18,6 +21,7 @@ const Events = () => {
       date: "Nov 18, 2025",
       time: "6:00 PM",
       location: "Community Center",
+      coordinates: [41.0365, 28.9810] as [number, number],
       attendees: 45,
       category: "Education",
     },
@@ -26,6 +30,7 @@ const Events = () => {
       date: "Nov 20, 2025",
       time: "12:00 PM",
       location: "Galata Square",
+      coordinates: [41.0344, 28.9740] as [number, number],
       attendees: 156,
       category: "Food & Dining",
     },
@@ -34,6 +39,7 @@ const Events = () => {
       date: "Nov 22, 2025",
       time: "2:00 PM",
       location: "Galata Tower",
+      coordinates: [41.0256, 28.9742] as [number, number],
       attendees: 34,
       category: "Arts & Culture",
     },
@@ -60,7 +66,19 @@ const Events = () => {
             <Button variant="hero">Create Event</Button>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <Tabs defaultValue="list" className="w-full">
+            <TabsList className="mb-6">
+              <TabsTrigger value="list" className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                List View
+              </TabsTrigger>
+              <TabsTrigger value="map" className="flex items-center gap-2">
+                <Map className="w-4 h-4" />
+                Map View
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="list" className="grid md:grid-cols-2 gap-6">
             {events.map((event, index) => (
               <Card key={index} className="hover:shadow-md transition-shadow">
                 <CardHeader>
@@ -98,7 +116,15 @@ const Events = () => {
                 </CardContent>
               </Card>
             ))}
-          </div>
+            </TabsContent>
+
+            <TabsContent value="map">
+              <EventsMap events={events} />
+              <div className="mt-6 text-center text-sm text-muted-foreground">
+                Click on markers to see event details
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
