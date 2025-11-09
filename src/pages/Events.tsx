@@ -3,9 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from "react";
 import EventsMap from "@/components/EventsMap";
 
 const Events = () => {
+  const [activeTab, setActiveTab] = useState("list");
+  
   const events = [
     {
       title: "Community Coffee Meetup",
@@ -66,7 +69,7 @@ const Events = () => {
             <Button variant="hero">Create Event</Button>
           </div>
 
-          <Tabs defaultValue="list" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="mb-6">
               <TabsTrigger value="list" className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
@@ -119,7 +122,7 @@ const Events = () => {
             </TabsContent>
 
             <TabsContent value="map">
-              <EventsMap events={events} />
+              {activeTab === "map" && <EventsMap events={events} />}
               <div className="mt-6 text-center text-sm text-muted-foreground">
                 Click on markers to see event details
               </div>
