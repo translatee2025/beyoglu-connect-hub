@@ -1,4 +1,4 @@
-import { Calendar, MapPin, Users, Clock, Map } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, Map as MapIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -76,7 +76,7 @@ const Events = () => {
                 List View
               </TabsTrigger>
               <TabsTrigger value="map" className="flex items-center gap-2">
-                <Map className="w-4 h-4" />
+                <MapIcon className="w-4 h-4" />
                 Map View
               </TabsTrigger>
             </TabsList>
