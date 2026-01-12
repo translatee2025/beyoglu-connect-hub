@@ -1,9 +1,9 @@
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import L from "leaflet";
+import { icon as leafletIcon } from "leaflet";
 
-// Fix default marker icon issue with webpack
-const icon = L.icon({
+// Vite + Leaflet: create an explicit marker icon (avoids default-export pitfalls)
+const markerIcon = leafletIcon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
@@ -37,7 +37,7 @@ const EventsMap = ({ events }: EventsMapProps) => {
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         {events.map((event, index) => (
-          <Marker key={index} position={event.coordinates} icon={icon}>
+          <Marker key={index} position={event.coordinates} icon={markerIcon}>
             <Popup>
               <div className="p-2">
                 <h3 className="font-semibold text-sm mb-1">{event.title}</h3>
