@@ -98,7 +98,9 @@ export type Database = {
           id: string
           is_lost: boolean | null
           is_neutered: boolean | null
+          latitude: number | null
           lifestyle_tags: string[] | null
+          longitude: number | null
           looking_for: string[] | null
           lost_at: string | null
           lost_details: string | null
@@ -128,7 +130,9 @@ export type Database = {
           id?: string
           is_lost?: boolean | null
           is_neutered?: boolean | null
+          latitude?: number | null
           lifestyle_tags?: string[] | null
+          longitude?: number | null
           looking_for?: string[] | null
           lost_at?: string | null
           lost_details?: string | null
@@ -158,7 +162,9 @@ export type Database = {
           id?: string
           is_lost?: boolean | null
           is_neutered?: boolean | null
+          latitude?: number | null
           lifestyle_tags?: string[] | null
+          longitude?: number | null
           looking_for?: string[] | null
           lost_at?: string | null
           lost_details?: string | null
