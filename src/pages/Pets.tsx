@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dog, Search, AlertTriangle, Heart, Plus, MapPin } from "lucide-react";
+import { Dog, Search, AlertTriangle, Heart, Plus, MapPin, Map } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import AddPetForm from "@/components/pets/AddPetForm";
 import FriendFinder from "@/components/pets/FriendFinder";
+import PetMap from "@/components/pets/PetMap";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
