@@ -146,6 +146,16 @@ const Pets = () => {
               )}
             </TabsContent>
 
+            {/* Map View */}
+            <TabsContent value="map">
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  🗺️ Explore pets in your neighborhood. Zoom in/out and drag to navigate. Tap a pin to see pet details.
+                </p>
+                <PetMap pets={pets} />
+              </div>
+            </TabsContent>
+
             {/* Friend Finder */}
             <TabsContent value="friends">
               <FriendFinder />
