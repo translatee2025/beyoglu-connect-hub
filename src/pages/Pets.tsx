@@ -37,6 +37,7 @@ const speciesEmoji: Record<string, string> = {
 const Pets = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [addPetOpen, setAddPetOpen] = useState(false);
+  const [reportLostOpen, setReportLostOpen] = useState(false);
 
   const { data: pets = [], isLoading, refetch } = useQuery({
     queryKey: ["pet-profiles"],
