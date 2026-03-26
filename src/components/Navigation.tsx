@@ -11,6 +11,7 @@ const Navigation = () => {
     { to: "/events", label: "Events", icon: Calendar },
     { to: "/classifieds", label: "Classifieds", icon: ShoppingBag },
     { to: "/wall", label: "Wall", icon: MessageSquare },
+    { to: "/pets", label: "Pets", icon: Dog },
   ];
 
   return (
