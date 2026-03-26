@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import AddPetForm from "@/components/pets/AddPetForm";
+import FriendFinder from "@/components/pets/FriendFinder";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -142,16 +143,7 @@ const Pets = () => {
 
             {/* Friend Finder */}
             <TabsContent value="friends">
-              <div className="text-center py-12">
-                <Heart className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">Find Pet Friends</h3>
-                <p className="text-muted-foreground mb-4">
-                  Add your pet first, then browse for compatible playmates nearby.
-                </p>
-                <Button variant="default" onClick={() => setAddPetOpen(true)}>
-                  <Plus className="w-4 h-4 mr-2" /> Add My Pet
-                </Button>
-              </div>
+              <FriendFinder />
             </TabsContent>
 
             {/* Lost & Found */}

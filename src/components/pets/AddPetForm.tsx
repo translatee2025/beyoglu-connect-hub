@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import PetPhotoUpload from "./PetPhotoUpload";
 
 const species = [
   { value: "dog", label: "🐕 Dog" },
@@ -17,12 +18,33 @@ const species = [
   { value: "other", label: "🐾 Other" },
 ];
 
+const sizeOptions = [
+  { value: "tiny", label: "Tiny (< 5kg)" },
+  { value: "small", label: "Small (5-10kg)" },
+  { value: "medium", label: "Medium (10-25kg)" },
+  { value: "large", label: "Large (25-45kg)" },
+  { value: "giant", label: "Giant (45kg+)" },
+];
+
+const energyOptions = [
+  { value: "low", label: "🧘 Low" },
+  { value: "moderate", label: "🚶 Moderate" },
+  { value: "high", label: "🏃 High" },
+  { value: "very_high", label: "⚡ Very High" },
+];
+
 const personalityOptions = [
   "friendly", "energetic", "calm", "shy", "playful", "protective", "curious", "independent",
 ];
 
 const lookingForOptions = [
   "Walking Buddy", "Playdate", "Social Group", "Calm Companion",
+];
+
+const lifestyleOptions = [
+  "Morning Walker", "Evening Walker", "Weekend Only", "Daily Runner",
+  "Park Regular", "Beach Lover", "City Stroller", "Hiking Buddy",
+  "Home Body", "Social Butterfly", "Training Enthusiast",
 ];
 
 interface AddPetFormProps {
@@ -32,36 +54,33 @@ interface AddPetFormProps {
 const AddPetForm = ({ onSuccess }: AddPetFormProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [photos, setPhotos] = useState<string[]>([]);
   const [form, setForm] = useState({
     name: "",
-    species: "dog" as string,
+    species: "dog",
     breed: "",
     age_years: "",
     age_months: "",
-    gender: "" as string,
+    gender: "",
     is_neutered: false,
     weight_kg: "",
     bio: "",
     neighborhood: "",
     personality_tags: [] as string[],
     looking_for: [] as string[],
+    size: "",
+    energy_level: "",
+    gender_preference: "any",
+    size_preference: [] as string[],
+    lifestyle_tags: [] as string[],
   });
 
-  const toggleTag = (tag: string) => {
-    setForm((prev) => ({
+  const toggleArray = (field: "personality_tags" | "looking_for" | "size_preference" | "lifestyle_tags", value: string) => {
+    setForm(prev => ({
       ...prev,
-      personality_tags: prev.personality_tags.includes(tag)
-        ? prev.personality_tags.filter((t) => t !== tag)
-        : [...prev.personality_tags, tag],
-    }));
-  };
-
-  const toggleLookingFor = (item: string) => {
-    setForm((prev) => ({
-      ...prev,
-      looking_for: prev.looking_for.includes(item)
-        ? prev.looking_for.filter((i) => i !== item)
-        : [...prev.looking_for, item],
+      [field]: prev[field].includes(value)
+        ? prev[field].filter(v => v !== value)
+        : [...prev[field], value],
     }));
   };
 
@@ -94,10 +113,15 @@ const AddPetForm = ({ onSuccess }: AddPetFormProps) => {
         neighborhood: form.neighborhood || null,
         personality_tags: form.personality_tags as any,
         looking_for: form.looking_for,
-      });
+        photo_url: photos.length > 0 ? photos[0] : null,
+        size: form.size || null,
+        energy_level: form.energy_level || null,
+        gender_preference: form.gender_preference,
+        size_preference: form.size_preference,
+        lifestyle_tags: form.lifestyle_tags,
+      } as any);
 
       if (error) throw error;
-
       toast({ title: "Pet added successfully! 🐾" });
       onSuccess();
     } catch (err: any) {
@@ -107,71 +131,72 @@ const AddPetForm = ({ onSuccess }: AddPetFormProps) => {
     }
   };
 
+  const TagSelector = ({ label, field, options }: { label: string; field: "personality_tags" | "looking_for" | "size_preference" | "lifestyle_tags"; options: string[] }) => (
+    <div>
+      <Label className="mb-2 block">{label}</Label>
+      <div className="flex flex-wrap gap-2">
+        {options.map(tag => (
+          <button
+            key={tag}
+            type="button"
+            onClick={() => toggleArray(field, tag)}
+            className={`text-sm px-3 py-1 rounded-full border transition-colors ${
+              form[field].includes(tag)
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-muted text-muted-foreground border-border hover:border-primary"
+            }`}
+          >
+            {tag}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <h2 className="text-xl font-bold text-foreground">Add Your Pet</h2>
 
+      {/* Photo Upload */}
+      <div>
+        <Label className="mb-2 block">Photos</Label>
+        <PetPhotoUpload photos={photos} onPhotosChange={setPhotos} />
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2">
           <Label htmlFor="name">Pet Name *</Label>
-          <Input
-            id="name"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="e.g. Boncuk"
-            required
-          />
+          <Input id="name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. Boncuk" required />
         </div>
 
         <div>
           <Label>Species</Label>
-          <Select value={form.species} onValueChange={(v) => setForm({ ...form, species: v })}>
+          <Select value={form.species} onValueChange={v => setForm({ ...form, species: v })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              {species.map((s) => (
-                <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-              ))}
+              {species.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
 
         <div>
           <Label htmlFor="breed">Breed</Label>
-          <Input
-            id="breed"
-            value={form.breed}
-            onChange={(e) => setForm({ ...form, breed: e.target.value })}
-            placeholder="e.g. Golden Retriever"
-          />
+          <Input id="breed" value={form.breed} onChange={e => setForm({ ...form, breed: e.target.value })} placeholder="e.g. Golden Retriever" />
         </div>
 
         <div>
           <Label htmlFor="age_years">Age (years)</Label>
-          <Input
-            id="age_years"
-            type="number"
-            min="0"
-            max="30"
-            value={form.age_years}
-            onChange={(e) => setForm({ ...form, age_years: e.target.value })}
-          />
+          <Input id="age_years" type="number" min="0" max="30" value={form.age_years} onChange={e => setForm({ ...form, age_years: e.target.value })} />
         </div>
 
         <div>
           <Label htmlFor="age_months">Age (months)</Label>
-          <Input
-            id="age_months"
-            type="number"
-            min="0"
-            max="11"
-            value={form.age_months}
-            onChange={(e) => setForm({ ...form, age_months: e.target.value })}
-          />
+          <Input id="age_months" type="number" min="0" max="11" value={form.age_months} onChange={e => setForm({ ...form, age_months: e.target.value })} />
         </div>
 
         <div>
           <Label>Gender</Label>
-          <Select value={form.gender} onValueChange={(v) => setForm({ ...form, gender: v })}>
+          <Select value={form.gender} onValueChange={v => setForm({ ...form, gender: v })}>
             <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
             <SelectContent>
               <SelectItem value="male">Male</SelectItem>
@@ -182,85 +207,68 @@ const AddPetForm = ({ onSuccess }: AddPetFormProps) => {
         </div>
 
         <div>
+          <Label>Size</Label>
+          <Select value={form.size} onValueChange={v => setForm({ ...form, size: v })}>
+            <SelectTrigger><SelectValue placeholder="Select size..." /></SelectTrigger>
+            <SelectContent>
+              {sizeOptions.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label>Energy Level</Label>
+          <Select value={form.energy_level} onValueChange={v => setForm({ ...form, energy_level: v })}>
+            <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+            <SelectContent>
+              {energyOptions.map(e => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
           <Label htmlFor="weight">Weight (kg)</Label>
-          <Input
-            id="weight"
-            type="number"
-            step="0.1"
-            min="0"
-            value={form.weight_kg}
-            onChange={(e) => setForm({ ...form, weight_kg: e.target.value })}
-          />
+          <Input id="weight" type="number" step="0.1" min="0" value={form.weight_kg} onChange={e => setForm({ ...form, weight_kg: e.target.value })} />
         </div>
 
         <div className="col-span-2">
           <Label htmlFor="neighborhood">Neighborhood</Label>
-          <Input
-            id="neighborhood"
-            value={form.neighborhood}
-            onChange={(e) => setForm({ ...form, neighborhood: e.target.value })}
-            placeholder="e.g. Cihangir, Beyoğlu"
-          />
+          <Input id="neighborhood" value={form.neighborhood} onChange={e => setForm({ ...form, neighborhood: e.target.value })} placeholder="e.g. Cihangir, Beyoğlu" />
         </div>
       </div>
 
       <div>
         <Label htmlFor="bio">About your pet</Label>
-        <Textarea
-          id="bio"
-          value={form.bio}
-          onChange={(e) => setForm({ ...form, bio: e.target.value })}
-          placeholder="Tell us about your pet's personality..."
-          rows={3}
-        />
+        <Textarea id="bio" value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} placeholder="Tell us about your pet's personality..." rows={3} />
       </div>
 
-      <div>
-        <Label className="mb-2 block">Personality Tags</Label>
-        <div className="flex flex-wrap gap-2">
-          {personalityOptions.map((tag) => (
-            <button
-              key={tag}
-              type="button"
-              onClick={() => toggleTag(tag)}
-              className={`text-sm px-3 py-1 rounded-full border transition-colors ${
-                form.personality_tags.includes(tag)
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-muted text-muted-foreground border-border hover:border-primary"
-              }`}
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
-      </div>
+      <TagSelector label="Personality Tags" field="personality_tags" options={personalityOptions} />
+      <TagSelector label="Looking For" field="looking_for" options={lookingForOptions} />
+      <TagSelector label="Lifestyle" field="lifestyle_tags" options={lifestyleOptions} />
 
-      <div>
-        <Label className="mb-2 block">Looking For</Label>
-        <div className="flex flex-wrap gap-2">
-          {lookingForOptions.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => toggleLookingFor(item)}
-              className={`text-sm px-3 py-1 rounded-full border transition-colors ${
-                form.looking_for.includes(item)
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-muted text-muted-foreground border-border hover:border-primary"
-              }`}
-            >
-              {item}
-            </button>
-          ))}
+      {/* Preferences section */}
+      <div className="border-t border-border pt-4">
+        <h3 className="font-semibold text-foreground mb-3">Friend Preferences</h3>
+        
+        <div className="space-y-4">
+          <div>
+            <Label>Gender Preference</Label>
+            <Select value={form.gender_preference} onValueChange={v => setForm({ ...form, gender_preference: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">Any Gender</SelectItem>
+                <SelectItem value="male_only">♂ Males Only</SelectItem>
+                <SelectItem value="female_only">♀ Females Only</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <TagSelector label="Preferred Friend Size" field="size_preference" options={sizeOptions.map(s => s.value)} />
         </div>
       </div>
 
       <div className="flex items-center gap-2">
-        <Checkbox
-          id="neutered"
-          checked={form.is_neutered}
-          onCheckedChange={(v) => setForm({ ...form, is_neutered: v === true })}
-        />
+        <Checkbox id="neutered" checked={form.is_neutered} onCheckedChange={v => setForm({ ...form, is_neutered: v === true })} />
         <Label htmlFor="neutered" className="cursor-pointer">Neutered / Spayed</Label>
       </div>
 

@@ -92,10 +92,13 @@ export type Database = {
           bio: string | null
           breed: string | null
           created_at: string
+          energy_level: string | null
           gender: string | null
+          gender_preference: string | null
           id: string
           is_lost: boolean | null
           is_neutered: boolean | null
+          lifestyle_tags: string[] | null
           looking_for: string[] | null
           lost_at: string | null
           lost_details: string | null
@@ -107,6 +110,8 @@ export type Database = {
             | Database["public"]["Enums"]["pet_personality"][]
             | null
           photo_url: string | null
+          size: string | null
+          size_preference: string[] | null
           species: Database["public"]["Enums"]["pet_species"]
           updated_at: string
           weight_kg: number | null
@@ -117,10 +122,13 @@ export type Database = {
           bio?: string | null
           breed?: string | null
           created_at?: string
+          energy_level?: string | null
           gender?: string | null
+          gender_preference?: string | null
           id?: string
           is_lost?: boolean | null
           is_neutered?: boolean | null
+          lifestyle_tags?: string[] | null
           looking_for?: string[] | null
           lost_at?: string | null
           lost_details?: string | null
@@ -132,6 +140,8 @@ export type Database = {
             | Database["public"]["Enums"]["pet_personality"][]
             | null
           photo_url?: string | null
+          size?: string | null
+          size_preference?: string[] | null
           species?: Database["public"]["Enums"]["pet_species"]
           updated_at?: string
           weight_kg?: number | null
@@ -142,10 +152,13 @@ export type Database = {
           bio?: string | null
           breed?: string | null
           created_at?: string
+          energy_level?: string | null
           gender?: string | null
+          gender_preference?: string | null
           id?: string
           is_lost?: boolean | null
           is_neutered?: boolean | null
+          lifestyle_tags?: string[] | null
           looking_for?: string[] | null
           lost_at?: string | null
           lost_details?: string | null
@@ -157,6 +170,8 @@ export type Database = {
             | Database["public"]["Enums"]["pet_personality"][]
             | null
           photo_url?: string | null
+          size?: string | null
+          size_preference?: string[] | null
           species?: Database["public"]["Enums"]["pet_species"]
           updated_at?: string
           weight_kg?: number | null
