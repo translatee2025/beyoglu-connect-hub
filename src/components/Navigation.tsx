@@ -1,6 +1,6 @@
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
-import { Users, Calendar, ShoppingBag, MessageSquare, Menu, X } from "lucide-react";
+import { Users, Calendar, ShoppingBag, MessageSquare, Dog, Menu, X } from "lucide-react";
 import { useState } from "react";
 
 const Navigation = () => {
@@ -11,6 +11,7 @@ const Navigation = () => {
     { to: "/events", label: "Events", icon: Calendar },
     { to: "/classifieds", label: "Classifieds", icon: ShoppingBag },
     { to: "/wall", label: "Wall", icon: MessageSquare },
+    { to: "/pets", label: "Pets", icon: Dog },
   ];
 
   return (

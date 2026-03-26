@@ -9,6 +9,7 @@ import Groups from "./pages/Groups";
 import Events from "./pages/Events";
 import Classifieds from "./pages/Classifieds";
 import Wall from "./pages/Wall";
+import Pets from "./pages/Pets";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/events" element={<Events />} />
           <Route path="/classifieds" element={<Classifieds />} />
           <Route path="/wall" element={<Wall />} />
+          <Route path="/pets" element={<Pets />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
