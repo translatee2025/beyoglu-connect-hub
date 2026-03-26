@@ -1,10 +1,6 @@
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { useEffect, useRef } from "react";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { icon as leafletIcon, divIcon } from "leaflet";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Heart, MapPin } from "lucide-react";
 
 const speciesEmoji: Record<string, string> = {
   dog: "🐕", cat: "🐈", bird: "🐦", rabbit: "🐇", fish: "🐟", other: "🐾",
@@ -19,11 +15,11 @@ const speciesColor: Record<string, string> = {
   other: "#6B7280",
 };
 
-function createPetIcon(species: string, photoUrl?: string) {
+function createPetIcon(species: string, photoUrl?: string | null) {
   const color = speciesColor[species] || "#6B7280";
   const emoji = speciesEmoji[species] || "🐾";
 
-  return divIcon({
+  return L.divIcon({
     className: "pet-marker-icon",
     html: `
       <div style="
@@ -51,98 +47,88 @@ function createPetIcon(species: string, photoUrl?: string) {
 
 interface PetMapProps {
   pets: any[];
-  onWoof?: (pet: any) => void;
 }
 
-const PetMap = ({ pets, onWoof }: PetMapProps) => {
-  // Center on Beyoğlu / Cihangir area
-  const center: [number, number] = [41.0325, 28.9800];
+const PetMap = ({ pets }: PetMapProps) => {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
 
-  // Filter pets that have coordinates
   const mappedPets = pets.filter((p) => p.latitude && p.longitude);
 
-  return (
-    <div className="w-full h-[500px] rounded-lg overflow-hidden shadow-lg border border-border relative">
-      <MapContainer
-        center={center}
-        zoom={15}
-        scrollWheelZoom={true}
-        style={{ height: "100%", width: "100%" }}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; OpenStreetMap'
-        />
-        {mappedPets.map((pet) => (
-          <Marker
-            key={pet.id}
-            position={[pet.latitude, pet.longitude]}
-            icon={createPetIcon(pet.species, pet.photo_url)}
-          >
-            <Popup maxWidth={280} minWidth={220}>
-              <div className="p-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
-                    {pet.photo_url ? (
-                      <img src={pet.photo_url} alt={pet.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl">
-                        {speciesEmoji[pet.species] || "🐾"}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-base">{pet.name}</h3>
-                    <p className="text-xs text-gray-500">
-                      {pet.breed || pet.species}
-                      {pet.age_years ? ` • ${pet.age_years}y` : ""}
-                      {pet.gender ? ` • ${pet.gender === "male" ? "♂" : "♀"}` : ""}
-                    </p>
-                    {pet.neighborhood && (
-                      <p className="text-xs text-gray-400 flex items-center gap-0.5 mt-0.5">
-                        <span>📍</span> {pet.neighborhood}
-                      </p>
-                    )}
-                  </div>
-                </div>
+  useEffect(() => {
+    if (!mapRef.current || mapInstanceRef.current) return;
 
-                {pet.bio && (
-                  <p className="text-xs text-gray-600 mb-2 line-clamp-2">{pet.bio}</p>
-                )}
+    const map = L.map(mapRef.current, {
+      center: [41.0325, 28.9800],
+      zoom: 15,
+      scrollWheelZoom: true,
+    });
 
-                {pet.personality_tags && pet.personality_tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {pet.personality_tags.slice(0, 3).map((tag: string) => (
-                      <span
-                        key={tag}
-                        className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap",
+    }).addTo(map);
 
-                {pet.size && (
-                  <p className="text-[10px] text-gray-400 mb-2">
-                    Size: {pet.size} {pet.energy_level && `• Energy: ${pet.energy_level}`}
-                  </p>
-                )}
+    mapInstanceRef.current = map;
 
-                {onWoof && (
-                  <button
-                    onClick={() => onWoof(pet)}
-                    className="w-full text-xs bg-blue-500 text-white rounded-md py-1.5 hover:bg-blue-600 transition-colors flex items-center justify-center gap-1"
-                  >
-                    ❤️ Send a Woof
-                  </button>
-                )}
+    return () => {
+      map.remove();
+      mapInstanceRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    // Clear existing markers
+    map.eachLayer((layer) => {
+      if (layer instanceof L.Marker) map.removeLayer(layer);
+    });
+
+    mappedPets.forEach((pet) => {
+      const marker = L.marker([pet.latitude, pet.longitude], {
+        icon: createPetIcon(pet.species, pet.photo_url),
+      }).addTo(map);
+
+      const popupContent = `
+        <div style="min-width: 200px; max-width: 260px; font-family: system-ui, sans-serif;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; overflow: hidden; background: #f3f4f6; flex-shrink: 0;">
+              ${pet.photo_url
+                ? `<img src="${pet.photo_url}" alt="${pet.name}" style="width: 100%; height: 100%; object-fit: cover;" />`
+                : `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 24px;">${speciesEmoji[pet.species] || "🐾"}</div>`
+              }
+            </div>
+            <div>
+              <div style="font-weight: 700; font-size: 15px;">${pet.name}</div>
+              <div style="font-size: 12px; color: #6b7280;">
+                ${pet.breed || pet.species}${pet.age_years ? ` • ${pet.age_years}y` : ""}${pet.gender ? ` • ${pet.gender === "male" ? "♂" : "♀"}` : ""}
               </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
+              ${pet.neighborhood ? `<div style="font-size: 11px; color: #9ca3af;">📍 ${pet.neighborhood}</div>` : ""}
+            </div>
+          </div>
+          ${pet.bio ? `<p style="font-size: 12px; color: #4b5563; margin: 0 0 6px; line-height: 1.4;">${pet.bio.slice(0, 100)}${pet.bio.length > 100 ? "..." : ""}</p>` : ""}
+          ${pet.personality_tags?.length ? `
+            <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px;">
+              ${pet.personality_tags.slice(0, 3).map((tag: string) => `
+                <span style="font-size: 10px; padding: 2px 8px; border-radius: 999px; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;">${tag}</span>
+              `).join("")}
+            </div>
+          ` : ""}
+          ${pet.size ? `<div style="font-size: 10px; color: #9ca3af;">Size: ${pet.size}${pet.energy_level ? ` • Energy: ${pet.energy_level}` : ""}</div>` : ""}
+        </div>
+      `;
 
+      marker.bindPopup(popupContent, { maxWidth: 280 });
+    });
+  }, [mappedPets]);
+
+  return (
+    <div className="relative">
+      <div
+        ref={mapRef}
+        className="w-full h-[500px] rounded-lg overflow-hidden shadow-lg border border-border"
+      />
       {/* Legend */}
       <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md z-[1000] text-xs">
         <p className="font-semibold mb-1">Pets nearby</p>

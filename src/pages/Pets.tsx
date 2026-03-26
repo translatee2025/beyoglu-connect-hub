@@ -42,7 +42,7 @@ const Pets = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("pet_profiles")
-        .select("*, profiles:owner_id(display_name, neighborhood)")
+        .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
