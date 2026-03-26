@@ -165,55 +165,120 @@ const Pets = () => {
 
             {/* Lost & Found */}
             <TabsContent value="lost">
-              {lostPets.length === 0 ? (
-                <div className="text-center py-12">
-                  <AlertTriangle className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">No lost pets reported</h3>
-                  <p className="text-muted-foreground">
-                    Great news! All pets in the community are accounted for.
-                  </p>
+              <div className="space-y-6">
+                {/* Alert banner + report button */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-lg border border-destructive/30 bg-destructive/5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
+                      <AlertTriangle className="w-5 h-5 text-destructive" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">Lost & Found Alerts</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {lostPets.length > 0
+                          ? `${lostPets.length} pet${lostPets.length > 1 ? "s" : ""} currently missing in the area`
+                          : "No missing pets reported — help keep it that way!"}
+                      </p>
+                    </div>
+                  </div>
+                  <Dialog open={reportLostOpen} onOpenChange={setReportLostOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="destructive" className="gap-2 whitespace-nowrap">
+                        <AlertTriangle className="w-4 h-4" />
+                        Report Lost Pet
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+                      <ReportLostPetForm
+                        onSuccess={() => {
+                          setReportLostOpen(false);
+                          refetch();
+                        }}
+                      />
+                    </DialogContent>
+                  </Dialog>
                 </div>
-              ) : (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {lostPets.map((pet: any) => (
-                    <Card key={pet.id} className="border-destructive/50 bg-destructive/5">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="w-16 h-16">
-                            {pet.photo_url ? (
-                              <AvatarImage src={pet.photo_url} alt={pet.name} />
-                            ) : null}
-                            <AvatarFallback className="bg-destructive/20 text-destructive text-2xl">
-                              {speciesEmoji[pet.species] || "🐾"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <Badge variant="destructive" className="mb-1">LOST</Badge>
-                            <CardTitle className="text-lg">{pet.name}</CardTitle>
-                            <p className="text-sm text-muted-foreground">
-                              {pet.breed || pet.species} {pet.gender && `• ${pet.gender}`}
-                            </p>
-                          </div>
+
+                {/* Lost pets map */}
+                {lostPets.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-destructive" />
+                      Last Seen Locations
+                    </h4>
+                    <PetMap pets={lostPets} />
+                  </div>
+                )}
+
+                {/* Lost pet cards */}
+                {lostPets.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-50 flex items-center justify-center">
+                      <span className="text-3xl">✅</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">All pets safe!</h3>
+                    <p className="text-muted-foreground">
+                      No lost pets reported in the community right now.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {lostPets.map((pet: any) => (
+                      <Card key={pet.id} className="border-destructive/50 bg-destructive/5 overflow-hidden">
+                        {/* Urgent header stripe */}
+                        <div className="bg-destructive text-white px-4 py-1.5 text-xs font-bold flex items-center gap-2">
+                          <span className="animate-pulse">🚨</span>
+                          URGENT — LOST PET
+                          {pet.lost_at && (
+                            <span className="ml-auto font-normal opacity-80 flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {getTimeAgo(pet.lost_at)}
+                            </span>
+                          )}
                         </div>
-                      </CardHeader>
-                      <CardContent>
-                        {pet.lost_details && (
-                          <p className="text-sm text-foreground mb-2">{pet.lost_details}</p>
-                        )}
-                        {pet.lost_location && (
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <MapPin className="w-3 h-3" />
-                            Last seen: {pet.lost_location}
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="w-16 h-16 ring-2 ring-destructive ring-offset-2">
+                              {pet.photo_url ? (
+                                <AvatarImage src={pet.photo_url} alt={pet.name} />
+                              ) : null}
+                              <AvatarFallback className="bg-destructive/20 text-destructive text-2xl">
+                                {speciesEmoji[pet.species] || "🐾"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <CardTitle className="text-lg">{pet.name}</CardTitle>
+                              <p className="text-sm text-muted-foreground">
+                                {pet.breed || pet.species} {pet.gender && `• ${pet.gender === "male" ? "♂" : "♀"}`}
+                              </p>
+                            </div>
                           </div>
-                        )}
-                        <Button variant="default" size="sm" className="w-full mt-3">
-                          I've Seen This Pet
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          {pet.lost_details && (
+                            <p className="text-sm text-foreground">{pet.lost_details}</p>
+                          )}
+                          {pet.lost_location && (
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <MapPin className="w-3 h-3 text-destructive" />
+                              Last seen: <span className="font-medium text-foreground">{pet.lost_location}</span>
+                            </div>
+                          )}
+                          <div className="flex gap-2 pt-1">
+                            <Button variant="destructive" size="sm" className="flex-1 gap-1">
+                              <Phone className="w-3 h-3" />
+                              I've Seen This Pet
+                            </Button>
+                            <Button variant="outline" size="sm" className="gap-1">
+                              Share
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
             </TabsContent>
           </Tabs>
         </div>
