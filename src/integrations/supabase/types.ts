@@ -14,7 +14,191 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      pet_connections: {
+        Row: {
+          created_at: string
+          friend_pet_id: string
+          id: string
+          pet_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          friend_pet_id: string
+          id?: string
+          pet_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          friend_pet_id?: string
+          id?: string
+          pet_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pet_connections_friend_pet_id_fkey"
+            columns: ["friend_pet_id"]
+            isOneToOne: false
+            referencedRelation: "pet_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pet_connections_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pet_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pet_photos: {
+        Row: {
+          created_at: string
+          id: string
+          is_primary: boolean | null
+          pet_id: string
+          photo_url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean | null
+          pet_id: string
+          photo_url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean | null
+          pet_id?: string
+          photo_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pet_photos_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pet_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pet_profiles: {
+        Row: {
+          age_months: number | null
+          age_years: number | null
+          bio: string | null
+          breed: string | null
+          created_at: string
+          gender: string | null
+          id: string
+          is_lost: boolean | null
+          is_neutered: boolean | null
+          looking_for: string[] | null
+          lost_at: string | null
+          lost_details: string | null
+          lost_location: string | null
+          name: string
+          neighborhood: string | null
+          owner_id: string
+          personality_tags:
+            | Database["public"]["Enums"]["pet_personality"][]
+            | null
+          photo_url: string | null
+          species: Database["public"]["Enums"]["pet_species"]
+          updated_at: string
+          weight_kg: number | null
+        }
+        Insert: {
+          age_months?: number | null
+          age_years?: number | null
+          bio?: string | null
+          breed?: string | null
+          created_at?: string
+          gender?: string | null
+          id?: string
+          is_lost?: boolean | null
+          is_neutered?: boolean | null
+          looking_for?: string[] | null
+          lost_at?: string | null
+          lost_details?: string | null
+          lost_location?: string | null
+          name: string
+          neighborhood?: string | null
+          owner_id: string
+          personality_tags?:
+            | Database["public"]["Enums"]["pet_personality"][]
+            | null
+          photo_url?: string | null
+          species?: Database["public"]["Enums"]["pet_species"]
+          updated_at?: string
+          weight_kg?: number | null
+        }
+        Update: {
+          age_months?: number | null
+          age_years?: number | null
+          bio?: string | null
+          breed?: string | null
+          created_at?: string
+          gender?: string | null
+          id?: string
+          is_lost?: boolean | null
+          is_neutered?: boolean | null
+          looking_for?: string[] | null
+          lost_at?: string | null
+          lost_details?: string | null
+          lost_location?: string | null
+          name?: string
+          neighborhood?: string | null
+          owner_id?: string
+          personality_tags?:
+            | Database["public"]["Enums"]["pet_personality"][]
+            | null
+          photo_url?: string | null
+          species?: Database["public"]["Enums"]["pet_species"]
+          updated_at?: string
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          neighborhood: string | null
+          updated_at: string
+          user_id: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          neighborhood?: string | null
+          updated_at?: string
+          user_id: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          neighborhood?: string | null
+          updated_at?: string
+          user_id?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +207,16 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      pet_personality:
+        | "friendly"
+        | "energetic"
+        | "calm"
+        | "shy"
+        | "playful"
+        | "protective"
+        | "curious"
+        | "independent"
+      pet_species: "dog" | "cat" | "bird" | "rabbit" | "fish" | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +343,18 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      pet_personality: [
+        "friendly",
+        "energetic",
+        "calm",
+        "shy",
+        "playful",
+        "protective",
+        "curious",
+        "independent",
+      ],
+      pet_species: ["dog", "cat", "bird", "rabbit", "fish", "other"],
+    },
   },
 } as const
