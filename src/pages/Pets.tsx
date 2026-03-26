@@ -105,6 +105,10 @@ const Pets = () => {
                 <Dog className="w-4 h-4" />
                 Browse Pets
               </TabsTrigger>
+              <TabsTrigger value="map" className="flex items-center gap-2">
+                <Map className="w-4 h-4" />
+                Map
+              </TabsTrigger>
               <TabsTrigger value="friends" className="flex items-center gap-2">
                 <Heart className="w-4 h-4" />
                 Friend Finder
