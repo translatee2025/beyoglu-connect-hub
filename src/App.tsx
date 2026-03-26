@@ -9,6 +9,7 @@ import Groups from "./pages/Groups";
 import Events from "./pages/Events";
 import Classifieds from "./pages/Classifieds";
 import Wall from "./pages/Wall";
+import Pets from "./pages/Pets";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
