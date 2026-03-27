@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import PetFilters, { PetFilterState, defaultFilters } from "./PetFilters";
 import { Button } from "@/components/ui/button";
 import { Filter } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const speciesEmoji: Record<string, string> = {
   dog: "🐕", cat: "🐈", bird: "🐦", rabbit: "🐇", fish: "🐟", other: "🐾",
@@ -13,7 +14,6 @@ const speciesColor: Record<string, string> = {
   dog: "#3B82F6", cat: "#F59E0B", bird: "#10B981", rabbit: "#8B5CF6", fish: "#06B6D4", other: "#6B7280",
 };
 
-// Venue data for Beyoğlu
 const venues: {
   name: string; type: "petshop" | "vet"; lat: number; lng: number; address: string; phone?: string;
 }[] = [
@@ -24,6 +24,14 @@ const venues: {
   { name: "PetLand Store", type: "petshop", lat: 41.0365, lng: 28.9810, address: "Galatasaray, İstiklal Cad. No:120" },
   { name: "İstanbul Vet Center", type: "vet", lat: 41.0330, lng: 28.9760, address: "Asmalımescit Mah. No:5", phone: "+90 212 555 0404" },
 ];
+
+interface MapLayerState {
+  pets: boolean;
+  lost: boolean;
+  found: boolean;
+  shops: boolean;
+  vets: boolean;
+}
 
 function createPetIcon(species: string, photoUrl?: string | null, isLost?: boolean, isFound?: boolean) {
   const color = isLost ? "#DC2626" : isFound ? "#16A34A" : (speciesColor[species] || "#6B7280");
@@ -96,7 +104,6 @@ function createVenueIcon(type: "petshop" | "vet") {
   });
 }
 
-// Inject CSS
 const styleId = "pet-map-pulse-style";
 if (typeof document !== "undefined" && !document.getElementById(styleId)) {
   const style = document.createElement("style");
@@ -132,11 +139,25 @@ interface PetMapProps {
   showFilters?: boolean;
 }
 
+const layerConfig: { key: keyof MapLayerState; label: string; emoji: string; color: string }[] = [
+  { key: "pets", label: "Pets", emoji: "🐾", color: "hsl(210 80% 55%)" },
+  { key: "lost", label: "Lost", emoji: "🚨", color: "hsl(0 70% 50%)" },
+  { key: "found", label: "Found", emoji: "✅", color: "hsl(142 60% 40%)" },
+  { key: "shops", label: "Shops", emoji: "🛒", color: "hsl(270 60% 55%)" },
+  { key: "vets", label: "Vets", emoji: "🏥", color: "hsl(340 75% 50%)" },
+];
+
 const PetMap = ({ pets, showFilters = true }: PetMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const [filters, setFilters] = useState<PetFilterState>(defaultFilters);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [layers, setLayers] = useState<MapLayerState>({
+    pets: true, lost: true, found: true, shops: true, vets: true,
+  });
+
+  const toggleLayer = (key: keyof MapLayerState) =>
+    setLayers((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const mappedPets = pets.filter((p) => p.latitude && p.longitude);
   const filteredPets = mappedPets.filter((p) => matchesFilters(p, filters));
@@ -163,30 +184,50 @@ const PetMap = ({ pets, showFilters = true }: PetMapProps) => {
     });
 
     // Venues
-    venues.forEach((v) => {
-      const marker = L.marker([v.lat, v.lng], { icon: createVenueIcon(v.type) }).addTo(map);
-      marker.bindPopup(`
-        <div style="min-width:180px;font-family:system-ui,sans-serif;">
-          <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${v.type === "vet" ? "🏥" : "🛒"} ${v.name}</div>
-          <div style="font-size:12px;color:#6b7280;margin-bottom:2px;">📍 ${v.address}</div>
-          ${v.phone ? `<div style="font-size:12px;color:#6b7280;">📞 ${v.phone}</div>` : ""}
-          <div style="margin-top:6px;font-size:11px;padding:3px 8px;background:${v.type === "vet" ? "#FEE2E2" : "#F3E8FF"};border-radius:4px;display:inline-block;font-weight:600;color:${v.type === "vet" ? "#BE123C" : "#7C3AED"};">
-            ${v.type === "vet" ? "Veterinary Clinic" : "Pet Shop"}
+    if (layers.shops) {
+      venues.filter((v) => v.type === "petshop").forEach((v) => {
+        const marker = L.marker([v.lat, v.lng], { icon: createVenueIcon(v.type) }).addTo(map);
+        marker.bindPopup(`
+          <div style="min-width:180px;font-family:system-ui,sans-serif;">
+            <div style="font-weight:700;font-size:14px;margin-bottom:4px;">🛒 ${v.name}</div>
+            <div style="font-size:12px;color:#6b7280;margin-bottom:2px;">📍 ${v.address}</div>
+            ${v.phone ? `<div style="font-size:12px;color:#6b7280;">📞 ${v.phone}</div>` : ""}
+            <div style="margin-top:6px;font-size:11px;padding:3px 8px;background:#F3E8FF;border-radius:4px;display:inline-block;font-weight:600;color:#7C3AED;">Pet Shop</div>
           </div>
-        </div>
-      `, { maxWidth: 250 });
-    });
+        `, { maxWidth: 250 });
+      });
+    }
+
+    if (layers.vets) {
+      venues.filter((v) => v.type === "vet").forEach((v) => {
+        const marker = L.marker([v.lat, v.lng], { icon: createVenueIcon(v.type) }).addTo(map);
+        marker.bindPopup(`
+          <div style="min-width:180px;font-family:system-ui,sans-serif;">
+            <div style="font-weight:700;font-size:14px;margin-bottom:4px;">🏥 ${v.name}</div>
+            <div style="font-size:12px;color:#6b7280;margin-bottom:2px;">📍 ${v.address}</div>
+            ${v.phone ? `<div style="font-size:12px;color:#6b7280;">📞 ${v.phone}</div>` : ""}
+            <div style="margin-top:6px;font-size:11px;padding:3px 8px;background:#FEE2E2;border-radius:4px;display:inline-block;font-weight:600;color:#BE123C;">Veterinary Clinic</div>
+          </div>
+        `, { maxWidth: 250 });
+      });
+    }
 
     // Pets
-    const sorted = [...filteredPets].sort((a, b) => (a.is_lost ? 1 : 0) - (b.is_lost ? 1 : 0));
-    sorted.forEach((pet) => {
-      const isFound = !pet.is_lost && pet.lost_location; // found pets have location but aren't lost
+    filteredPets.forEach((pet) => {
+      const isLost = !!pet.is_lost;
+      const isFound = !pet.is_lost && !!pet.lost_location;
+
+      // Layer visibility
+      if (isLost && !layers.lost) return;
+      if (isFound && !layers.found) return;
+      if (!isLost && !isFound && !layers.pets) return;
+
       const marker = L.marker([pet.latitude, pet.longitude], {
-        icon: createPetIcon(pet.species, pet.photo_url, pet.is_lost, false),
-        zIndexOffset: pet.is_lost ? 1000 : 0,
+        icon: createPetIcon(pet.species, pet.photo_url, isLost, isFound),
+        zIndexOffset: isLost ? 1000 : 0,
       }).addTo(map);
 
-      const popupContent = pet.is_lost ? `
+      const popupContent = isLost ? `
         <div style="min-width:220px;max-width:280px;font-family:system-ui,sans-serif;">
           <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:12px;margin-bottom:8px;">
             <span style="background:#DC2626;color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;">🚨 LOST PET</span>
@@ -223,57 +264,81 @@ const PetMap = ({ pets, showFilters = true }: PetMapProps) => {
 
       marker.bindPopup(popupContent, { maxWidth: 300 });
     });
-  }, [filteredPets]);
+  }, [filteredPets, layers]);
 
-  const lostCount = filteredPets.filter((p) => p.is_lost).length;
+  const lostCount = mappedPets.filter((p) => p.is_lost).length;
 
   return (
-    <div className="relative space-y-3">
-      {/* Filter toggle */}
-      {showFilters && (
-        <div>
-          <Button variant="outline" size="sm" onClick={() => setFiltersOpen(!filtersOpen)} className="gap-2 text-xs">
+    <div className="space-y-3">
+      {/* Layer toggles */}
+      <div className="flex flex-wrap items-center gap-2">
+        {layerConfig.map(({ key, label, emoji, color }) => (
+          <button
+            key={key}
+            onClick={() => toggleLayer(key)}
+            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${
+              layers[key]
+                ? "bg-card text-foreground border-border shadow-sm"
+                : "bg-muted/50 text-muted-foreground border-transparent opacity-50"
+            }`}
+          >
+            <span>{emoji}</span>
+            {label}
+            {key === "lost" && lostCount > 0 && layers[key] && (
+              <Badge variant="destructive" className="text-[10px] px-1.5 py-0 ml-0.5 h-4">{lostCount}</Badge>
+            )}
+          </button>
+        ))}
+
+        {showFilters && (
+          <Button variant="outline" size="sm" onClick={() => setFiltersOpen(!filtersOpen)} className="gap-1.5 text-xs ml-auto h-8">
             <Filter className="w-3 h-3" />
-            {filtersOpen ? "Hide Filters" : "Show Filters"}
+            {filtersOpen ? "Hide" : "Filters"}
           </Button>
-          {filtersOpen && (
-            <div className="mt-2 p-3 rounded-lg border border-border bg-card">
-              <PetFilters filters={filters} onChange={setFilters} />
-            </div>
-          )}
+        )}
+      </div>
+
+      {/* Pet filters */}
+      {showFilters && filtersOpen && (
+        <div className="p-3 rounded-lg border border-border bg-card">
+          <PetFilters filters={filters} onChange={setFilters} />
         </div>
       )}
 
-      <div ref={mapRef} className="w-full h-[500px] rounded-lg overflow-hidden shadow-lg border border-border" />
-
-      {/* Legend */}
-      <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md z-[1000] text-xs">
-        <p className="font-semibold mb-1">Map Legend</p>
-        <div className="flex flex-wrap gap-2">
-          {Object.entries(speciesEmoji).filter(([k]) => k !== "other").map(([species, emoji]) => (
-            <span key={species} className="flex items-center gap-0.5">
-              <span className="w-3 h-3 rounded-full inline-block" style={{ background: speciesColor[species] }} />
-              {emoji}
-            </span>
-          ))}
-          <span className="flex items-center gap-0.5">
-            <span className="w-3 h-3 rounded-full inline-block" style={{ background: "#DC2626" }} /> 🚨 Lost
-          </span>
-          <span className="flex items-center gap-0.5">
-            <span className="w-3 h-3 rounded inline-block" style={{ background: "#7C3AED" }} /> 🛒 Shop
-          </span>
-          <span className="flex items-center gap-0.5">
-            <span className="w-3 h-3 rounded inline-block" style={{ background: "#E11D48" }} /> 🏥 Vet
-          </span>
-        </div>
-      </div>
-
-      {lostCount > 0 && (
-        <div className="absolute top-3 left-3 right-3 bg-destructive/90 backdrop-blur-sm text-white rounded-lg px-3 py-2 shadow-lg z-[1000] text-sm font-medium flex items-center gap-2">
+      {/* Lost alert — below controls, above map */}
+      {lostCount > 0 && layers.lost && (
+        <div className="bg-destructive/90 text-destructive-foreground rounded-lg px-3 py-2 text-sm font-medium flex items-center gap-2">
           <span className="animate-pulse">🚨</span>
           {lostCount} lost pet{lostCount > 1 ? "s" : ""} reported nearby — tap red pins to help!
         </div>
       )}
+
+      {/* Map */}
+      <div className="relative">
+        <div ref={mapRef} className="w-full h-[500px] rounded-lg overflow-hidden shadow-lg border border-border" />
+
+        {/* Legend */}
+        <div className="absolute bottom-3 left-3 bg-card/90 backdrop-blur-sm rounded-lg p-2 shadow-md z-[1000] text-xs">
+          <p className="font-semibold mb-1 text-foreground">Legend</p>
+          <div className="flex flex-wrap gap-2 text-muted-foreground">
+            {Object.entries(speciesEmoji).filter(([k]) => k !== "other").map(([species, emoji]) => (
+              <span key={species} className="flex items-center gap-0.5">
+                <span className="w-3 h-3 rounded-full inline-block" style={{ background: speciesColor[species] }} />
+                {emoji}
+              </span>
+            ))}
+            <span className="flex items-center gap-0.5">
+              <span className="w-3 h-3 rounded-full inline-block bg-destructive" /> 🚨
+            </span>
+            <span className="flex items-center gap-0.5">
+              <span className="w-3 h-3 rounded inline-block" style={{ background: "#7C3AED" }} /> 🛒
+            </span>
+            <span className="flex items-center gap-0.5">
+              <span className="w-3 h-3 rounded inline-block" style={{ background: "#E11D48" }} /> 🏥
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
