@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      lost_found_posts: {
+        Row: {
+          category: string
+          contact_preference: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          last_seen_at: string | null
+          last_seen_lat: number | null
+          last_seen_lng: number | null
+          neighborhood: string | null
+          phone: string | null
+          photo_urls: string[] | null
+          resolved_at: string | null
+          status: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          contact_preference?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          last_seen_at?: string | null
+          last_seen_lat?: number | null
+          last_seen_lng?: number | null
+          neighborhood?: string | null
+          phone?: string | null
+          photo_urls?: string[] | null
+          resolved_at?: string | null
+          status?: string | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          contact_preference?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          last_seen_at?: string | null
+          last_seen_lat?: number | null
+          last_seen_lng?: number | null
+          neighborhood?: string | null
+          phone?: string | null
+          photo_urls?: string[] | null
+          resolved_at?: string | null
+          status?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       pet_connections: {
         Row: {
           created_at: string
@@ -219,6 +276,485 @@ export type Database = {
           username?: string | null
         }
         Relationships: []
+      }
+      venue_analytics: {
+        Row: {
+          call_taps: number | null
+          date: string
+          direction_taps: number | null
+          id: string
+          message_taps: number | null
+          profile_views: number | null
+          saves_count: number | null
+          venue_id: string
+        }
+        Insert: {
+          call_taps?: number | null
+          date: string
+          direction_taps?: number | null
+          id?: string
+          message_taps?: number | null
+          profile_views?: number | null
+          saves_count?: number | null
+          venue_id: string
+        }
+        Update: {
+          call_taps?: number | null
+          date?: string
+          direction_taps?: number | null
+          id?: string
+          message_taps?: number | null
+          profile_views?: number | null
+          saves_count?: number | null
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_analytics_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venue_attribute_definitions: {
+        Row: {
+          attribute_key: string
+          field_type: string
+          id: string
+          is_required: boolean | null
+          label: string
+          options: Json | null
+          sort_order: number | null
+          venue_type_id: string
+        }
+        Insert: {
+          attribute_key: string
+          field_type?: string
+          id?: string
+          is_required?: boolean | null
+          label: string
+          options?: Json | null
+          sort_order?: number | null
+          venue_type_id: string
+        }
+        Update: {
+          attribute_key?: string
+          field_type?: string
+          id?: string
+          is_required?: boolean | null
+          label?: string
+          options?: Json | null
+          sort_order?: number | null
+          venue_type_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_attribute_definitions_venue_type_id_fkey"
+            columns: ["venue_type_id"]
+            isOneToOne: false
+            referencedRelation: "venue_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venue_attributes: {
+        Row: {
+          attribute_key: string
+          id: string
+          value: string | null
+          venue_id: string
+        }
+        Insert: {
+          attribute_key: string
+          id?: string
+          value?: string | null
+          venue_id: string
+        }
+        Update: {
+          attribute_key?: string
+          id?: string
+          value?: string | null
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_attributes_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venue_claims: {
+        Row: {
+          created_at: string | null
+          document_url: string | null
+          id: string
+          phone: string | null
+          reviewed_by: string | null
+          role_at_venue: string | null
+          status: string | null
+          user_id: string
+          venue_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          document_url?: string | null
+          id?: string
+          phone?: string | null
+          reviewed_by?: string | null
+          role_at_venue?: string | null
+          status?: string | null
+          user_id: string
+          venue_id: string
+        }
+        Update: {
+          created_at?: string | null
+          document_url?: string | null
+          id?: string
+          phone?: string | null
+          reviewed_by?: string | null
+          role_at_venue?: string | null
+          status?: string | null
+          user_id?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_claims_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venue_deals: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          discount_label: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          qr_code_token: string | null
+          title: string
+          venue_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          discount_label?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          qr_code_token?: string | null
+          title: string
+          venue_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          discount_label?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          qr_code_token?: string | null
+          title?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_deals_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venue_menu_items: {
+        Row: {
+          currency: string | null
+          description: string | null
+          id: string
+          is_available: boolean | null
+          item_name: string
+          photo: string | null
+          price: number | null
+          section_label: string | null
+          sort_order: number | null
+          venue_id: string
+        }
+        Insert: {
+          currency?: string | null
+          description?: string | null
+          id?: string
+          is_available?: boolean | null
+          item_name: string
+          photo?: string | null
+          price?: number | null
+          section_label?: string | null
+          sort_order?: number | null
+          venue_id: string
+        }
+        Update: {
+          currency?: string | null
+          description?: string | null
+          id?: string
+          is_available?: boolean | null
+          item_name?: string
+          photo?: string | null
+          price?: number | null
+          section_label?: string | null
+          sort_order?: number | null
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_menu_items_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venue_reviews: {
+        Row: {
+          body: string | null
+          created_at: string | null
+          helpful_count: number | null
+          id: string
+          photos: string[] | null
+          rating: number
+          reply_at: string | null
+          reply_body: string | null
+          user_id: string
+          venue_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string | null
+          helpful_count?: number | null
+          id?: string
+          photos?: string[] | null
+          rating: number
+          reply_at?: string | null
+          reply_body?: string | null
+          user_id: string
+          venue_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string | null
+          helpful_count?: number | null
+          id?: string
+          photos?: string[] | null
+          rating?: number
+          reply_at?: string | null
+          reply_body?: string | null
+          user_id?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_reviews_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venue_saves: {
+        Row: {
+          created_at: string | null
+          id: string
+          user_id: string
+          venue_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          user_id: string
+          venue_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          user_id?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_saves_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venue_type_groups: {
+        Row: {
+          color_accent: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          sort_order: number | null
+        }
+        Insert: {
+          color_accent?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          sort_order?: number | null
+        }
+        Update: {
+          color_accent?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
+      venue_types: {
+        Row: {
+          default_attributes: Json | null
+          group_id: string
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          sort_order: number | null
+        }
+        Insert: {
+          default_attributes?: Json | null
+          group_id: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          sort_order?: number | null
+        }
+        Update: {
+          default_attributes?: Json | null
+          group_id?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_types_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "venue_type_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venues: {
+        Row: {
+          address: string | null
+          claimed_by_user_id: string | null
+          cover_photo: string | null
+          created_at: string | null
+          created_by_user_id: string | null
+          description: string | null
+          email: string | null
+          hours: Json | null
+          id: string
+          is_claimed: boolean | null
+          is_verified: boolean | null
+          lat: number | null
+          lng: number | null
+          logo: string | null
+          name: string
+          neighborhood: string | null
+          phone: string | null
+          photos: string[] | null
+          rating_avg: number | null
+          review_count: number | null
+          slug: string | null
+          status: string | null
+          updated_at: string | null
+          venue_type_id: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          claimed_by_user_id?: string | null
+          cover_photo?: string | null
+          created_at?: string | null
+          created_by_user_id?: string | null
+          description?: string | null
+          email?: string | null
+          hours?: Json | null
+          id?: string
+          is_claimed?: boolean | null
+          is_verified?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          logo?: string | null
+          name: string
+          neighborhood?: string | null
+          phone?: string | null
+          photos?: string[] | null
+          rating_avg?: number | null
+          review_count?: number | null
+          slug?: string | null
+          status?: string | null
+          updated_at?: string | null
+          venue_type_id: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          claimed_by_user_id?: string | null
+          cover_photo?: string | null
+          created_at?: string | null
+          created_by_user_id?: string | null
+          description?: string | null
+          email?: string | null
+          hours?: Json | null
+          id?: string
+          is_claimed?: boolean | null
+          is_verified?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          logo?: string | null
+          name?: string
+          neighborhood?: string | null
+          phone?: string | null
+          photos?: string[] | null
+          rating_avg?: number | null
+          review_count?: number | null
+          slug?: string | null
+          status?: string | null
+          updated_at?: string | null
+          venue_type_id?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venues_venue_type_id_fkey"
+            columns: ["venue_type_id"]
+            isOneToOne: false
+            referencedRelation: "venue_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
