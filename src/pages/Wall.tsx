@@ -139,15 +139,16 @@ const Wall = () => {
                 <Avatar>
                   <AvatarFallback className="bg-primary text-primary-foreground">You</AvatarFallback>
                 </Avatar>
-                <div className="flex-1">
+                <div className="flex-1 space-y-3">
                   <Textarea
                     placeholder="Share something with your community..."
-                    className="mb-3 resize-none"
+                    className="resize-none"
                     rows={3}
                     value={newPost}
                     onChange={(e) => setNewPost(e.target.value)}
                   />
-                  <Button disabled={!newPost.trim() || !user} onClick={() => { if (!user) navigate("/auth"); else postToWall.mutate(); }}>Post</Button>
+                  <MediaUpload value={newPhotos} onChange={setNewPhotos} maxFiles={6} />
+                  <Button disabled={(!newPost.trim() && newPhotos.length === 0) || !user} onClick={() => { if (!user) navigate("/auth"); else postToWall.mutate(); }}>Post</Button>
                 </div>
               </div>
             </CardContent>
