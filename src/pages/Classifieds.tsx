@@ -9,13 +9,27 @@ import ClassifiedPostForm from "@/components/classifieds/ClassifiedPostForm";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-const categories = ["All", "Services", "Items for Sale", "Electronics", "Furniture", "Jobs", "Lessons & Tutoring", "Events & Tickets", "Free Stuff", "Other"];
-
 const Classifieds = () => {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [postOpen, setPostOpen] = useState(false);
   const queryClient = useQueryClient();
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ["classified-categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("classified_categories")
+        .select("*")
+        .eq("section", "classifieds")
+        .eq("is_active", true)
+        .order("sort_order");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const categoryNames = ["All", ...categories.map((c: any) => c.name)];
 
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["classifieds"],
@@ -39,11 +53,11 @@ const Classifieds = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="font-display font-bold text-4xl md:text-5xl text-foreground mb-4">Classifieds</h1>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Buy, sell, and exchange services within the community</p>
+          <div className="text-center mb-8">
+            <h1 className="font-display font-bold text-3xl md:text-4xl text-foreground mb-2">Classifieds</h1>
+            <p className="text-muted-foreground">Buy, sell, and exchange services within the community</p>
           </div>
 
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -53,16 +67,19 @@ const Classifieds = () => {
             </div>
             <Dialog open={postOpen} onOpenChange={setPostOpen}>
               <DialogTrigger asChild>
-                <Button variant="hero" className="gap-2"><Plus className="w-4 h-4" /> Post Ad</Button>
+                <Button className="gap-2"><Plus className="w-4 h-4" /> Post Ad</Button>
               </DialogTrigger>
               <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-                <ClassifiedPostForm onSuccess={() => { setPostOpen(false); queryClient.invalidateQueries({ queryKey: ["classifieds"] }); }} />
+                <ClassifiedPostForm
+                  categories={categories.map((c: any) => c.name)}
+                  onSuccess={() => { setPostOpen(false); queryClient.invalidateQueries({ queryKey: ["classifieds"] }); }}
+                />
               </DialogContent>
             </Dialog>
           </div>
 
-          <div className="flex flex-wrap gap-2 mb-8">
-            {categories.map((cat) => (
+          <div className="flex flex-wrap gap-2 mb-6">
+            {categoryNames.map((cat) => (
               <Button key={cat} variant={category === cat ? "default" : "outline"} size="sm" onClick={() => setCategory(cat)}>
                 {cat}
               </Button>
@@ -76,7 +93,7 @@ const Classifieds = () => {
               <ShoppingBag className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">No classifieds found</h3>
               <p className="text-muted-foreground mb-4">Be the first to post an ad!</p>
-              <Button variant="default" onClick={() => setPostOpen(true)}><Plus className="w-4 h-4 mr-2" /> Post Ad</Button>
+              <Button onClick={() => setPostOpen(true)}><Plus className="w-4 h-4 mr-2" /> Post Ad</Button>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-6">
@@ -95,7 +112,7 @@ const Classifieds = () => {
                           {item.category && <Badge variant="outline">{item.category}</Badge>}
                         </div>
                         <CardTitle className="text-xl mb-1">{item.title}</CardTitle>
-                        {item.description && <p className="text-sm text-muted-foreground">{item.description}</p>}
+                        {item.description && <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>}
                         {item.price && <p className="text-primary font-semibold mt-2">{item.currency}{item.price}</p>}
                         {item.neighborhood && (
                           <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
