@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
       lost_found_posts: {
         Row: {
           category: string
@@ -68,6 +98,36 @@ export type Database = {
           title?: string
           type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      module_settings: {
+        Row: {
+          icon: string | null
+          id: string
+          is_enabled: boolean
+          label: string
+          module_key: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          icon?: string | null
+          id?: string
+          is_enabled?: boolean
+          label: string
+          module_key: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          icon?: string | null
+          id?: string
+          is_enabled?: boolean
+          label?: string
+          module_key?: string
+          sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -274,6 +334,87 @@ export type Database = {
           updated_at?: string
           user_id?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      theme_settings: {
+        Row: {
+          accent_color: string
+          background_color: string
+          border_color: string
+          button_color: string
+          card_background: string
+          id: string
+          nav_color: string
+          preset_name: string | null
+          primary_color: string
+          text_color: string
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string
+          background_color?: string
+          border_color?: string
+          button_color?: string
+          card_background?: string
+          id?: string
+          nav_color?: string
+          preset_name?: string | null
+          primary_color?: string
+          text_color?: string
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string
+          background_color?: string
+          border_color?: string
+          button_color?: string
+          card_background?: string
+          id?: string
+          nav_color?: string
+          preset_name?: string | null
+          primary_color?: string
+          text_color?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -761,9 +902,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "moderator" | "vendor" | "user"
       pet_personality:
         | "friendly"
         | "energetic"
@@ -901,6 +1049,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "moderator", "vendor", "user"],
       pet_personality: [
         "friendly",
         "energetic",
