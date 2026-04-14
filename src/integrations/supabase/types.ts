@@ -44,6 +44,75 @@ export type Database = {
         }
         Relationships: []
       }
+      classifieds: {
+        Row: {
+          address: string | null
+          category: string | null
+          contact_preference: string | null
+          created_at: string
+          currency: string | null
+          description: string | null
+          id: string
+          lat: number | null
+          lng: number | null
+          neighborhood: string | null
+          phone: string | null
+          photos: string[] | null
+          price: string | null
+          section: Database["public"]["Enums"]["classified_section"]
+          status: Database["public"]["Enums"]["classified_status"]
+          title: string
+          type: string | null
+          updated_at: string
+          user_id: string
+          whatsapp: string | null
+        }
+        Insert: {
+          address?: string | null
+          category?: string | null
+          contact_preference?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          neighborhood?: string | null
+          phone?: string | null
+          photos?: string[] | null
+          price?: string | null
+          section?: Database["public"]["Enums"]["classified_section"]
+          status?: Database["public"]["Enums"]["classified_status"]
+          title: string
+          type?: string | null
+          updated_at?: string
+          user_id: string
+          whatsapp?: string | null
+        }
+        Update: {
+          address?: string | null
+          category?: string | null
+          contact_preference?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          neighborhood?: string | null
+          phone?: string | null
+          photos?: string[] | null
+          price?: string | null
+          section?: Database["public"]["Enums"]["classified_section"]
+          status?: Database["public"]["Enums"]["classified_status"]
+          title?: string
+          type?: string | null
+          updated_at?: string
+          user_id?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       lost_found_posts: {
         Row: {
           category: string
@@ -201,6 +270,78 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pet_posts: {
+        Row: {
+          address: string | null
+          age_text: string | null
+          breed: string | null
+          created_at: string
+          description: string | null
+          gender: string | null
+          id: string
+          is_offering: boolean | null
+          lat: number | null
+          lng: number | null
+          opening_hours: Json | null
+          phone: string | null
+          photos: string[] | null
+          post_type: Database["public"]["Enums"]["pet_post_type"]
+          price: string | null
+          species: string | null
+          status: Database["public"]["Enums"]["pet_post_status"]
+          title: string
+          updated_at: string
+          user_id: string
+          whatsapp: string | null
+        }
+        Insert: {
+          address?: string | null
+          age_text?: string | null
+          breed?: string | null
+          created_at?: string
+          description?: string | null
+          gender?: string | null
+          id?: string
+          is_offering?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          opening_hours?: Json | null
+          phone?: string | null
+          photos?: string[] | null
+          post_type: Database["public"]["Enums"]["pet_post_type"]
+          price?: string | null
+          species?: string | null
+          status?: Database["public"]["Enums"]["pet_post_status"]
+          title: string
+          updated_at?: string
+          user_id: string
+          whatsapp?: string | null
+        }
+        Update: {
+          address?: string | null
+          age_text?: string | null
+          breed?: string | null
+          created_at?: string
+          description?: string | null
+          gender?: string | null
+          id?: string
+          is_offering?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          opening_hours?: Json | null
+          phone?: string | null
+          photos?: string[] | null
+          post_type?: Database["public"]["Enums"]["pet_post_type"]
+          price?: string | null
+          species?: string | null
+          status?: Database["public"]["Enums"]["pet_post_status"]
+          title?: string
+          updated_at?: string
+          user_id?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
       }
       pet_profiles: {
         Row: {
@@ -912,6 +1053,8 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "vendor" | "user"
+      classified_section: "classifieds" | "rental" | "parking"
+      classified_status: "active" | "sold" | "closed"
       pet_personality:
         | "friendly"
         | "energetic"
@@ -921,6 +1064,15 @@ export type Database = {
         | "protective"
         | "curious"
         | "independent"
+      pet_post_status: "active" | "resolved" | "closed"
+      pet_post_type:
+        | "adoption"
+        | "pet_sitting"
+        | "friend"
+        | "lost"
+        | "found"
+        | "shop"
+        | "vet"
       pet_species: "dog" | "cat" | "bird" | "rabbit" | "fish" | "other"
     }
     CompositeTypes: {
@@ -1050,6 +1202,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "vendor", "user"],
+      classified_section: ["classifieds", "rental", "parking"],
+      classified_status: ["active", "sold", "closed"],
       pet_personality: [
         "friendly",
         "energetic",
@@ -1059,6 +1213,16 @@ export const Constants = {
         "protective",
         "curious",
         "independent",
+      ],
+      pet_post_status: ["active", "resolved", "closed"],
+      pet_post_type: [
+        "adoption",
+        "pet_sitting",
+        "friend",
+        "lost",
+        "found",
+        "shop",
+        "vet",
       ],
       pet_species: ["dog", "cat", "bird", "rabbit", "fish", "other"],
     },
