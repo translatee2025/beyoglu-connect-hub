@@ -8,6 +8,7 @@ import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { MediaUpload } from "@/components/shared/MediaUpload";
 
 interface ClassifiedPostFormProps {
   categories: string[];
@@ -18,6 +19,7 @@ const ClassifiedPostForm = ({ categories, onSuccess }: ClassifiedPostFormProps) 
   const [form, setForm] = useState({
     title: "", description: "", category: "", price: "", type: "offer", phone: "", neighborhood: "",
   });
+  const [photos, setPhotos] = useState<string[]>([]);
   const { toast } = useToast();
 
   const mutation = useMutation({
@@ -34,6 +36,7 @@ const ClassifiedPostForm = ({ categories, onSuccess }: ClassifiedPostFormProps) 
         type: form.type,
         phone: form.phone,
         neighborhood: form.neighborhood,
+        photos,
       });
       if (error) throw error;
     },
@@ -65,6 +68,10 @@ const ClassifiedPostForm = ({ categories, onSuccess }: ClassifiedPostFormProps) 
           <div><Label>Neighborhood</Label><Input value={form.neighborhood} onChange={(e) => setForm({ ...form, neighborhood: e.target.value })} placeholder="e.g. Beyoğlu" /></div>
         </div>
         <div><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Describe your item or service..." /></div>
+        <div>
+          <Label>Photos / Videos</Label>
+          <MediaUpload value={photos} onChange={setPhotos} maxFiles={8} />
+        </div>
         <div><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+90 5xx xxx xx xx" /></div>
         <Button className="w-full" onClick={() => mutation.mutate()} disabled={!form.title || mutation.isPending}>
           {mutation.isPending ? "Posting..." : "Post Ad"}
