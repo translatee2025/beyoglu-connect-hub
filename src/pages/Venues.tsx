@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Store, Search, Plus, MapPin, List, Map, Phone } from "lucide-react";
+import { MediaUpload } from "@/components/shared/MediaUpload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -128,6 +129,7 @@ const VenuePostForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const [form, setForm] = useState({
     name: "", description: "", address: "", phone: "", whatsapp: "", neighborhood: "",
   });
+  const [photos, setPhotos] = useState<string[]>([]);
   const { toast } = useToast();
 
   const mutation = useMutation({
@@ -148,6 +150,7 @@ const VenuePostForm = ({ onSuccess }: { onSuccess: () => void }) => {
         neighborhood: form.neighborhood,
         venue_type_id: venueTypeId,
         created_by_user_id: user.id,
+        photos: photos.length > 0 ? photos : null,
       });
       if (error) throw error;
     },
@@ -165,6 +168,10 @@ const VenuePostForm = ({ onSuccess }: { onSuccess: () => void }) => {
         <div><Label>WhatsApp</Label><Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} placeholder="+90 5xx xxx xx xx" /></div>
         <div><Label>Neighborhood</Label><Input value={form.neighborhood} onChange={(e) => setForm({ ...form, neighborhood: e.target.value })} placeholder="Beyoğlu" /></div>
         <div><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="What does this place offer?" /></div>
+        <div>
+          <Label>Photos / Videos</Label>
+          <MediaUpload value={photos} onChange={setPhotos} maxFiles={8} />
+        </div>
         <Button className="w-full" onClick={() => mutation.mutate()} disabled={!form.name || mutation.isPending}>
           {mutation.isPending ? "Adding..." : "Add Venue"}
         </Button>

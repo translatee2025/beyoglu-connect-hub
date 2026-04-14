@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Wrench, Search, Plus, User } from "lucide-react";
+import { MediaUpload } from "@/components/shared/MediaUpload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -122,6 +123,7 @@ const NeighborHelp = () => {
 
 const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const [form, setForm] = useState({ title: "", description: "", category: "Mixed / Other", helpType: "offer", neighborhood: "", phone: "", whatsapp: "" });
+  const [photos, setPhotos] = useState<string[]>([]);
   const { toast } = useToast();
 
   const mutation = useMutation({
@@ -164,6 +166,10 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
         </div>
         <div><Label>Title</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Can fix bathroom leaks" /></div>
         <div><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+        <div>
+          <Label>Photos / Videos</Label>
+          <MediaUpload value={photos} onChange={setPhotos} maxFiles={5} />
+        </div>
         <div><Label>Neighborhood</Label><Input value={form.neighborhood} onChange={(e) => setForm({ ...form, neighborhood: e.target.value })} /></div>
         <div><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+90 5xx xxx xx xx" /></div>
         <div><Label>WhatsApp</Label><Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} /></div>

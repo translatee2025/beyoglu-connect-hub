@@ -11,12 +11,15 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { LikeButton } from "@/components/social/LikeButton";
 import { type EntityType } from "@/hooks/useLikes";
+import { MediaUpload } from "@/components/shared/MediaUpload";
+import { MediaGrid } from "@/components/shared/MediaGrid";
 
 type FeedItem = {
   id: string;
   source: string;
   title: string;
   description?: string;
+  photos?: string[];
   created_at: string;
   badge: string;
   icon: any;
@@ -25,6 +28,7 @@ type FeedItem = {
 
 const Wall = () => {
   const [newPost, setNewPost] = useState("");
+  const [newPhotos, setNewPhotos] = useState<string[]>([]);
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -33,10 +37,10 @@ const Wall = () => {
   const { data: wallPosts = [] } = useQuery({
     queryKey: ["wall-posts"],
     queryFn: async () => {
-      const { data } = await supabase.from("wall_posts").select("id, content, user_id, created_at").order("created_at", { ascending: false }).limit(20);
+      const { data } = await supabase.from("wall_posts").select("id, content, photos, user_id, created_at").order("created_at", { ascending: false }).limit(20);
       return (data || []).map((item: any) => ({
         id: item.id, source: "wall", title: item.content?.slice(0, 80), description: item.content?.length > 80 ? item.content : undefined,
-        created_at: item.created_at, badge: "Post", icon: MessageSquare, entityType: "wall_post" as EntityType,
+        photos: item.photos || [], created_at: item.created_at, badge: "Post", icon: MessageSquare, entityType: "wall_post" as EntityType,
       }));
     },
   });
@@ -88,11 +92,12 @@ const Wall = () => {
 
   const postToWall = useMutation({
     mutationFn: async () => {
-      if (!user || !newPost.trim()) return;
-      await supabase.from("wall_posts").insert({ content: newPost.trim(), user_id: user.id });
+      if (!user || (!newPost.trim() && newPhotos.length === 0)) return;
+      await supabase.from("wall_posts").insert({ content: newPost.trim(), user_id: user.id, photos: newPhotos.length > 0 ? newPhotos : [] });
     },
     onSuccess: () => {
       setNewPost("");
+      setNewPhotos([]);
       queryClient.invalidateQueries({ queryKey: ["wall-posts"] });
     },
   });
@@ -134,15 +139,16 @@ const Wall = () => {
                 <Avatar>
                   <AvatarFallback className="bg-primary text-primary-foreground">You</AvatarFallback>
                 </Avatar>
-                <div className="flex-1">
+                <div className="flex-1 space-y-3">
                   <Textarea
                     placeholder="Share something with your community..."
-                    className="mb-3 resize-none"
+                    className="resize-none"
                     rows={3}
                     value={newPost}
                     onChange={(e) => setNewPost(e.target.value)}
                   />
-                  <Button disabled={!newPost.trim() || !user} onClick={() => { if (!user) navigate("/auth"); else postToWall.mutate(); }}>Post</Button>
+                  <MediaUpload value={newPhotos} onChange={setNewPhotos} maxFiles={6} />
+                  <Button disabled={(!newPost.trim() && newPhotos.length === 0) || !user} onClick={() => { if (!user) navigate("/auth"); else postToWall.mutate(); }}>Post</Button>
                 </div>
               </div>
             </CardContent>
@@ -177,6 +183,11 @@ const Wall = () => {
                         </div>
                       </div>
                     </CardHeader>
+                    {item.photos && item.photos.length > 0 && (
+                      <div className="px-6 pb-2">
+                        <MediaGrid urls={item.photos} />
+                      </div>
+                    )}
                     <CardContent>
                       <div className="flex items-center gap-4 pt-2 border-t border-border">
                         <LikeButton entityType={item.entityType} entityId={item.id} />

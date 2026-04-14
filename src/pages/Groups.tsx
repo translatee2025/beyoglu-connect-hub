@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Users, Lock, Globe as GlobeIcon, UserPlus, Plus, Search } from "lucide-react";
+import { MediaUpload } from "@/components/shared/MediaUpload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -380,6 +381,7 @@ const GroupForm = ({
     category: groupOptions.categories[0]?.key || "community",
     groupType: groupOptions.groupTypes[0]?.key || "public",
     neighborhood: groupOptions.neighborhoods[0]?.key || "beyoglu",
+    coverPhoto: "",
   });
 
   const mutation = useMutation({
@@ -394,6 +396,7 @@ const GroupForm = ({
           category: form.category,
           group_type: form.groupType,
           neighborhood: form.neighborhood,
+          cover_photo: form.coverPhoto || null,
           created_by: user.id,
           member_count: 1,
         })
@@ -489,6 +492,11 @@ const GroupForm = ({
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             placeholder={t("groups.form.description_placeholder", "What is this group about?")}
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label>{t("groups.form.cover_photo", "Cover Photo")}</Label>
+          <MediaUpload value={form.coverPhoto ? [form.coverPhoto] : []} onChange={(urls) => setForm({ ...form, coverPhoto: urls[0] || "" })} maxFiles={1} label={t("groups.form.add_cover", "Add Cover Photo")} />
         </div>
 
         <Button className="w-full" onClick={() => mutation.mutate()} disabled={!form.name.trim() || mutation.isPending}>
