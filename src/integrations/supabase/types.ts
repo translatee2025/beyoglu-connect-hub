@@ -44,6 +44,36 @@ export type Database = {
         }
         Relationships: []
       }
+      classified_categories: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          is_active: boolean
+          name: string
+          section: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          section?: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          section?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       classifieds: {
         Row: {
           address: string | null
