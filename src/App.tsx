@@ -12,6 +12,8 @@ import Index from "./pages/Index";
 import Groups from "./pages/Groups";
 import Events from "./pages/Events";
 import Classifieds from "./pages/Classifieds";
+import Rentals from "./pages/Rentals";
+import Parking from "./pages/Parking";
 import Wall from "./pages/Wall";
 import Pets from "./pages/Pets";
 import Auth from "./pages/Auth";
@@ -58,6 +60,8 @@ const App = () => (
                     <Route path="/groups" element={<Groups />} />
                     <Route path="/events" element={<Events />} />
                     <Route path="/classifieds" element={<Classifieds />} />
+                    <Route path="/rentals" element={<Rentals />} />
+                    <Route path="/parking" element={<Parking />} />
                     <Route path="/wall" element={<Wall />} />
                     <Route path="/pets" element={<Pets />} />
                   </Route>
