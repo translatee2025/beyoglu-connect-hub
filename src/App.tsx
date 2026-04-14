@@ -7,7 +7,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { LanguageProvider } from "@/providers/LanguageProvider";
 import { AuthProvider } from "@/providers/AuthProvider";
-import Navigation from "./components/Navigation";
+import PublicLayout from "./components/PublicLayout";
 import Index from "./pages/Index";
 import Groups from "./pages/Groups";
 import Events from "./pages/Events";
@@ -40,7 +40,7 @@ const App = () => (
                 <Toaster />
                 <Sonner />
                 <Routes>
-                  {/* Admin routes - no public nav */}
+                  {/* Admin routes */}
                   <Route path="/admin" element={<AdminLayout />}>
                     <Route index element={<AdminDashboard />} />
                     <Route path="modules" element={<AdminModules />} />
@@ -52,24 +52,17 @@ const App = () => (
                   {/* Auth */}
                   <Route path="/auth" element={<Auth />} />
 
-                  {/* Public routes with nav */}
-                  <Route
-                    path="*"
-                    element={
-                      <>
-                        <Navigation />
-                        <Routes>
-                          <Route path="/" element={<Index />} />
-                          <Route path="/groups" element={<Groups />} />
-                          <Route path="/events" element={<Events />} />
-                          <Route path="/classifieds" element={<Classifieds />} />
-                          <Route path="/wall" element={<Wall />} />
-                          <Route path="/pets" element={<Pets />} />
-                          <Route path="*" element={<NotFound />} />
-                        </Routes>
-                      </>
-                    }
-                  />
+                  {/* Public routes with navigation */}
+                  <Route element={<PublicLayout />}>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/groups" element={<Groups />} />
+                    <Route path="/events" element={<Events />} />
+                    <Route path="/classifieds" element={<Classifieds />} />
+                    <Route path="/wall" element={<Wall />} />
+                    <Route path="/pets" element={<Pets />} />
+                  </Route>
+
+                  <Route path="*" element={<NotFound />} />
                 </Routes>
               </TooltipProvider>
             </AuthProvider>
