@@ -54,6 +54,7 @@ export type Database = {
           description: string | null
           id: string
           lat: number | null
+          listing_mode: string | null
           lng: number | null
           neighborhood: string | null
           phone: string | null
@@ -76,6 +77,7 @@ export type Database = {
           description?: string | null
           id?: string
           lat?: number | null
+          listing_mode?: string | null
           lng?: number | null
           neighborhood?: string | null
           phone?: string | null
@@ -98,6 +100,7 @@ export type Database = {
           description?: string | null
           id?: string
           lat?: number | null
+          listing_mode?: string | null
           lng?: number | null
           neighborhood?: string | null
           phone?: string | null
@@ -230,6 +233,51 @@ export type Database = {
           module_key?: string
           sort_order?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      neighbor_help_posts: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          help_type: string
+          id: string
+          neighborhood: string | null
+          phone: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+          whatsapp: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          help_type?: string
+          id?: string
+          neighborhood?: string | null
+          phone?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+          whatsapp?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          help_type?: string
+          id?: string
+          neighborhood?: string | null
+          phone?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }
@@ -1105,6 +1153,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      wall_posts: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
