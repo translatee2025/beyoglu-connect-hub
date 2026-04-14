@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useAuth } from "@/providers/AuthProvider";
 import { useNavigate } from "react-router-dom";
-import { useLanguage } from "@/providers/LanguageProvider";
 import {
   DropdownMenu,
   DropdownMenuContent,
