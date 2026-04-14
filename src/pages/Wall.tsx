@@ -11,12 +11,15 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { LikeButton } from "@/components/social/LikeButton";
 import { type EntityType } from "@/hooks/useLikes";
+import { MediaUpload } from "@/components/shared/MediaUpload";
+import { MediaGrid } from "@/components/shared/MediaGrid";
 
 type FeedItem = {
   id: string;
   source: string;
   title: string;
   description?: string;
+  photos?: string[];
   created_at: string;
   badge: string;
   icon: any;
@@ -25,6 +28,7 @@ type FeedItem = {
 
 const Wall = () => {
   const [newPost, setNewPost] = useState("");
+  const [newPhotos, setNewPhotos] = useState<string[]>([]);
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
