@@ -381,6 +381,7 @@ const GroupForm = ({
     category: groupOptions.categories[0]?.key || "community",
     groupType: groupOptions.groupTypes[0]?.key || "public",
     neighborhood: groupOptions.neighborhoods[0]?.key || "beyoglu",
+    coverPhoto: "",
   });
 
   const mutation = useMutation({
