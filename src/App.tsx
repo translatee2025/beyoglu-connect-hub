@@ -16,6 +16,8 @@ import Rentals from "./pages/Rentals";
 import Parking from "./pages/Parking";
 import Wall from "./pages/Wall";
 import Pets from "./pages/Pets";
+import Venues from "./pages/Venues";
+import NeighborHelp from "./pages/NeighborHelp";
 import Auth from "./pages/Auth";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -64,6 +66,8 @@ const App = () => (
                     <Route path="/parking" element={<Parking />} />
                     <Route path="/wall" element={<Wall />} />
                     <Route path="/pets" element={<Pets />} />
+                    <Route path="/venues" element={<Venues />} />
+                    <Route path="/help" element={<NeighborHelp />} />
                   </Route>
 
                   <Route path="*" element={<NotFound />} />
