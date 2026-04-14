@@ -1,19 +1,27 @@
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
-import { Users, Calendar, ShoppingBag, MessageSquare, Dog, Menu, X, Home, Car } from "lucide-react";
+import { Users, Calendar, ShoppingBag, MessageSquare, Dog, Menu, X, Home, Car, Globe } from "lucide-react";
 import { useState } from "react";
+import { useLanguage } from "@/providers/LanguageProvider";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navigation = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t, language, setLanguage, languages } = useLanguage();
 
   const navItems = [
-    { to: "/groups", label: "Groups", icon: Users },
-    { to: "/events", label: "Events", icon: Calendar },
-    { to: "/classifieds", label: "Classifieds", icon: ShoppingBag },
-    { to: "/rentals", label: "Rentals", icon: Home },
-    { to: "/parking", label: "Parking", icon: Car },
-    { to: "/wall", label: "Wall", icon: MessageSquare },
-    { to: "/pets", label: "Pets", icon: Dog },
+    { to: "/groups", labelKey: "nav.groups", fallback: "Groups", icon: Users },
+    { to: "/events", labelKey: "nav.events", fallback: "Events", icon: Calendar },
+    { to: "/classifieds", labelKey: "nav.classifieds", fallback: "Classifieds", icon: ShoppingBag },
+    { to: "/rentals", labelKey: "nav.rentals", fallback: "Rentals", icon: Home },
+    { to: "/parking", labelKey: "nav.parking", fallback: "Parking", icon: Car },
+    { to: "/wall", labelKey: "nav.wall", fallback: "Wall", icon: MessageSquare },
+    { to: "/pets", labelKey: "nav.pets", fallback: "Pets", icon: Dog },
   ];
 
   return (
@@ -40,15 +48,36 @@ const Navigation = () => {
                 activeClassName="text-primary bg-muted font-medium"
               >
                 <item.icon className="w-4 h-4" />
-                <span>{item.label}</span>
+                <span>{t(item.labelKey, item.fallback)}</span>
               </NavLink>
             ))}
           </div>
 
-          {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost">Log In</Button>
-            <Button variant="default">Sign Up</Button>
+          {/* Desktop Auth + Language */}
+          <div className="hidden md:flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Globe className="w-4 h-4" />
+                  <span className="absolute -bottom-0.5 -right-0.5 text-[9px] font-bold uppercase bg-primary text-primary-foreground rounded px-0.5 leading-tight">
+                    {language}
+                  </span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {languages.map((lang) => (
+                  <DropdownMenuItem
+                    key={lang.code}
+                    onClick={() => setLanguage(lang.code)}
+                    className={language === lang.code ? "bg-muted font-medium" : ""}
+                  >
+                    {lang.native_name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="ghost">{t('nav.login', 'Log In')}</Button>
+            <Button variant="default">{t('nav.signup', 'Sign Up')}</Button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -73,12 +102,26 @@ const Navigation = () => {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <item.icon className="w-5 h-5" />
-                  <span>{item.label}</span>
+                  <span>{t(item.labelKey, item.fallback)}</span>
                 </NavLink>
               ))}
+              {/* Language switcher mobile */}
+              <div className="flex items-center gap-2 px-4 py-3">
+                <Globe className="w-5 h-5 text-muted-foreground" />
+                {languages.map((lang) => (
+                  <Button
+                    key={lang.code}
+                    variant={language === lang.code ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setLanguage(lang.code)}
+                  >
+                    {lang.native_name}
+                  </Button>
+                ))}
+              </div>
               <div className="flex flex-col gap-2 mt-4 px-4">
-                <Button variant="ghost" className="w-full">Log In</Button>
-                <Button variant="default" className="w-full">Sign Up</Button>
+                <Button variant="ghost" className="w-full">{t('nav.login', 'Log In')}</Button>
+                <Button variant="default" className="w-full">{t('nav.signup', 'Sign Up')}</Button>
               </div>
             </div>
           </div>

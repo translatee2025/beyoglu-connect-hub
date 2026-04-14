@@ -113,6 +113,39 @@ export type Database = {
         }
         Relationships: []
       }
+      languages: {
+        Row: {
+          code: string
+          created_at: string
+          direction: string | null
+          is_active: boolean | null
+          is_default: boolean | null
+          name: string
+          native_name: string
+          sort_order: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          direction?: string | null
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name: string
+          native_name: string
+          sort_order?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          direction?: string | null
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name?: string
+          native_name?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
       lost_found_posts: {
         Row: {
           category: string
@@ -537,6 +570,41 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      translations: {
+        Row: {
+          created_at: string
+          id: string
+          language_code: string
+          translation_key: string
+          translation_value: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          language_code: string
+          translation_key: string
+          translation_value: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          language_code?: string
+          translation_key?: string
+          translation_value?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "translations_language_code_fkey"
+            columns: ["language_code"]
+            isOneToOne: false
+            referencedRelation: "languages"
+            referencedColumns: ["code"]
+          },
+        ]
       }
       user_roles: {
         Row: {
