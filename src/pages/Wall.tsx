@@ -92,11 +92,12 @@ const Wall = () => {
 
   const postToWall = useMutation({
     mutationFn: async () => {
-      if (!user || !newPost.trim()) return;
-      await supabase.from("wall_posts").insert({ content: newPost.trim(), user_id: user.id });
+      if (!user || (!newPost.trim() && newPhotos.length === 0)) return;
+      await supabase.from("wall_posts").insert({ content: newPost.trim(), user_id: user.id, photos: newPhotos.length > 0 ? newPhotos : [] });
     },
     onSuccess: () => {
       setNewPost("");
+      setNewPhotos([]);
       queryClient.invalidateQueries({ queryKey: ["wall-posts"] });
     },
   });
