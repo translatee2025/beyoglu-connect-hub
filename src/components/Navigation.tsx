@@ -1,7 +1,10 @@
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
-import { Users, Calendar, ShoppingBag, MessageSquare, Dog, Menu, X, Home, Car, Globe, Store, Wrench, ChevronDown } from "lucide-react";
+import { Users, Calendar, ShoppingBag, MessageSquare, Dog, Menu, X, Home, Car, Globe, Store, Wrench, ChevronDown, Mail, User } from "lucide-react";
 import { useState } from "react";
+import { useLanguage } from "@/providers/LanguageProvider";
+import { useAuth } from "@/providers/AuthProvider";
+import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/providers/LanguageProvider";
 import {
   DropdownMenu,
@@ -13,6 +16,8 @@ import {
 const Navigation = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { t, language, setLanguage, languages } = useLanguage();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const navItems = [
     { to: "/groups", labelKey: "nav.groups", fallback: "Groups", icon: Users },
@@ -110,8 +115,29 @@ const Navigation = () => {
           {/* Desktop Auth + Language */}
           <div className="hidden lg:flex items-center gap-1.5 flex-shrink-0">
             <LanguageSwitcher />
-            <Button variant="ghost" size="sm">{t('nav.login', 'Log In')}</Button>
-            <Button variant="default" size="sm">{t('nav.signup', 'Sign Up')}</Button>
+            {user ? (
+              <>
+                <NavLink to="/messages" className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors">
+                  <Mail className="w-5 h-5" />
+                </NavLink>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-sm">
+                      <User className="w-4 h-4" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => navigate(`/profile/${user.id}`)}>My Profile</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => signOut()}>Log Out</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" onClick={() => navigate("/auth")}>{t('nav.login', 'Log In')}</Button>
+                <Button variant="default" size="sm" onClick={() => navigate("/auth")}>{t('nav.signup', 'Sign Up')}</Button>
+              </>
+            )}
           </div>
 
           {/* Mobile: Language + Hamburger */}
@@ -143,8 +169,22 @@ const Navigation = () => {
                 </NavLink>
               ))}
               <div className="flex flex-col gap-2 mt-4 px-4">
-                <Button variant="ghost" className="w-full">{t('nav.login', 'Log In')}</Button>
-                <Button variant="default" className="w-full">{t('nav.signup', 'Sign Up')}</Button>
+                {user ? (
+                  <>
+                    <NavLink to="/messages" className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
+                      <Mail className="w-5 h-5" /> Messages
+                    </NavLink>
+                    <NavLink to={`/profile/${user.id}`} className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
+                      <User className="w-5 h-5" /> My Profile
+                    </NavLink>
+                    <Button variant="ghost" className="w-full" onClick={() => { signOut(); setMobileMenuOpen(false); }}>Log Out</Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="ghost" className="w-full" onClick={() => { navigate("/auth"); setMobileMenuOpen(false); }}>{t('nav.login', 'Log In')}</Button>
+                    <Button variant="default" className="w-full" onClick={() => { navigate("/auth"); setMobileMenuOpen(false); }}>{t('nav.signup', 'Sign Up')}</Button>
+                  </>
+                )}
               </div>
             </div>
           </div>
