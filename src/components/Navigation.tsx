@@ -1,6 +1,6 @@
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
-import { Users, Calendar, ShoppingBag, MessageSquare, Dog, Menu, X, Home, Car, Globe, Store, Wrench } from "lucide-react";
+import { Users, Calendar, ShoppingBag, MessageSquare, Dog, Menu, X, Home, Car, Globe, Store, Wrench, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from "@/providers/LanguageProvider";
 import {
@@ -26,6 +26,32 @@ const Navigation = () => {
     { to: "/help", labelKey: "nav.help", fallback: "Help", icon: Wrench },
   ];
 
+  // Split: show first 6 on desktop, rest in "More" dropdown
+  const visibleItems = navItems.slice(0, 6);
+  const moreItems = navItems.slice(6);
+
+  const LanguageSwitcher = () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="gap-1 px-2">
+          <Globe className="w-4 h-4" />
+          <span className="text-xs font-bold uppercase">{language}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {languages.map((lang) => (
+          <DropdownMenuItem
+            key={lang.code}
+            onClick={() => setLanguage(lang.code)}
+            className={language === lang.code ? "bg-muted font-medium" : ""}
+          >
+            {lang.native_name}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   return (
     <nav className="sticky top-0 z-50 bg-card border-b border-border shadow-sm">
       <div className="container mx-auto px-4">
@@ -35,72 +61,62 @@ const Navigation = () => {
             <div className="w-8 h-8 rounded-lg bg-gradient-hero flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-lg">B</span>
             </div>
-            <span className="font-display font-bold text-lg text-foreground hidden lg:inline">
+            <span className="font-display font-bold text-lg text-foreground hidden xl:inline">
               Beyoğlu Connect
             </span>
           </NavLink>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-0.5">
-            {navItems.map((item) => (
+            {visibleItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-sm"
+                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-sm"
                 activeClassName="text-primary bg-muted font-medium"
               >
                 <item.icon className="w-4 h-4" />
                 <span>{t(item.labelKey, item.fallback)}</span>
               </NavLink>
             ))}
+
+            {/* More dropdown for remaining items */}
+            {moreItems.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-sm">
+                    <ChevronDown className="w-4 h-4" />
+                    <span>More</span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {moreItems.map((item) => (
+                    <DropdownMenuItem key={item.to} asChild>
+                      <NavLink
+                        to={item.to}
+                        className="flex items-center gap-2 w-full"
+                        activeClassName="text-primary font-medium"
+                      >
+                        <item.icon className="w-4 h-4" />
+                        <span>{t(item.labelKey, item.fallback)}</span>
+                      </NavLink>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
 
           {/* Desktop Auth + Language */}
           <div className="hidden lg:flex items-center gap-1.5 flex-shrink-0">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="relative gap-1 px-2">
-                  <Globe className="w-4 h-4" />
-                  <span className="text-xs font-bold uppercase">{language}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {languages.map((lang) => (
-                  <DropdownMenuItem
-                    key={lang.code}
-                    onClick={() => setLanguage(lang.code)}
-                    className={language === lang.code ? "bg-muted font-medium" : ""}
-                  >
-                    {lang.native_name}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <LanguageSwitcher />
             <Button variant="ghost" size="sm">{t('nav.login', 'Log In')}</Button>
             <Button variant="default" size="sm">{t('nav.signup', 'Sign Up')}</Button>
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile: Language + Hamburger */}
           <div className="flex lg:hidden items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-1 px-2">
-                  <Globe className="w-4 h-4" />
-                  <span className="text-xs font-bold uppercase">{language}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {languages.map((lang) => (
-                  <DropdownMenuItem
-                    key={lang.code}
-                    onClick={() => setLanguage(lang.code)}
-                    className={language === lang.code ? "bg-muted font-medium" : ""}
-                  >
-                    {lang.native_name}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <LanguageSwitcher />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 text-foreground"
@@ -113,7 +129,7 @@ const Navigation = () => {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="lg:hidden py-4 border-t border-border">
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1">
               {navItems.map((item) => (
                 <NavLink
                   key={item.to}
