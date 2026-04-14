@@ -396,6 +396,7 @@ const GroupForm = ({
           category: form.category,
           group_type: form.groupType,
           neighborhood: form.neighborhood,
+          cover_photo: form.coverPhoto || null,
           created_by: user.id,
           member_count: 1,
         })
