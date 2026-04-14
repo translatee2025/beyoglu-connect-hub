@@ -9,13 +9,12 @@ import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-const classifiedCategories = ["Services", "Items for Sale", "Electronics", "Furniture", "Jobs", "Lessons & Tutoring", "Events & Tickets", "Free Stuff", "Other"];
-
 interface ClassifiedPostFormProps {
+  categories: string[];
   onSuccess: () => void;
 }
 
-const ClassifiedPostForm = ({ onSuccess }: ClassifiedPostFormProps) => {
+const ClassifiedPostForm = ({ categories, onSuccess }: ClassifiedPostFormProps) => {
   const [form, setForm] = useState({
     title: "", description: "", category: "", price: "", type: "offer", phone: "", neighborhood: "",
   });
@@ -57,7 +56,7 @@ const ClassifiedPostForm = ({ onSuccess }: ClassifiedPostFormProps) => {
           <div><Label>Category</Label>
             <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
               <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-              <SelectContent>{classifiedCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+              <SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
             </Select>
           </div>
         </div>
