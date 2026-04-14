@@ -35,8 +35,8 @@ const App = () => (
   <HelmetProvider>
     <BrowserRouter>
       <ThemeProvider>
-        <LanguageProvider>
-          <QueryClientProvider client={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <LanguageProvider>
             <AuthProvider>
               <TooltipProvider>
                 <Toaster />
