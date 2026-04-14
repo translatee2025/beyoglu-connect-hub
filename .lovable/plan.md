@@ -1,105 +1,105 @@
 
 
-# Plan: Restructure Classifieds + Pets into Category-Based Modules
+# Plan: Restructure Rentals/Parking Views, Add Wall Feed, Venues Module, Neighbor Help Module
 
-## What Changes
+## Summary
 
-### 1. Split Classifieds into 3 Separate Pages
+Five changes: (1) Restructure Rentals with separate "Looking" list view and "Offering" list+map view with rent/sell toggle, (2) same pattern for Parking, (3) Wall becomes a real-time aggregated feed from all modules, (4) new Venues page for restaurants/pharmacies/bars/hospitals/tekkels/etc, (5) new Neighbor Help page — a single wall of offer/want posts with category filters.
 
-**Current state:** One `/classifieds` page with hardcoded items including apartments.
+---
 
-**New structure:**
-- `/classifieds` — Standard classifieds (Services, Items, Electronics, Furniture, Jobs, etc.) with category filter chips. No housing/parking.
-- `/rentals` — Dedicated apartment/housing finder with list + map view. Fields: title, type (1+1, 2+1, studio), price, neighborhood, photos, description, map pin, contact.
-- `/parking` — Dedicated parking finder with list + map view. Fields: title, type (garage, open, street), price, availability, photos, map pin, contact.
+## 1. Rentals Page Restructure
 
-Each page gets a "Post Ad" dialog that saves to a `classifieds` database table with a `section` enum (`classifieds`, `rental`, `parking`) and a `category` field.
+**Two top-level tabs:** "I Need a Place" and "Apartments for Rent/Sale"
 
-**Database — new `classifieds` table:**
-- id, user_id, section (enum: classifieds/rental/parking), category, title, description, type (offer/need), price, currency, photos (text[]), address, lat, lng, phone, whatsapp, contact_preference, status (active/sold/closed), created_at
+- **"I Need a Place" tab:** Simple Craigslist-style list of posts. Filters: category (Studio, 1+1, 2+1, etc.), neighborhood. No map. Each post shows title, description, budget, contact.
+- **"Apartments for Rent/Sale" tab:** Two sub-views — List and Map (toggle). Filter chips include a **Rent / Sale** toggle button. Posts that have lat/lng show as pins on the map. Post form includes a rent/sell selector.
 
-**Navigation:** Add "Rentals" and "Parking" to nav alongside existing "Classifieds".
+**DB change:** Add a `listing_mode` column (text, nullable) to `classifieds` table — values: `rent`, `sell`, `looking`. This distinguishes seekers from offerers and rent from sale.
 
-### 2. Restructure Pets Page with Category Tabs
+**Files:** Rewrite `src/pages/Rentals.tsx`.
 
-**Replace current tabs** (Browse, Discover, Map, Friends, Lost & Found) with category-based tabs:
+## 2. Parking Page Restructure
 
-| Tab | Description |
-|-----|-------------|
-| 🐾 Adoption | Pets available for adoption — user posts with pet details, photos, contact |
-| 🏠 Pet Sitting | Two sub-filters: "I Want a Sitter" / "I Offer Sitting" — posts with availability, price, experience |
-| ❤️ Friends | Find playmates — keeps existing swipe/browse/friend-finder functionality |
-| 🚨 Lost & Found | Lost/found reports with map — keeps existing functionality |
-| 🏥 Shops & Vets | Browse pet shops and vet clinics on map — keeps existing map layer |
+**Two top-level tabs:** "I Need Parking" and "Parking for Rent"
 
-### 3. Replace "Add My Pet" with Universal Post Button
+- **"I Need Parking" tab:** Simple list view with filters (type, neighborhood).
+- **"Parking for Rent" tab:** List + Map toggle. Posts with lat/lng appear as map pins.
 
-**Remove** the current "Add My Pet" dialog button.
+**DB change:** Uses same `listing_mode` column on `classifieds` (`rent` vs `looking`).
 
-**Add** a single "Create Post" button that opens a dialog with **big icon buttons** to choose what to post:
+**Files:** Rewrite `src/pages/Parking.tsx`.
 
-```text
-┌─────────────────────────────────────┐
-│       What would you like to post?  │
-│                                     │
-│  🐾 Pet for      🏠 Pet Sitting    │
-│     Adoption        Service         │
-│                                     │
-│  ❤️ Find a       🚨 Lost / Found   │
-│     Friend          Report          │
-│                                     │
-│  🏥 Register     🏥 Register       │
-│     Shop            Vet Clinic      │
-└─────────────────────────────────────┘
-```
+## 3. Wall — Aggregated Activity Feed
 
-Each button opens a **different form** tailored to that post type:
+Wall pulls the latest posts from all tables (`classifieds`, `pet_posts`, plus new `venues`, `neighbor_help_posts`) ordered by `created_at`, and also allows direct status posts.
 
-- **Adoption:** Pet name, species, breed, age, gender, photos, description, contact, location
-- **Pet Sitting:** Title, I want/I offer toggle, availability, price range, experience, area, contact
-- **Find a Friend:** Existing AddPetForm (pet profile for matching)
-- **Lost/Found:** Existing ReportLostPetForm
-- **Register Shop:** Shop name, address, phone, WhatsApp, opening hours, photos, map pin, description
-- **Register Vet:** Same as shop form but for vet clinics
+**New DB table: `wall_posts`** — for direct status posts on the wall.
+- id, user_id, content (text), created_at
 
-### 4. Database Changes
+The Wall page queries all sources in parallel, merges by date, and shows a unified feed. Each card shows source badge (Rental, Pet, Venue, Help, etc.) and links to the original.
 
-**New table: `pet_posts`**
-- id, user_id, post_type (enum: adoption, pet_sitting, friend, lost, found, shop, vet), title, description, photos (text[]), species, breed, age_text, gender, price, phone, whatsapp, address, lat, lng, opening_hours (JSONB), is_offering (bool for sitting), status (active/resolved/closed), created_at
+**Files:** Rewrite `src/pages/Wall.tsx`.
 
-This single table handles all pet community posts. The `post_type` determines which fields are relevant and which tab the post appears in.
+## 4. Venues Page (New)
 
-Shops and vets posted here also appear on the pet map as pins (like they do now, but user-generated instead of hardcoded).
+Similar structure to Pets. Categories as tabs or filter chips:
+- Restaurants, Pharmacies, Bars, Hospitals, Tekkels, Other
 
-**RLS:** Authenticated users can insert their own posts. Anyone can read active posts. Only the author can update/delete.
+Each venue is a user post with: name/headline (free text — user can write "Shoe Repair" etc.), address, phone, WhatsApp, opening hours, description, photos, map pin.
 
-### 5. Routes Update in App.tsx
+**Two views:** List + Map toggle.
 
-Add two new routes inside PublicLayout:
-- `/rentals` → new `Rentals` page
-- `/parking` → new `Parking` page
+**New DB table: `venues`**
+- id, user_id, category (text), name, description, address, phone, whatsapp, opening_hours (jsonb), photos (text[]), lat, lng, neighborhood, status, created_at, updated_at
 
-### 6. Files to Create/Modify
+**New files:** `src/pages/Venues.tsx`, `src/components/venues/VenuePostForm.tsx`
 
-**New files:**
-- `src/pages/Rentals.tsx` — Housing finder with list + map, category filters, post dialog
-- `src/pages/Parking.tsx` — Parking finder with list + map, post dialog
-- `src/components/pets/PetPostChooser.tsx` — The big-button category chooser dialog
-- `src/components/pets/AdoptionForm.tsx` — Form for adoption posts
-- `src/components/pets/PetSittingForm.tsx` — Form for sitting posts
-- `src/components/pets/RegisterVenueForm.tsx` — Form for shop/vet registration
-- `src/components/classifieds/ClassifiedPostForm.tsx` — Form for standard classifieds
+**Navigation:** Add "Venues" to nav with `Store` icon.
 
-**Modified files:**
-- `src/pages/Pets.tsx` — New tab structure, replace "Add My Pet" with universal post button
-- `src/pages/Classifieds.tsx` — Add categories, remove housing items, connect to DB
-- `src/components/Navigation.tsx` — Add Rentals and Parking nav items
-- `src/App.tsx` — Add /rentals and /parking routes
+## 5. Neighbor Help Page (New)
 
-**Database migration:** One migration creating `classifieds` and `pet_posts` tables with RLS.
+Single wall view (no map). Top filter chips for categories:
+- Plumbing & Bathroom, Painting, Furniture Repair, Electrical, Assembly & Hanging, Mixed/Other
 
-### 7. Classifieds Categories
+Each post: Offer or Want toggle, category, title, description, neighborhood, contact info.
 
-Standard classifieds categories (filter chips on the page):
-- All, Services, Items for Sale, Electronics, Furniture, Jobs, Lessons & Tutoring, Events & Tickets, Free Stuff, Other
+**New DB table: `neighbor_help_posts`**
+- id, user_id, help_type (text: offer/want), category (text), title, description, neighborhood, phone, whatsapp, status (text: active/closed), created_at, updated_at
+
+**New files:** `src/pages/NeighborHelp.tsx`
+
+**Navigation:** Add "Help" to nav with `Handshake` icon.
+
+## 6. Routes & Navigation
+
+Add to `App.tsx`:
+- `/venues` → Venues
+- `/help` → NeighborHelp
+
+Update `Navigation.tsx` with two new nav items.
+
+## 7. Database Migration
+
+Single migration:
+1. `ALTER TABLE classifieds ADD COLUMN listing_mode text;` — values: rent/sell/looking
+2. Create `wall_posts` table with RLS
+3. Create `venues` table with RLS
+4. Create `neighbor_help_posts` table with RLS
+
+All tables: authenticated users can insert own rows, anyone can read active posts, only author can update/delete.
+
+## Files Summary
+
+| Action | File |
+|--------|------|
+| Rewrite | `src/pages/Rentals.tsx` |
+| Rewrite | `src/pages/Parking.tsx` |
+| Rewrite | `src/pages/Wall.tsx` |
+| Create | `src/pages/Venues.tsx` |
+| Create | `src/components/venues/VenuePostForm.tsx` |
+| Create | `src/pages/NeighborHelp.tsx` |
+| Modify | `src/App.tsx` — add 2 routes |
+| Modify | `src/components/Navigation.tsx` — add 2 nav items |
+| Create | DB migration — 1 alter + 3 new tables |
 
