@@ -183,6 +183,11 @@ const Wall = () => {
                         </div>
                       </div>
                     </CardHeader>
+                    {item.photos && item.photos.length > 0 && (
+                      <div className="px-6 pb-2">
+                        <MediaGrid urls={item.photos} />
+                      </div>
+                    )}
                     <CardContent>
                       <div className="flex items-center gap-4 pt-2 border-t border-border">
                         <LikeButton entityType={item.entityType} entityId={item.id} />
