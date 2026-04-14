@@ -1,12 +1,16 @@
 import { useState } from "react";
-import { MessageSquare, ThumbsUp, Share2, Home, Car, Dog, Store, Wrench, Plus } from "lucide-react";
+import { MessageSquare, Share2, Home, Car, Dog, Store, Wrench } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/providers/AuthProvider";
+import { useNavigate } from "react-router-dom";
+import { LikeButton } from "@/components/social/LikeButton";
+import { type EntityType } from "@/hooks/useLikes";
 
 type FeedItem = {
   id: string;
@@ -16,23 +20,35 @@ type FeedItem = {
   created_at: string;
   badge: string;
   icon: any;
+  entityType: EntityType;
 };
 
 const Wall = () => {
   const [newPost, setNewPost] = useState("");
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  // Wall posts
+  const { data: wallPosts = [] } = useQuery({
+    queryKey: ["wall-posts"],
+    queryFn: async () => {
+      const { data } = await supabase.from("wall_posts").select("id, content, user_id, created_at").order("created_at", { ascending: false }).limit(20);
+      return (data || []).map((item: any) => ({
+        id: item.id, source: "wall", title: item.content?.slice(0, 80), description: item.content?.length > 80 ? item.content : undefined,
+        created_at: item.created_at, badge: "Post", icon: MessageSquare, entityType: "wall_post" as EntityType,
+      }));
+    },
+  });
 
   const { data: classifieds = [] } = useQuery({
     queryKey: ["wall-classifieds"],
     queryFn: async () => {
       const { data } = await supabase.from("classifieds").select("id, title, description, section, created_at").order("created_at", { ascending: false }).limit(20);
       return (data || []).map((item: any) => ({
-        id: item.id,
-        source: "classifieds",
-        title: item.title,
-        description: item.description,
-        created_at: item.created_at,
+        id: item.id, source: "classifieds", title: item.title, description: item.description, created_at: item.created_at,
         badge: item.section === "rental" ? "Rental" : item.section === "parking" ? "Parking" : "Classified",
-        icon: item.section === "rental" ? Home : item.section === "parking" ? Car : Store,
+        icon: item.section === "rental" ? Home : item.section === "parking" ? Car : Store, entityType: "classified" as EntityType,
       }));
     },
   });
@@ -42,13 +58,8 @@ const Wall = () => {
     queryFn: async () => {
       const { data } = await supabase.from("pet_posts").select("id, title, description, post_type, created_at").order("created_at", { ascending: false }).limit(20);
       return (data || []).map((item: any) => ({
-        id: item.id,
-        source: "pets",
-        title: item.title,
-        description: item.description,
-        created_at: item.created_at,
-        badge: "Pets",
-        icon: Dog,
+        id: item.id, source: "pets", title: item.title, description: item.description, created_at: item.created_at,
+        badge: "Pets", icon: Dog, entityType: "pet_post" as EntityType,
       }));
     },
   });
@@ -58,13 +69,8 @@ const Wall = () => {
     queryFn: async () => {
       const { data } = await supabase.from("venues").select("id, name, description, created_at").order("created_at", { ascending: false }).limit(20);
       return (data || []).map((item: any) => ({
-        id: item.id,
-        source: "venues",
-        title: item.name,
-        description: item.description,
-        created_at: item.created_at,
-        badge: "Venue",
-        icon: Store,
+        id: item.id, source: "venues", title: item.name, description: item.description, created_at: item.created_at,
+        badge: "Venue", icon: Store, entityType: "venue" as EntityType,
       }));
     },
   });
@@ -74,19 +80,24 @@ const Wall = () => {
     queryFn: async () => {
       const { data } = await supabase.from("neighbor_help_posts").select("id, title, description, help_type, created_at").order("created_at", { ascending: false }).limit(20);
       return (data || []).map((item: any) => ({
-        id: item.id,
-        source: "help",
-        title: item.title,
-        description: item.description,
-        created_at: item.created_at,
-        badge: item.help_type === "offer" ? "Help Offer" : "Help Wanted",
-        icon: Wrench,
+        id: item.id, source: "help", title: item.title, description: item.description, created_at: item.created_at,
+        badge: item.help_type === "offer" ? "Help Offer" : "Help Wanted", icon: Wrench, entityType: "help_post" as EntityType,
       }));
     },
   });
 
-  // Merge and sort all items
-  const allItems: FeedItem[] = [...classifieds, ...petPosts, ...venues, ...helpPosts]
+  const postToWall = useMutation({
+    mutationFn: async () => {
+      if (!user || !newPost.trim()) return;
+      await supabase.from("wall_posts").insert({ content: newPost.trim(), user_id: user.id });
+    },
+    onSuccess: () => {
+      setNewPost("");
+      queryClient.invalidateQueries({ queryKey: ["wall-posts"] });
+    },
+  });
+
+  const allItems: FeedItem[] = [...wallPosts, ...classifieds, ...petPosts, ...venues, ...helpPosts]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 50);
 
@@ -131,7 +142,7 @@ const Wall = () => {
                     value={newPost}
                     onChange={(e) => setNewPost(e.target.value)}
                   />
-                  <Button disabled={!newPost.trim()}>Post</Button>
+                  <Button disabled={!newPost.trim() || !user} onClick={() => { if (!user) navigate("/auth"); else postToWall.mutate(); }}>Post</Button>
                 </div>
               </div>
             </CardContent>
@@ -168,9 +179,7 @@ const Wall = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="flex items-center gap-4 pt-2 border-t border-border">
-                        <Button variant="ghost" size="sm" className="gap-1">
-                          <ThumbsUp className="w-4 h-4" /> Like
-                        </Button>
+                        <LikeButton entityType={item.entityType} entityId={item.id} />
                         <Button variant="ghost" size="sm" className="gap-1">
                           <MessageSquare className="w-4 h-4" /> Comment
                         </Button>
