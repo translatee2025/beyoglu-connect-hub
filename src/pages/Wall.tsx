@@ -1,12 +1,16 @@
 import { useState } from "react";
-import { MessageSquare, ThumbsUp, Share2, Home, Car, Dog, Store, Wrench, Plus } from "lucide-react";
+import { MessageSquare, Share2, Home, Car, Dog, Store, Wrench } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/providers/AuthProvider";
+import { useNavigate } from "react-router-dom";
+import { LikeButton } from "@/components/social/LikeButton";
+import { type EntityType } from "@/hooks/useLikes";
 
 type FeedItem = {
   id: string;
@@ -16,10 +20,14 @@ type FeedItem = {
   created_at: string;
   badge: string;
   icon: any;
+  entityType: EntityType;
 };
 
 const Wall = () => {
   const [newPost, setNewPost] = useState("");
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: classifieds = [] } = useQuery({
     queryKey: ["wall-classifieds"],
