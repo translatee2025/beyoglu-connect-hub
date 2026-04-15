@@ -19,6 +19,8 @@ import { UserName } from "@/components/shared/UserName";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
+import { SkeletonGrid } from "@/components/shared/SkeletonCard";
+import { EmptyState as EmptyStateComponent } from "@/components/shared/EmptyState";
 
 const aptCategoryKeys = [
   { key: "All", tKey: "filter.all", fallback: "All" },
