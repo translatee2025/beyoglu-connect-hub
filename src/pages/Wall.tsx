@@ -255,7 +255,7 @@ const Wall = () => {
       <div className="mx-auto px-4 py-4" style={{ maxWidth: '680px' }}>
         {/* Filter bar */}
         <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide">
-          {FILTERS.map((f) => (
+          {FILTER_KEYS.map((f) => (
             <button
               key={f.key}
               onClick={() => setActiveFilter(f.key)}
@@ -268,7 +268,7 @@ const Wall = () => {
               }}
             >
               {f.emoji && <span>{f.emoji}</span>}
-              {f.label}
+              {t(f.tKey, f.fallback)}
             </button>
           ))}
         </div>
