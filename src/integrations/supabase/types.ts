@@ -999,42 +999,57 @@ export type Database = {
       }
       profiles: {
         Row: {
+          age: number | null
+          age_public: boolean
           avatar_url: string | null
           bio: string | null
           created_at: string
           display_name: string | null
           district_id: string | null
+          gender: string | null
           id: string
+          messages_public: boolean
           neighborhood: string | null
           phone: string | null
+          photo_public: boolean
           updated_at: string
           user_id: string
           username: string | null
           verified: boolean | null
         }
         Insert: {
+          age?: number | null
+          age_public?: boolean
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
           district_id?: string | null
+          gender?: string | null
           id?: string
+          messages_public?: boolean
           neighborhood?: string | null
           phone?: string | null
+          photo_public?: boolean
           updated_at?: string
           user_id: string
           username?: string | null
           verified?: boolean | null
         }
         Update: {
+          age?: number | null
+          age_public?: boolean
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
           district_id?: string | null
+          gender?: string | null
           id?: string
+          messages_public?: boolean
           neighborhood?: string | null
           phone?: string | null
+          photo_public?: boolean
           updated_at?: string
           user_id?: string
           username?: string | null
@@ -1234,6 +1249,27 @@ export type Database = {
             referencedColumns: ["code"]
           },
         ]
+      }
+      user_follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
       }
       user_friends: {
         Row: {

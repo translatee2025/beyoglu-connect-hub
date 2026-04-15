@@ -22,6 +22,7 @@ import Venues from "./pages/Venues";
 import NeighborHelp from "./pages/NeighborHelp";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import EditProfile from "./pages/EditProfile";
 import Messages from "./pages/Messages";
 import VenueCharts from "./pages/VenueCharts";
 import VenueDetail from "./pages/VenueDetail";
@@ -82,6 +83,7 @@ const App = () => (
                     <Route path="/venues" element={<Venues />} />
                     <Route path="/help" element={<NeighborHelp />} />
                     <Route path="/lost-found" element={<LostFound />} />
+                    <Route path="/profile/edit" element={<EditProfile />} />
                     <Route path="/profile/:userId" element={<Profile />} />
                     <Route path="/messages" element={<Messages />} />
                     <Route path="/charts" element={<VenueCharts />} />
