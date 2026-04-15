@@ -114,13 +114,8 @@ const Rentals = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <Home className="w-8 h-8 text-primary" />
-            </div>
-            <h1 className="font-display font-bold text-3xl md:text-4xl text-foreground mb-2">{t("rentals.title", "Rental Finder")}</h1>
-            <p className="text-muted-foreground">{t("rentals.subtitle", "Find or list apartments in the neighborhood")}</p>
-          </div>
+
+
 
           <Tabs value={mainTab} onValueChange={setMainTab}>
             <TabsList className="w-full mb-6">

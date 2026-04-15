@@ -80,15 +80,8 @@ const Pets = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <Dog className="w-8 h-8 text-primary" />
-            </div>
-            <h1 className="font-display font-bold text-4xl md:text-5xl text-foreground mb-4">{t("pets.title", "Pet Community")}</h1>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              {t("pets.subtitle", "Connect with furry (and feathery) neighbors. Adopt, find sitters, playmates, and more.")}
-            </p>
-          </div>
+
+
 
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div className="relative w-full sm:w-80">

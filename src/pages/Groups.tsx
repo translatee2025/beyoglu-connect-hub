@@ -237,14 +237,8 @@ const Groups = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="font-display font-bold text-3xl md:text-4xl text-foreground mb-2">
-              {t("groups.title", "Community Groups")}
-            </h1>
-            <p className="text-muted-foreground">
-              {t("groups.subtitle", "Join groups to connect with neighbors who share your interests")}
-            </p>
-          </div>
+
+
 
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div className="relative w-full sm:w-80">

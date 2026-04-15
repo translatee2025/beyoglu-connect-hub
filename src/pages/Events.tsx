@@ -121,14 +121,8 @@ const Events = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="font-display font-bold text-4xl md:text-5xl text-foreground mb-4">
-              {t("events.title", "Etkinlikler")}
-            </h1>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              {t("events.subtitle", "Mahallenizdeki etkinlikleri keşfedin ve katılın")}
-            </p>
-          </div>
+
+
 
           <div className="flex justify-between items-center mb-8">
             <div />
