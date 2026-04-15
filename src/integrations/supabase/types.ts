@@ -839,14 +839,22 @@ export type Database = {
       pet_posts: {
         Row: {
           address: string | null
+          age_months: number | null
           age_text: string | null
+          age_years: number | null
+          available_days: string[] | null
           breed: string | null
           created_at: string
           description: string | null
           district_id: string | null
+          energy_level: string | null
           gender: string | null
+          good_with_children: boolean | null
+          good_with_pets: boolean | null
           id: string
+          is_neutered: boolean | null
           is_offering: boolean | null
+          is_vaccinated: boolean | null
           lat: number | null
           lng: number | null
           opening_hours: Json | null
@@ -854,6 +862,9 @@ export type Database = {
           photos: string[] | null
           post_type: Database["public"]["Enums"]["pet_post_type"]
           price: string | null
+          price_type: string | null
+          service_type: string | null
+          size: string | null
           species: string | null
           status: Database["public"]["Enums"]["pet_post_status"]
           title: string
@@ -863,14 +874,22 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          age_months?: number | null
           age_text?: string | null
+          age_years?: number | null
+          available_days?: string[] | null
           breed?: string | null
           created_at?: string
           description?: string | null
           district_id?: string | null
+          energy_level?: string | null
           gender?: string | null
+          good_with_children?: boolean | null
+          good_with_pets?: boolean | null
           id?: string
+          is_neutered?: boolean | null
           is_offering?: boolean | null
+          is_vaccinated?: boolean | null
           lat?: number | null
           lng?: number | null
           opening_hours?: Json | null
@@ -878,6 +897,9 @@ export type Database = {
           photos?: string[] | null
           post_type: Database["public"]["Enums"]["pet_post_type"]
           price?: string | null
+          price_type?: string | null
+          service_type?: string | null
+          size?: string | null
           species?: string | null
           status?: Database["public"]["Enums"]["pet_post_status"]
           title: string
@@ -887,14 +909,22 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          age_months?: number | null
           age_text?: string | null
+          age_years?: number | null
+          available_days?: string[] | null
           breed?: string | null
           created_at?: string
           description?: string | null
           district_id?: string | null
+          energy_level?: string | null
           gender?: string | null
+          good_with_children?: boolean | null
+          good_with_pets?: boolean | null
           id?: string
+          is_neutered?: boolean | null
           is_offering?: boolean | null
+          is_vaccinated?: boolean | null
           lat?: number | null
           lng?: number | null
           opening_hours?: Json | null
@@ -902,6 +932,9 @@ export type Database = {
           photos?: string[] | null
           post_type?: Database["public"]["Enums"]["pet_post_type"]
           price?: string | null
+          price_type?: string | null
+          service_type?: string | null
+          size?: string | null
           species?: string | null
           status?: Database["public"]["Enums"]["pet_post_status"]
           title?: string

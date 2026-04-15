@@ -1,18 +1,15 @@
-import { useState } from "react";
-import { Dog, Search, AlertTriangle, Heart, Plus, MapPin, Map, Clock, Phone, Filter, Sparkles, Stethoscope, ShoppingBag, Home } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Dog, Search, AlertTriangle, Heart, Plus, MapPin, Phone, Home } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import PetPostChooser from "@/components/pets/PetPostChooser";
 import FriendFinder from "@/components/pets/FriendFinder";
-import PetMap from "@/components/pets/PetMap";
 import ShopsVetsSection from "@/components/pets/ShopsVetsSection";
-import PetFilters, { PetFilterState, defaultFilters } from "@/components/pets/PetFilters";
 import LostFoundSection from "@/components/pets/LostFoundSection";
-import PetSwipeCards from "@/components/pets/PetSwipeCards";
+import PetSittingWalkingSection from "@/components/pets/PetSittingWalkingSection";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UserName } from "@/components/shared/UserName";
@@ -20,34 +17,27 @@ import { useLanguage } from "@/providers/LanguageProvider";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
 import { SkeletonGrid } from "@/components/shared/SkeletonCard";
-
-const speciesEmoji: Record<string, string> = {
-  dog: "🐕", cat: "🐈", bird: "🐦", rabbit: "🐇", fish: "🐟", other: "🐾",
-};
-
-function getTimeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
-}
+import { useSpecies, useBreeds } from "@/hooks/useSpeciesBreeds";
+import { Stethoscope } from "lucide-react";
 
 const Pets = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [postChooserOpen, setPostChooserOpen] = useState(false);
-  const [sittingFilter, setSittingFilter] = useState<"all" | "offer" | "want">("all");
+  const [speciesFilter, setSpeciesFilter] = useState("all");
+  const [breedFilter, setBreedFilter] = useState("all");
+  const [adoptionSort, setAdoptionSort] = useState<"newest" | "nearest">("newest");
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { speciesOptions, speciesEmojiMap } = useSpecies();
+  const { breedOptions } = useBreeds(speciesFilter !== "all" ? speciesFilter : undefined);
 
   const handleContact = (userId: string) => {
     if (!user) { navigate("/auth"); return; }
     navigate(`/messages?to=${userId}`);
   };
 
-  const { data: pets = [], isLoading: petsLoading, refetch: refetchPets } = useQuery({
+  const { data: pets = [], refetch: refetchPets } = useQuery({
     queryKey: ["pet-profiles"],
     queryFn: async () => {
       const { data, error } = await supabase.from("pet_profiles").select("*").order("created_at", { ascending: false });
@@ -66,26 +56,28 @@ const Pets = () => {
   });
 
   const lostPets = pets.filter((p: any) => p.is_lost);
-  const adoptionPosts = petPosts.filter((p: any) => p.post_type === "adoption");
-  const sittingPosts = petPosts.filter((p: any) => {
-    if (p.post_type !== "pet_sitting") return false;
-    if (sittingFilter === "offer") return p.is_offering;
-    if (sittingFilter === "want") return !p.is_offering;
-    return true;
-  });
   const lostFoundPosts = petPosts.filter((p: any) => p.post_type === "lost" || p.post_type === "found");
-  const shopPosts = petPosts.filter((p: any) => p.post_type === "shop");
-  const vetPosts = petPosts.filter((p: any) => p.post_type === "vet");
+
+  const adoptionPosts = useMemo(() => {
+    let list = petPosts.filter((p: any) => p.post_type === "adoption");
+    if (speciesFilter !== "all") list = list.filter((p: any) => p.species === speciesFilter);
+    if (breedFilter !== "all") list = list.filter((p: any) => p.breed === breedFilter);
+    if (adoptionSort === "newest") list.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return list;
+  }, [petPosts, speciesFilter, breedFilter, adoptionSort]);
 
   const handleRefresh = () => { refetchPets(); refetchPosts(); };
+
+  const pillStyle = (active: boolean) => ({
+    backgroundColor: active ? "#1E3A5F" : "white",
+    color: active ? "white" : "#374151",
+    border: `1px solid ${active ? "#1E3A5F" : "#E2EBFC"}`,
+  });
 
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
-
-
-
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div className="relative w-full sm:w-80">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -101,7 +93,7 @@ const Pets = () => {
           <Tabs defaultValue="adoption" className="w-full">
             <TabsList className="mb-6 flex-wrap h-auto gap-1 bg-white border border-[#E2EBFC]">
               <TabsTrigger value="adoption" className="flex items-center gap-2 text-[#374151] data-[state=active]:text-[#1E3A5F] data-[state=active]:bg-[#EFF4FF]"><Dog className="w-4 h-4" /> {t("pets.adoption", "Adoption")}</TabsTrigger>
-              <TabsTrigger value="sitting" className="flex items-center gap-2 text-[#374151] data-[state=active]:text-[#1E3A5F] data-[state=active]:bg-[#EFF4FF]"><Home className="w-4 h-4" /> {t("pets.sitting", "Pet Sitting")}</TabsTrigger>
+              <TabsTrigger value="sitting" className="flex items-center gap-2 text-[#374151] data-[state=active]:text-[#1E3A5F] data-[state=active]:bg-[#EFF4FF]"><Home className="w-4 h-4" /> {t("pets.sitting", "Bakım & Gezdirme")}</TabsTrigger>
               <TabsTrigger value="friends" className="flex items-center gap-2 text-[#374151] data-[state=active]:text-[#1E3A5F] data-[state=active]:bg-[#EFF4FF]"><Heart className="w-4 h-4" /> {t("pets.friends", "Friends")}</TabsTrigger>
               <TabsTrigger value="lost" className="flex items-center gap-2 text-[#374151] data-[state=active]:text-[#1E3A5F] data-[state=active]:bg-[#EFF4FF]">
                 <AlertTriangle className="w-4 h-4" /> {t("pets.lost_found", "Lost & Found")}
@@ -112,7 +104,46 @@ const Pets = () => {
               <TabsTrigger value="shops" className="flex items-center gap-2 text-[#374151] data-[state=active]:text-[#1E3A5F] data-[state=active]:bg-[#EFF4FF]"><Stethoscope className="w-4 h-4" /> {t("pets.shops_vets", "Shops & Vets")}</TabsTrigger>
             </TabsList>
 
+            {/* ADOPTION TAB */}
             <TabsContent value="adoption">
+              {/* Species filter pills */}
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                <button onClick={() => { setSpeciesFilter("all"); setBreedFilter("all"); }} className="px-3 py-1.5 rounded-full text-xs font-medium transition-colors" style={pillStyle(speciesFilter === "all")}>
+                  Tümü 🐾
+                </button>
+                {speciesOptions.map((s) => (
+                  <button key={s.value} onClick={() => { setSpeciesFilter(s.value); setBreedFilter("all"); }} className="px-3 py-1.5 rounded-full text-xs font-medium transition-colors" style={pillStyle(speciesFilter === s.value)}>
+                    {s.emoji} {s.label.replace(s.emoji + " ", "")}
+                  </button>
+                ))}
+              </div>
+
+              {/* Breed filter pills */}
+              {speciesFilter !== "all" && breedOptions.length > 0 && (
+                <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: "none" }}>
+                  <button onClick={() => setBreedFilter("all")} className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 transition-colors" style={pillStyle(breedFilter === "all")}>
+                    Tüm Cinsler
+                  </button>
+                  {breedOptions.map((b) => (
+                    <button key={b.value} onClick={() => setBreedFilter(b.value)} className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 transition-colors" style={pillStyle(breedFilter === b.value)}>
+                      {b.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Sort pills */}
+              <div className="flex gap-2 mb-4">
+                {([
+                  { key: "newest" as const, label: "En Yeni" },
+                  { key: "nearest" as const, label: "Yakınımda" },
+                ]).map((s) => (
+                  <button key={s.key} onClick={() => setAdoptionSort(s.key)} className="px-3 py-1 rounded-full text-xs font-medium transition-colors" style={pillStyle(adoptionSort === s.key)}>
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+
               {postsLoading ? (
                 <SkeletonGrid count={2} hasPhoto photoHeight={140} />
               ) : adoptionPosts.length === 0 ? (
@@ -120,31 +151,15 @@ const Pets = () => {
               ) : (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {adoptionPosts.map((post: any) => (
-                    <PostCard key={post.id} post={post} badgeLabel={t("pets.adoption", "Adoption")} onContact={handleContact} />
+                    <PostCard key={post.id} post={post} badgeLabel={t("pets.adoption", "Adoption")} onContact={handleContact} speciesEmojiMap={speciesEmojiMap} />
                   ))}
                 </div>
               )}
             </TabsContent>
 
+            {/* SITTING/WALKING TAB */}
             <TabsContent value="sitting">
-              <div className="flex gap-2 mb-4">
-                {(["all", "offer", "want"] as const).map((f) => (
-                  <Button key={f} variant={sittingFilter === f ? "default" : "outline"} size="sm" onClick={() => setSittingFilter(f)}>
-                    {f === "all" ? t("common.all", "All") : f === "offer" ? t("pets.i_offer", "I Offer") : t("pets.i_want", "I Want")}
-                  </Button>
-                ))}
-              </div>
-              {postsLoading ? (
-                <SkeletonGrid count={2} hasPhoto photoHeight={140} />
-              ) : sittingPosts.length === 0 ? (
-                <EmptyState emoji="🏠" title={t("pets.no_sitting", "No pet sitting posts")} subtitle={t("pets.post_sitting", "Post a sitting service or request!")} onAction={() => setPostChooserOpen(true)} />
-              ) : (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {sittingPosts.map((post: any) => (
-                    <PostCard key={post.id} post={post} badgeLabel={post.is_offering ? t("classifieds.offering", "Offering") : t("classifieds.looking_for", "Looking for")} onContact={handleContact} />
-                  ))}
-                </div>
-              )}
+              <PetSittingWalkingSection onCreatePost={() => setPostChooserOpen(true)} />
             </TabsContent>
 
             <TabsContent value="friends">
@@ -165,46 +180,42 @@ const Pets = () => {
   );
 };
 
-const PostCard = ({ post, badgeLabel, isUrgent, onContact }: { post: any; badgeLabel: string; isUrgent?: boolean; onContact: (userId: string) => void }) => (
-  <Card className={`hover:shadow-md transition-shadow ${isUrgent ? "border-destructive/50 bg-destructive/5" : ""}`}>
-    <CardHeader>
-      <div className="flex items-center gap-2 mb-2">
-        <Badge variant={isUrgent ? "destructive" : "default"}>{badgeLabel}</Badge>
-        {post.species && <Badge variant="outline">{post.species}</Badge>}
+const PostCard = ({ post, badgeLabel, isUrgent, onContact, speciesEmojiMap }: { post: any; badgeLabel: string; isUrgent?: boolean; onContact: (userId: string) => void; speciesEmojiMap?: Record<string, string> }) => (
+  <Card className="hover:shadow-md transition-shadow overflow-hidden" style={{ border: `1px solid ${isUrgent ? "#FECACA" : "#E2EBFC"}` }}>
+    {/* Photo */}
+    {post.photos?.[0] ? (
+      <div className="h-[140px] overflow-hidden">
+        <img src={post.photos[0]} alt={post.title} className="w-full h-full object-cover" />
       </div>
-      <CardTitle className="text-lg">{post.title}</CardTitle>
-      {post.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{post.description}</p>}
-      {post.price && <p className="text-primary font-semibold mt-2">{post.price}</p>}
-      {post.user_id && <div className="mt-1"><UserName userId={post.user_id} showAvatar /></div>}
-      {post.address && (
-        <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-          <MapPin className="w-3 h-3" /> {post.address}
-        </div>
-      )}
-    </CardHeader>
-    <CardContent>
-      <Button variant="outline" className="w-full" onClick={() => post.user_id && onContact(post.user_id)}>Contact</Button>
-    </CardContent>
-  </Card>
-);
-
-const VenueCard = ({ post, onContact }: { post: any; onContact: (userId: string) => void }) => (
-  <Card className="hover:shadow-md transition-shadow">
+    ) : (
+      <div className="h-[140px] flex items-center justify-center" style={{ backgroundColor: "#EFF4FF" }}>
+        <span className="text-4xl">{speciesEmojiMap?.[post.species] || "🐾"}</span>
+      </div>
+    )}
     <CardHeader className="pb-2">
-      <CardTitle className="text-base">{post.title}</CardTitle>
+      <div className="flex items-center gap-2 mb-1 flex-wrap">
+        <Badge className="text-[10px] px-1.5 py-0 h-4" style={{ backgroundColor: "#EFF4FF", color: "#1E3A5F", border: "none" }}>{badgeLabel}</Badge>
+        {post.species && <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">{post.species}</Badge>}
+        {post.breed && <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">{post.breed}</Badge>}
+      </div>
+      <CardTitle className="text-[15px]" style={{ color: "#1E3A5F" }}>{post.title}</CardTitle>
+      {post.description && <p className="text-[11px] mt-1 line-clamp-2" style={{ color: "#64748B" }}>{post.description}</p>}
+      {post.price && <p className="font-bold text-[13px] mt-1" style={{ color: "#1E3A5F" }}>{post.price}</p>}
+      {post.user_id && <div className="mt-1"><UserName userId={post.user_id} showAvatar /></div>}
       {post.address && (
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1 text-[11px] mt-1" style={{ color: "#94A3B8" }}>
           <MapPin className="w-3 h-3" /> {post.address}
         </div>
       )}
-      {post.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{post.description}</p>}
-      {post.user_id && <div className="mt-1"><UserName userId={post.user_id} showAvatar /></div>}
     </CardHeader>
     <CardContent className="pt-0">
-      <div className="flex gap-2">
-        {post.phone && <Button variant="outline" size="sm" className="flex-1 gap-1"><Phone className="w-3 h-3" /> Call</Button>}
-        <Button variant="outline" size="sm" className="flex-1" onClick={() => post.user_id && onContact(post.user_id)}>Contact</Button>
-      </div>
+      <button
+        onClick={() => post.user_id && onContact(post.user_id)}
+        className="w-full py-1.5 rounded-lg text-xs font-semibold text-white"
+        style={{ backgroundColor: "#E74C3C" }}
+      >
+        İletişim
+      </button>
     </CardContent>
   </Card>
 );
@@ -212,9 +223,9 @@ const VenueCard = ({ post, onContact }: { post: any; onContact: (userId: string)
 const EmptyState = ({ emoji, title, subtitle, onAction }: { emoji: string; title: string; subtitle: string; onAction: () => void }) => (
   <div className="text-center py-12">
     <span className="text-5xl block mb-4">{emoji}</span>
-    <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
-    <p className="text-muted-foreground mb-4">{subtitle}</p>
-    <Button variant="default" onClick={onAction}><Plus className="w-4 h-4 mr-2" /> Create Post</Button>
+    <h3 className="text-lg font-semibold mb-2" style={{ color: "#1E3A5F" }}>{title}</h3>
+    <p className="mb-4" style={{ color: "#94A3B8" }}>{subtitle}</p>
+    <Button style={{ backgroundColor: "#1E3A5F" }} onClick={onAction}><Plus className="w-4 h-4 mr-2" /> İlan Oluştur</Button>
   </div>
 );
 
