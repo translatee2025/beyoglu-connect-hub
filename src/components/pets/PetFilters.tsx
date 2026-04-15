@@ -2,6 +2,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { useSpecies } from "@/hooks/useSpeciesBreeds";
 
 export interface PetFilterState {
   species: string;
@@ -27,6 +28,7 @@ interface PetFiltersProps {
 }
 
 const PetFilters = ({ filters, onChange }: PetFiltersProps) => {
+  const { speciesOptions } = useSpecies();
   const update = (key: keyof PetFilterState, value: string) =>
     onChange({ ...filters, [key]: value });
 
@@ -37,12 +39,7 @@ const PetFilters = ({ filters, onChange }: PetFiltersProps) => {
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-foreground">Filters</p>
         {activeCount > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onChange(defaultFilters)}
-            className="text-xs gap-1 h-7"
-          >
+          <Button variant="ghost" size="sm" onClick={() => onChange(defaultFilters)} className="text-xs gap-1 h-7">
             <X className="w-3 h-3" /> Clear ({activeCount})
           </Button>
         )}
@@ -54,19 +51,14 @@ const PetFilters = ({ filters, onChange }: PetFiltersProps) => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Species</SelectItem>
-            <SelectItem value="dog">🐕 Dog</SelectItem>
-            <SelectItem value="cat">🐈 Cat</SelectItem>
-            <SelectItem value="bird">🐦 Bird</SelectItem>
-            <SelectItem value="rabbit">🐇 Rabbit</SelectItem>
-            <SelectItem value="fish">🐟 Fish</SelectItem>
-            <SelectItem value="other">🐾 Other</SelectItem>
+            {speciesOptions.map(s => (
+              <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
         <Select value={filters.size} onValueChange={(v) => update("size", v)}>
-          <SelectTrigger className="w-[120px] h-8 text-xs">
-            <SelectValue placeholder="Size" />
-          </SelectTrigger>
+          <SelectTrigger className="w-[120px] h-8 text-xs"><SelectValue placeholder="Size" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Sizes</SelectItem>
             <SelectItem value="small">Small</SelectItem>
@@ -76,9 +68,7 @@ const PetFilters = ({ filters, onChange }: PetFiltersProps) => {
         </Select>
 
         <Select value={filters.ageRange} onValueChange={(v) => update("ageRange", v)}>
-          <SelectTrigger className="w-[120px] h-8 text-xs">
-            <SelectValue placeholder="Age" />
-          </SelectTrigger>
+          <SelectTrigger className="w-[120px] h-8 text-xs"><SelectValue placeholder="Age" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Ages</SelectItem>
             <SelectItem value="puppy">Puppy (0-1y)</SelectItem>
@@ -89,9 +79,7 @@ const PetFilters = ({ filters, onChange }: PetFiltersProps) => {
         </Select>
 
         <Select value={filters.gender} onValueChange={(v) => update("gender", v)}>
-          <SelectTrigger className="w-[120px] h-8 text-xs">
-            <SelectValue placeholder="Gender" />
-          </SelectTrigger>
+          <SelectTrigger className="w-[120px] h-8 text-xs"><SelectValue placeholder="Gender" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Genders</SelectItem>
             <SelectItem value="male">♂ Male</SelectItem>
@@ -100,9 +88,7 @@ const PetFilters = ({ filters, onChange }: PetFiltersProps) => {
         </Select>
 
         <Select value={filters.personality} onValueChange={(v) => update("personality", v)}>
-          <SelectTrigger className="w-[140px] h-8 text-xs">
-            <SelectValue placeholder="Character" />
-          </SelectTrigger>
+          <SelectTrigger className="w-[140px] h-8 text-xs"><SelectValue placeholder="Character" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Characters</SelectItem>
             <SelectItem value="friendly">😊 Friendly</SelectItem>
@@ -117,9 +103,7 @@ const PetFilters = ({ filters, onChange }: PetFiltersProps) => {
         </Select>
 
         <Select value={filters.energyLevel} onValueChange={(v) => update("energyLevel", v)}>
-          <SelectTrigger className="w-[130px] h-8 text-xs">
-            <SelectValue placeholder="Energy" />
-          </SelectTrigger>
+          <SelectTrigger className="w-[130px] h-8 text-xs"><SelectValue placeholder="Energy" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Energy</SelectItem>
             <SelectItem value="low">🐢 Low</SelectItem>
@@ -135,10 +119,7 @@ const PetFilters = ({ filters, onChange }: PetFiltersProps) => {
             .map(([k, v]) => (
               <Badge key={k} variant="secondary" className="text-xs gap-1">
                 {v}
-                <X
-                  className="w-3 h-3 cursor-pointer"
-                  onClick={() => update(k as keyof PetFilterState, "all")}
-                />
+                <X className="w-3 h-3 cursor-pointer" onClick={() => update(k as keyof PetFilterState, "all")} />
               </Badge>
             ))}
         </div>

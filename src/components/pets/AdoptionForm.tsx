@@ -10,6 +10,7 @@ import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { useSpecies, useBreeds } from "@/hooks/useSpeciesBreeds";
 
 interface AdoptionFormProps { onSuccess: () => void; onBack: () => void; }
 
@@ -17,6 +18,8 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
   const [form, setForm] = useState({ title: "", species: "dog", breed: "", age_text: "", gender: "", description: "", phone: "", whatsapp: "", address: "" });
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { speciesOptions } = useSpecies();
+  const { breedOptions } = useBreeds(form.species);
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -41,12 +44,10 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
         <div><Label>{t("pets.pet_name", "Pet Name / Title")}</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
         <div className="grid grid-cols-2 gap-3">
           <div><Label>{t("pets.species", "Species")}</Label>
-            <Select value={form.species} onValueChange={(v) => setForm({ ...form, species: v })}>
+            <Select value={form.species} onValueChange={(v) => setForm({ ...form, species: v, breed: "" })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="dog">{t("pets.dog", "Dog")}</SelectItem><SelectItem value="cat">{t("pets.cat", "Cat")}</SelectItem>
-                <SelectItem value="bird">{t("pets.bird", "Bird")}</SelectItem><SelectItem value="rabbit">{t("pets.rabbit", "Rabbit")}</SelectItem>
-                <SelectItem value="other">{t("pets.other", "Other")}</SelectItem>
+                {speciesOptions.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -58,7 +59,14 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <div><Label>{t("pets.breed", "Breed")}</Label><Input value={form.breed} onChange={(e) => setForm({ ...form, breed: e.target.value })} /></div>
+          <div><Label>{t("pets.breed", "Breed")}</Label>
+            <Select value={form.breed} onValueChange={(v) => setForm({ ...form, breed: v })}>
+              <SelectTrigger><SelectValue placeholder={t("common.select", "Select")} /></SelectTrigger>
+              <SelectContent>
+                {breedOptions.map(b => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
           <div><Label>{t("pets.age", "Age")}</Label><Input value={form.age_text} onChange={(e) => setForm({ ...form, age_text: e.target.value })} /></div>
         </div>
         <div><Label>{t("pets.description", "Description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>

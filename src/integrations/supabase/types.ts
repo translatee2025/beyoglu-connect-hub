@@ -44,6 +44,38 @@ export type Database = {
         }
         Relationships: []
       }
+      breeds: {
+        Row: {
+          id: string
+          is_popular: boolean
+          name_en: string
+          name_tr: string
+          species_id: string
+        }
+        Insert: {
+          id?: string
+          is_popular?: boolean
+          name_en: string
+          name_tr: string
+          species_id: string
+        }
+        Update: {
+          id?: string
+          is_popular?: boolean
+          name_en?: string
+          name_tr?: string
+          species_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "breeds_species_id_fkey"
+            columns: ["species_id"]
+            isOneToOne: false
+            referencedRelation: "species"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classified_categories: {
         Row: {
           created_at: string
@@ -1170,6 +1202,30 @@ export type Database = {
           key?: string
           updated_at?: string
           value?: Json
+        }
+        Relationships: []
+      }
+      species: {
+        Row: {
+          display_order: number
+          emoji: string
+          id: string
+          name_en: string
+          name_tr: string
+        }
+        Insert: {
+          display_order?: number
+          emoji: string
+          id?: string
+          name_en: string
+          name_tr: string
+        }
+        Update: {
+          display_order?: number
+          emoji?: string
+          id?: string
+          name_en?: string
+          name_tr?: string
         }
         Relationships: []
       }
