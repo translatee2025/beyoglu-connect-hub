@@ -1,20 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
 import { useLanguage } from "@/providers/LanguageProvider";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, Clock, MapPin, Users, ArrowLeft, Trash2, Check, Flag } from "lucide-react";
+import { ArrowLeft, Trash2, Check, Flag, Share2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { UserName } from "@/components/shared/UserName";
+import { MediaGrid } from "@/components/shared/MediaGrid";
+import { ReportDialog } from "@/components/shared/ReportDialog";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useRef } from "react";
-import { ReportDialog } from "@/components/shared/ReportDialog";
 
 const markerIcon = L.icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -24,10 +22,24 @@ const markerIcon = L.icon({
   iconAnchor: [12, 41],
 });
 
+const CATEGORY_PLACEHOLDERS: Record<string, { bg: string; emoji: string }> = {
+  sports: { bg: "#DCFCE7", emoji: "⚽" },
+  culture: { bg: "#EDE9FE", emoji: "🎨" },
+  art: { bg: "#EDE9FE", emoji: "🎨" },
+  music: { bg: "#FEF3C7", emoji: "🎵" },
+  community: { bg: "#E0F2FE", emoji: "👥" },
+  food: { bg: "#FEF3C7", emoji: "🍽️" },
+};
+
+const getPlaceholder = (category?: string | null) => {
+  if (!category) return { bg: "#EFF4FF", emoji: "📅" };
+  return CATEGORY_PLACEHOLDERS[category.toLowerCase()] || { bg: "#EFF4FF", emoji: "📅" };
+};
+
 const formatEventDate = (dateStr: string) => {
   const d = new Date(dateStr);
   return d.toLocaleDateString("tr-TR", { weekday: "long", day: "numeric", month: "long" }) +
-    ", " + d.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+    " · " + d.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
 };
 
 function EventMap({ lat, lng }: { lat: number; lng: number }) {
@@ -43,7 +55,7 @@ function EventMap({ lat, lng }: { lat: number; lng: number }) {
     return () => { map.remove(); mapInstanceRef.current = null; };
   }, [lat, lng]);
 
-  return <div ref={mapRef} className="w-full h-64 rounded-lg overflow-hidden border border-border" />;
+  return <div ref={mapRef} className="w-full h-52 rounded-lg overflow-hidden" style={{ border: "1px solid #E2EBFC" }} />;
 }
 
 const EventDetail = () => {
@@ -120,116 +132,158 @@ const EventDetail = () => {
     },
   });
 
-  if (isLoading) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
-    </div>
-  );
-
-  if (!event) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <p className="text-muted-foreground">{t("events.not_found", "Etkinlik bulunamadı")}</p>
-    </div>
-  );
+  if (isLoading) return <div className="min-h-screen bg-background flex items-center justify-center text-[#94A3B8] text-sm">Yükleniyor...</div>;
+  if (!event) return <div className="min-h-screen bg-background flex items-center justify-center text-[#94A3B8] text-sm">Etkinlik bulunamadı</div>;
 
   const isOwner = user?.id === event.user_id;
+  const ph = getPlaceholder(event.category);
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6">
-        <div className="max-w-3xl mx-auto">
-          <Button variant="ghost" className="mb-4 gap-2" onClick={() => navigate("/events")}>
-            <ArrowLeft className="w-4 h-4" /> {t("common.back", "Geri")}
-          </Button>
+      {/* Cover photo */}
+      <div className="relative w-full h-[280px] overflow-hidden">
+        {event.cover_photo ? (
+          <img src={event.cover_photo} alt={event.title} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: ph.bg }}>
+            <span className="text-[48px]">{ph.emoji}</span>
+          </div>
+        )}
+        <button
+          onClick={() => navigate("/events")}
+          className="absolute top-3 left-3 w-9 h-9 rounded-full flex items-center justify-center"
+          style={{ backgroundColor: "rgba(0,0,0,0.3)" }}
+        >
+          <ArrowLeft className="w-5 h-5 text-white" />
+        </button>
+        {user && !isOwner && (
+          <button
+            onClick={() => setReportOpen(true)}
+            className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: "rgba(0,0,0,0.3)" }}
+          >
+            <Flag className="w-4 h-4 text-white" />
+          </button>
+        )}
+      </div>
 
-          {event.cover_photo && (
-            <img src={event.cover_photo} alt={event.title} className="w-full h-64 object-cover rounded-xl mb-6" />
-          )}
-
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              {event.category && <Badge variant="secondary" className="mb-2">{event.category}</Badge>}
-              <h1 className="font-display font-bold text-3xl text-foreground">{event.title}</h1>
+      <div className="container mx-auto px-4 max-w-3xl" style={{ marginTop: "-20px", position: "relative", zIndex: 10 }}>
+        <div className="bg-card rounded-xl p-4" style={{ border: "1px solid #E2EBFC" }}>
+          {/* Title + badges */}
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <h1 className="text-[22px] font-bold" style={{ color: "#1E3A5F" }}>{event.title}</h1>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              {event.category && <Badge variant="outline" className="text-[10px]">{event.category}</Badge>}
+              <span
+                className="text-[10px] font-medium px-2 py-0.5 rounded"
+                style={event.is_free
+                  ? { backgroundColor: "#DCFCE7", color: "#166534" }
+                  : { backgroundColor: "#FEF3C7", color: "#92400E" }}
+              >
+                {event.is_free ? "Ücretsiz" : `${event.price || 0} TRY`}
+              </span>
             </div>
-            {event.is_free ? (
-              <Badge variant="secondary">{t("events.free", "Ücretsiz")}</Badge>
-            ) : (
-              <Badge variant="outline">{event.price} {event.currency || "TRY"}</Badge>
-            )}
           </div>
 
-          <Card className="p-4 mb-6 space-y-3">
-            <div className="flex items-center gap-3 text-foreground">
-              <Calendar className="w-5 h-5 text-primary" />
-              <span>{formatEventDate(event.start_at)}</span>
-            </div>
+          {/* Date & location */}
+          <div className="space-y-1.5 mb-3">
+            <p className="text-[12px] flex items-center gap-1.5" style={{ color: "#374151" }}>
+              📅 {formatEventDate(event.start_at)}
+            </p>
             {event.end_at && (
-              <div className="flex items-center gap-3 text-muted-foreground">
-                <Clock className="w-5 h-5" />
-                <span>{t("events.until", "Bitiş:")} {formatEventDate(event.end_at)}</span>
-              </div>
+              <p className="text-[12px] flex items-center gap-1.5" style={{ color: "#94A3B8" }}>
+                🕐 Bitiş: {formatEventDate(event.end_at)}
+              </p>
             )}
             {(event.venue_name || event.address) && (
-              <div className="flex items-center gap-3 text-foreground">
-                <MapPin className="w-5 h-5 text-primary" />
-                <span>{event.venue_name}{event.address ? `, ${event.address}` : ""}</span>
-              </div>
+              <p className="text-[12px] flex items-center gap-1.5" style={{ color: "#64748B" }}>
+                📍 {event.venue_name}{event.address ? `, ${event.address}` : ""}
+              </p>
             )}
-            <div className="flex items-center gap-3 text-foreground">
-              <Users className="w-5 h-5 text-primary" />
-              <span>{attendeeCount} {t("events.attending", "katılımcı")}</span>
-            </div>
-          </Card>
+            <p className="text-[12px] flex items-center gap-1.5" style={{ color: "#64748B" }}>
+              👥 {attendeeCount} katılımcı
+            </p>
+          </div>
 
+          {/* Description */}
           {event.description && (
-            <div className="mb-6">
-              <h2 className="font-semibold text-lg mb-2">{t("events.about", "Hakkında")}</h2>
-              <p className="text-muted-foreground whitespace-pre-wrap">{event.description}</p>
+            <p className="text-[13px] mb-3" style={{ color: "#374151", lineHeight: "1.6", whiteSpace: "pre-wrap" }}>{event.description}</p>
+          )}
+
+          {/* Photos */}
+          {event.photos && (event.photos as string[]).length > 0 && (
+            <div className="mb-3 rounded-lg overflow-hidden">
+              <MediaGrid urls={event.photos as string[]} />
             </div>
           )}
 
-          <div className="flex gap-3 mb-6">
-            <Button
+          {/* Action buttons */}
+          <div className="flex gap-2 mb-3">
+            <button
+              className="flex-1 py-2 rounded-lg text-xs font-medium transition-colors"
+              style={
+                isAttending
+                  ? { border: "1px solid #1E3A5F", color: "#1E3A5F", backgroundColor: "white" }
+                  : event.is_free
+                    ? { border: "1px solid #1E3A5F", color: "#1E3A5F", backgroundColor: "white" }
+                    : { backgroundColor: "#E74C3C", color: "white", border: "none" }
+              }
               onClick={() => { if (!user) { navigate("/auth"); return; } toggleRsvp.mutate(); }}
-              variant={isAttending ? "outline" : "default"}
-              className="flex-1 gap-2"
-              disabled={toggleRsvp.isPending}
             >
-              {isAttending ? <><Check className="w-4 h-4" /> {t("events.attending_btn", "Katılıyorum")}</> : t("events.rsvp", "Katıl")}
-            </Button>
-            {user && !isOwner && (
-              <Button variant="ghost" size="icon" className="text-muted-foreground" onClick={() => setReportOpen(true)}>
-                <Flag className="w-4 h-4" />
-              </Button>
-            )}
+              {isAttending ? "✓ Katılıyorum" : event.is_free ? "Katıl" : "Bilet Al"}
+            </button>
+            <button
+              className="py-2 px-4 rounded-lg text-xs font-medium"
+              style={{ border: "1px solid #1E3A5F", color: "#1E3A5F" }}
+              onClick={() => navigator.share?.({ url: window.location.href, title: event.title }).catch(() => {})}
+            >
+              <Share2 className="w-3.5 h-3.5 inline mr-1" />Paylaş
+            </button>
             {isOwner && (
-              <Button variant="destructive" size="icon" onClick={() => deleteEvent.mutate()} disabled={deleteEvent.isPending}>
-                <Trash2 className="w-4 h-4" />
-              </Button>
+              <button
+                className="py-2 px-3 rounded-lg text-xs font-medium text-white"
+                style={{ backgroundColor: "#DC2626" }}
+                onClick={() => deleteEvent.mutate()}
+              >
+                <Trash2 className="w-3.5 h-3.5 inline" />
+              </button>
             )}
           </div>
 
-          {attendees.length > 0 && (
-            <div className="mb-6">
-              <h2 className="font-semibold text-lg mb-3">{t("events.attendees", "Katılımcılar")}</h2>
-              <div className="flex flex-wrap gap-3">
-                {attendees.map((a) => (
-                  <div key={a.user_id} className="bg-muted rounded-full pl-1 pr-3 py-1">
-                    <UserName userId={a.user_id} showAvatar avatarSize="w-7 h-7" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {event.lat && event.lng && (
-            <div className="mb-6">
-              <h2 className="font-semibold text-lg mb-3">{t("events.location", "Konum")}</h2>
-              <EventMap lat={Number(event.lat)} lng={Number(event.lng)} />
+          {/* Creator info */}
+          {event.user_id && (
+            <div className="flex items-center gap-1.5 text-[11px] pt-2" style={{ borderTop: "1px solid #E2EBFC", color: "#94A3B8" }}>
+              <UserName userId={event.user_id} showAvatar avatarSize="w-5 h-5" className="text-[11px]" />
+              <span>tarafından oluşturuldu</span>
             </div>
           )}
         </div>
+
+        {/* Attendees */}
+        {attendees.length > 0 && (
+          <div className="mt-3 bg-card rounded-xl p-4" style={{ border: "1px solid #E2EBFC" }}>
+            <h2 className="text-sm font-semibold mb-2" style={{ color: "#1E3A5F" }}>
+              Katılımcılar ({attendeeCount})
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {attendees.map((a: any) => (
+                <div key={a.user_id} className="flex items-center gap-1.5 rounded-full px-2 py-1" style={{ backgroundColor: "#EFF4FF" }}>
+                  <UserName userId={a.user_id} showAvatar avatarSize="w-5 h-5" className="text-[11px]" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Map */}
+        {event.lat && event.lng && (
+          <div className="mt-3 mb-6 bg-card rounded-xl p-4" style={{ border: "1px solid #E2EBFC" }}>
+            <h2 className="text-sm font-semibold mb-2" style={{ color: "#1E3A5F" }}>Konum</h2>
+            <EventMap lat={Number(event.lat)} lng={Number(event.lng)} />
+          </div>
+        )}
       </div>
+
       {id && (
         <ReportDialog open={reportOpen} onOpenChange={setReportOpen} contentType="event" contentId={id} />
       )}
