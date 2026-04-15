@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -166,12 +166,14 @@ export function CommentsSection({ entityType, entityId }: CommentsProps) {
           <div className="space-y-3 max-h-64 overflow-y-auto">
             {comments.map((comment) => (
               <div key={comment.id} className="flex gap-2">
-                <Avatar className="w-7 h-7 flex-shrink-0">
-                  <AvatarImage src={comment.profile?.avatar_url || undefined} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-[10px]">
-                    {(comment.profile?.display_name || "U").slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <Link to={`/profile/${comment.user_id}`} onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
+                  <Avatar className="w-7 h-7">
+                    <AvatarImage src={comment.profile?.avatar_url || undefined} />
+                    <AvatarFallback className="bg-primary text-primary-foreground text-[10px]">
+                      {(comment.profile?.display_name || "U").slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <UserName userId={comment.user_id} className="text-xs" />
