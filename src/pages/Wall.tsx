@@ -142,6 +142,19 @@ const Wall = () => {
     return () => { supabase.removeChannel(channel); };
   }, [queryClient, selectedDistrict]);
 
+  // Auto-scroll pills to center the selected district on load
+  useEffect(() => {
+    if (!pillsRef.current || districts.length === 0) return;
+    const container = pillsRef.current;
+    const activeBtn = selectedDistrict
+      ? container.querySelector(`[data-district-id="${selectedDistrict}"]`) as HTMLElement
+      : container.querySelector('button') as HTMLElement;
+    if (activeBtn) {
+      const scrollLeft = activeBtn.offsetLeft - container.offsetWidth / 2 + activeBtn.offsetWidth / 2;
+      container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+    }
+  }, [districts, selectedDistrict]);
+
   const allItems: FeedItem[] = [...wallPosts, ...classifieds, ...petPosts, ...venues, ...helpPosts].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 50);
 
   const timeAgo = (date: string) => { const diff = Date.now() - new Date(date).getTime(); const mins = Math.floor(diff / 60000); if (mins < 60) return `${mins}m`; const hrs = Math.floor(mins / 60); if (hrs < 24) return `${hrs}h`; return `${Math.floor(hrs / 24)}d`; };
@@ -238,7 +251,13 @@ const Wall = () => {
                   <Card key={`${item.source}-${item.id}`}>
                     <CardHeader className="pb-2">
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0"><Icon className="w-5 h-5 text-primary" /></div>
+                        {item.user_id ? (
+                          <Link to={`/profile/${item.user_id}`} className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0 hover:ring-2 hover:ring-primary/30 transition-all">
+                            <Icon className="w-5 h-5 text-primary" />
+                          </Link>
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0"><Icon className="w-5 h-5 text-primary" /></div>
+                        )}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
                             {item.user_id && <UserName userId={item.user_id} showAvatar />}
