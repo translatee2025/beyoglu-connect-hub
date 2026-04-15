@@ -14,6 +14,7 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
+import { createNotification, getDisplayName } from "@/lib/notifications";
 
 interface ConvItem {
   id: string;
@@ -273,7 +274,27 @@ const Messages = () => {
       if (!activeConvId || !user) return;
       await supabase.from("messages").insert({ conversation_id: activeConvId, sender_id: user.id, content });
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["messages", activeConvId] }); },
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ["messages", activeConvId] });
+      // Notify other participant
+      try {
+        if (activeConvId && user) {
+          const { data: conv } = await supabase.from("conversations").select("status").eq("id", activeConvId).maybeSingle();
+          if (conv?.status === "accepted") {
+            const { data: parts } = await supabase.from("conversation_participants").select("user_id").eq("conversation_id", activeConvId).neq("user_id", user.id);
+            if (parts?.[0]) {
+              const displayName = await getDisplayName(user.id);
+              await createNotification({
+                userId: parts[0].user_id,
+                type: "message",
+                body: `${displayName} sent you a message`,
+                link: "/messages",
+              });
+            }
+          }
+        }
+      } catch {}
+    },
   });
 
   const deleteConversation = useMutation({

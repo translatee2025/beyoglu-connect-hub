@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
+import { createNotification, getDisplayName, getContentOwnerId, getEntityLink } from "@/lib/notifications";
 
-export type EntityType = "wall_post" | "classified" | "venue" | "pet_post" | "help_post";
+export type EntityType = "wall_post" | "classified" | "venue" | "pet_post" | "help_post" | "reel";
 
 export function useLikes(entityType: EntityType, entityId: string) {
   const { user } = useAuth();
@@ -40,6 +41,20 @@ export function useLikes(entityType: EntityType, entityId: string) {
           entity_type: entityType,
           entity_id: entityId,
         });
+
+        // Send notification to content owner (not for unlike, not for own content)
+        try {
+          const ownerId = await getContentOwnerId(entityType, entityId);
+          if (ownerId && ownerId !== user.id) {
+            const displayName = await getDisplayName(user.id);
+            await createNotification({
+              userId: ownerId,
+              type: "like",
+              body: `${displayName} liked your post`,
+              link: getEntityLink(entityType),
+            });
+          }
+        } catch {}
       }
     },
     onMutate: async () => {
