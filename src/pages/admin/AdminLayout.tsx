@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/providers/AuthProvider';
-import { LayoutDashboard, Puzzle, Palette, Settings, Brain, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, Puzzle, Palette, Settings, Brain, ArrowLeft, Flag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,6 +11,7 @@ const adminNav = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/admin/modules', label: 'Modules', icon: Puzzle },
   { to: '/admin/theme', label: 'Theme', icon: Palette },
+  { to: '/admin/reports', label: 'Reports', icon: Flag },
   { to: '/admin/settings', label: 'Settings', icon: Settings },
   { to: '/admin/ai', label: 'AI', icon: Brain },
 ];
