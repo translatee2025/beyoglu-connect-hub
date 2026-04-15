@@ -4,48 +4,52 @@
 
 @layer base {
   :root {
-    --background: 132 11% 97%;
-    --foreground: 220 39% 11%;
+    --background: 222 33% 98%;
+    --foreground: 213 52% 24%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 39% 11%;
+    --card-foreground: 213 52% 24%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 39% 11%;
+    --popover-foreground: 213 52% 24%;
 
-    --primary: 147 61% 23%;
+    --primary: 213 52% 24%;
     --primary-foreground: 0 0% 100%;
 
-    --primary-light: 138 68% 93%;
-    --primary-mid: 142 69% 85%;
-    --primary-dark: 150 69% 18%;
+    --primary-light: 222 100% 97%;
+    --primary-mid: 220 76% 87%;
+    --primary-dark: 213 52% 18%;
 
-    --secondary: 210 11% 71%;
-    --secondary-foreground: 220 39% 11%;
+    --cta: 6 76% 57%;
+    --cta-foreground: 0 0% 100%;
+    --cta-dark: 6 64% 46%;
 
-    --muted: 220 9% 46%;
-    --muted-foreground: 220 9% 46%;
+    --secondary: 215 16% 47%;
+    --secondary-foreground: 213 52% 24%;
 
-    --accent: 138 68% 93%;
-    --accent-foreground: 147 61% 23%;
+    --muted: 215 20% 65%;
+    --muted-foreground: 215 20% 65%;
 
-    --destructive: 0 72% 51%;
+    --accent: 222 100% 97%;
+    --accent-foreground: 213 52% 24%;
+
+    --destructive: 6 76% 57%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 142 69% 85%;
-    --input: 142 69% 85%;
-    --ring: 147 61% 23%;
+    --border: 220 76% 94%;
+    --input: 220 76% 87%;
+    --ring: 213 52% 24%;
 
     --radius: 0.75rem;
 
-    --header-bg: 20 6% 10%;
+    --header-bg: 213 52% 24%;
 
-    --text-primary: 220 39% 11%;
-    --text-secondary: 220 9% 46%;
-    --text-tertiary: 218 11% 65%;
+    --text-primary: 213 52% 24%;
+    --text-secondary: 215 16% 47%;
+    --text-tertiary: 215 20% 65%;
 
-    --gradient-hero: linear-gradient(135deg, hsl(147 61% 23%) 0%, hsl(147 50% 30%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(132 11% 98%) 0%, hsl(132 11% 97%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(213 52% 24%) 0%, hsl(213 52% 30%) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(222 33% 99%) 0%, hsl(222 33% 98%) 100%);
   }
 }
 

@@ -4,10 +4,10 @@ import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const AVATAR_COLORS = [
-  { bg: '#BBF7D0', text: '#166534' },
-  { bg: '#FEF3C7', text: '#92400E' },
+  { bg: '#DBEAFE', text: '#1E40AF' },
   { bg: '#EDE9FE', text: '#5B21B6' },
-  { bg: '#E0F2FE', text: '#0369A1' },
+  { bg: '#FEF3C7', text: '#92400E' },
+  { bg: '#DCFCE7', text: '#166534' },
   { bg: '#FECACA', text: '#991B1B' },
 ];
 

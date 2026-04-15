@@ -1,6 +1,6 @@
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
-import { Users, Calendar, ShoppingBag, MessageSquare, Dog, Home, Car, Globe, Store, Wrench, ChevronDown, Mail, User, TrendingUp, Film, Search } from "lucide-react";
+import { Users, Calendar, ShoppingBag, MessageSquare, Dog, Home, Car, Globe, Store, Wrench, ChevronDown, Mail, User, TrendingUp, Film, Search, Plus } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useState } from "react";
 import { useLanguage } from "@/providers/LanguageProvider";
@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const Navigation = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { t, language, setLanguage, languages } = useLanguage();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -40,24 +39,24 @@ const Navigation = () => {
   const userInitials = user?.email?.slice(0, 2).toUpperCase() || "U";
 
   return (
-    <nav className="sticky top-0 z-50" style={{ backgroundColor: '#1C1917', height: '48px' }}>
+    <nav className="sticky top-0 z-50" style={{ backgroundColor: '#1E3A5F', height: '48px' }}>
       <div className="container mx-auto px-4 h-full">
         <div className="flex items-center justify-between h-full">
           {/* Logo */}
           <NavLink to="/" className="flex items-center gap-2 flex-shrink-0">
-            <span className="text-white font-bold text-sm" style={{ letterSpacing: '-0.3px' }}>
-              Istanbul District Hub
+            <span className="text-white text-sm" style={{ fontWeight: 800, letterSpacing: '-0.5px' }}>
+              beyoğlu
             </span>
           </NavLink>
 
-          {/* Desktop Navigation - inside header */}
+          {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-0.5">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 className="px-2.5 py-1 text-xs transition-colors border-b-[1.5px] border-transparent"
-                activeClassName="!text-white !border-primary font-medium"
+                activeClassName="!text-white !border-[#E74C3C] font-medium"
                 style={{ color: 'rgba(255,255,255,0.55)' }}
               >
                 {t(item.labelKey, item.fallback)}
@@ -87,6 +86,15 @@ const Navigation = () => {
 
           {/* Right side controls */}
           <div className="hidden lg:flex items-center gap-1.5 flex-shrink-0">
+            {/* Post button */}
+            <button
+              onClick={() => navigate("/wall")}
+              className="flex items-center gap-1 px-3 py-1 text-xs font-semibold text-white rounded-md transition-colors"
+              style={{ backgroundColor: '#E74C3C', fontSize: '11px' }}
+            >
+              <Plus className="w-3 h-3" /> Paylaş
+            </button>
+
             {/* Language toggle */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -108,11 +116,11 @@ const Navigation = () => {
               <>
                 <NotificationBell />
                 <NavLink to="/messages" className="p-1.5 rounded transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                  <Mail className="w-4 h-4" />
+                  <Mail className="w-5 h-5" />
                 </NavLink>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xxs font-medium" style={{ backgroundColor: '#166534' }}>
+                    <button className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xxs font-medium" style={{ backgroundColor: '#E74C3C' }}>
                       {userInitials}
                     </button>
                   </DropdownMenuTrigger>
@@ -125,7 +133,7 @@ const Navigation = () => {
             ) : (
               <>
                 <button onClick={() => navigate("/auth")} className="text-xs px-3 py-1 rounded transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>{t('nav.login', 'Log In')}</button>
-                <button onClick={() => navigate("/auth")} className="text-xs px-3 py-1 rounded text-white font-medium" style={{ backgroundColor: '#166534' }}>{t('nav.signup', 'Sign Up')}</button>
+                <button onClick={() => navigate("/auth")} className="text-xs px-3 py-1 rounded text-white font-medium" style={{ backgroundColor: '#E74C3C' }}>{t('nav.signup', 'Sign Up')}</button>
               </>
             )}
           </div>
@@ -135,7 +143,7 @@ const Navigation = () => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xxs font-medium" style={{ backgroundColor: '#166534' }}>
+                  <button className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xxs font-medium" style={{ backgroundColor: '#E74C3C' }}>
                     {userInitials}
                   </button>
                 </DropdownMenuTrigger>
@@ -146,7 +154,7 @@ const Navigation = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <button onClick={() => navigate("/auth")} className="text-xs px-3 py-1 rounded text-white font-medium" style={{ backgroundColor: '#166534' }}>{t('nav.login', 'Log In')}</button>
+              <button onClick={() => navigate("/auth")} className="text-xs px-3 py-1 rounded text-white font-medium" style={{ backgroundColor: '#E74C3C' }}>{t('nav.login', 'Log In')}</button>
             )}
           </div>
         </div>

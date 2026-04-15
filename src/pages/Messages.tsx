@@ -23,10 +23,10 @@ interface ConvItem {
 }
 
 const AVATAR_COLORS = [
-  { bg: '#BBF7D0', text: '#166534' },
-  { bg: '#FEF3C7', text: '#92400E' },
+  { bg: '#DBEAFE', text: '#1E40AF' },
   { bg: '#EDE9FE', text: '#5B21B6' },
-  { bg: '#E0F2FE', text: '#0369A1' },
+  { bg: '#FEF3C7', text: '#92400E' },
+  { bg: '#DCFCE7', text: '#166534' },
   { bg: '#FECACA', text: '#991B1B' },
 ];
 
@@ -96,7 +96,7 @@ const ConversationList = ({ conversations, activeConvId, onSelect, onDelete, onN
     </div>
     <div className="flex-1 overflow-y-auto">
       {conversations.length === 0 ? (
-        <div className="text-center py-12 text-[#9CA3AF]">
+        <div className="text-center py-12 text-[#94A3B8]">
           <MessageSquare className="w-10 h-10 mx-auto mb-2 opacity-30" />
           <p className="text-xs">{t("messages.no_conversations", "Henüz konuşma yok")}</p>
         </div>
@@ -104,7 +104,7 @@ const ConversationList = ({ conversations, activeConvId, onSelect, onDelete, onN
         conversations.map((conv) => {
           const colors = getAvatarColor(conv.otherUserId);
           return (
-            <div key={conv.id} className={`group flex items-center transition-colors ${activeConvId === conv.id ? "bg-[#DCFCE7]" : "hover:bg-accent/30"}`}>
+            <div key={conv.id} className={`group flex items-center transition-colors ${activeConvId === conv.id ? "bg-[#EFF4FF]" : "hover:bg-accent/30"}`}>
               <button onClick={() => onSelect(conv.id)} className="flex-1 flex items-center gap-2.5 p-3 text-left min-w-0">
                 <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-medium" style={{ backgroundColor: colors.bg, color: colors.text }}>
                   {conv.otherName.slice(0, 2).toUpperCase()}
@@ -112,14 +112,14 @@ const ConversationList = ({ conversations, activeConvId, onSelect, onDelete, onN
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-foreground truncate">{conv.otherName}</span>
-                    <span className="text-xs text-[#9CA3AF] ml-2">{timeAgo(conv.lastMessageAt)}</span>
+                    <span className="text-xs text-[#94A3B8] ml-2">{timeAgo(conv.lastMessageAt)}</span>
                   </div>
-                  <p className="text-xs text-[#9CA3AF] truncate">{conv.lastMessage}</p>
+                  <p className="text-xs text-[#94A3B8] truncate">{conv.lastMessage}</p>
                 </div>
               </button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <button className="p-2 mr-1 opacity-0 group-hover:opacity-100 text-[#9CA3AF] hover:text-destructive transition-all min-w-[44px] min-h-[44px] flex items-center justify-center">
+                  <button className="p-2 mr-1 opacity-0 group-hover:opacity-100 text-[#94A3B8] hover:text-destructive transition-all min-w-[44px] min-h-[44px] flex items-center justify-center">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </AlertDialogTrigger>
@@ -155,9 +155,9 @@ const NewChatSearch = ({ onStart, userId, t }: { onStart: (otherUserId: string) 
   });
 
   return (
-    <div className="p-3 border-b border-border">
+    <div className="p-3" style={{ borderBottom: '1px solid #E2EBFC' }}>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF]" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#94A3B8]" />
         <Input placeholder={t("messages.search_users", "Kullanıcı ara...")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 text-xs" />
       </div>
       <div className="mt-2 max-h-48 overflow-y-auto">
@@ -173,7 +173,7 @@ const NewChatSearch = ({ onStart, userId, t }: { onStart: (otherUserId: string) 
           );
         })}
         {search.length >= 2 && results.length === 0 && (
-          <p className="text-xxs text-[#9CA3AF] text-center py-2">{t("messages.no_users", "Kullanıcı bulunamadı")}</p>
+          <p className="text-xxs text-[#94A3B8] text-center py-2">{t("messages.no_users", "Kullanıcı bulunamadı")}</p>
         )}
       </div>
     </div>
@@ -191,7 +191,7 @@ const ChatThread = ({ conv, messages, userId, onBack, onSend, onNavigateProfile,
 
   return (
     <>
-      <div className="flex items-center gap-2.5 p-3 border-b border-border">
+      <div className="flex items-center gap-2.5 p-3" style={{ borderBottom: '1px solid #E2EBFC' }}>
         <button className="md:hidden min-w-[44px] min-h-[44px] flex items-center justify-center" onClick={onBack}><ArrowLeft className="w-4 h-4 text-foreground" /></button>
         <div className="w-8 h-8 rounded-full flex items-center justify-center text-xxs font-medium" style={{ backgroundColor: colors.bg, color: colors.text }}>
           {conv.otherName.slice(0, 2).toUpperCase()}
@@ -205,7 +205,7 @@ const ChatThread = ({ conv, messages, userId, onBack, onSend, onNavigateProfile,
             <div key={msg.id} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[75%] px-3 py-2 rounded-2xl text-xs ${isOwn ? "bg-primary text-primary-foreground rounded-br-md" : "bg-accent text-foreground rounded-bl-md"}`}>
                 {msg.content}
-                <div className={`text-[10px] mt-0.5 ${isOwn ? "text-primary-foreground/70" : "text-[#9CA3AF]"}`}>
+                <div className={`text-[10px] mt-0.5 ${isOwn ? "text-primary-foreground/70" : "text-[#94A3B8]"}`}>
                   {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </div>
               </div>
@@ -214,10 +214,10 @@ const ChatThread = ({ conv, messages, userId, onBack, onSend, onNavigateProfile,
         })}
         <div ref={endRef} />
       </div>
-      <div className="p-3 border-t border-border">
+      <div className="p-3" style={{ borderTop: '1px solid #E2EBFC' }}>
         <form className="flex gap-2" onSubmit={handleSubmit}>
           <Input value={text} onChange={(e) => setText(e.target.value)} placeholder={t("messages.type_message", "Mesaj yazın...")} className="flex-1 text-xs" />
-          <Button type="submit" size="icon" disabled={!text.trim()} className="h-9 w-9"><Send className="w-3.5 h-3.5" /></Button>
+          <Button type="submit" size="icon" variant="cta" disabled={!text.trim()} className="h-9 w-9"><Send className="w-3.5 h-3.5" /></Button>
         </form>
       </div>
     </>
@@ -349,16 +349,16 @@ const Messages = () => {
         <div className="max-w-app mx-auto">
           <div className="flex gap-0 h-[calc(100vh-7rem)] md:gap-0">
             {/* Conversation list */}
-            <div className={`${activeConvId ? "hidden md:flex" : "flex"} flex-col w-full md:w-[280px] flex-shrink-0 bg-card rounded-l-xl border border-border overflow-hidden`}>
+            <div className={`${activeConvId ? "hidden md:flex" : "flex"} flex-col w-full md:w-[280px] flex-shrink-0 bg-card rounded-l-xl overflow-hidden`} style={{ border: '1px solid #E2EBFC' }}>
               {showNewChat && <NewChatSearch onStart={startNewConversation} userId={user.id} t={t} />}
               <ConversationList conversations={conversations} activeConvId={activeConvId} onSelect={(id) => setSearchParams({ conv: id })} onDelete={(id) => deleteConversation.mutate(id)} onNewChat={() => setShowNewChat(!showNewChat)} t={t} />
             </div>
             {/* Chat thread */}
-            <div className={`${activeConvId ? "flex" : "hidden md:flex"} flex-col flex-1 bg-card rounded-r-xl border border-l-0 border-border`}>
+            <div className={`${activeConvId ? "flex" : "hidden md:flex"} flex-col flex-1 bg-card rounded-r-xl`} style={{ border: '1px solid #E2EBFC', borderLeft: 'none' }}>
               {activeConvId && activeConv ? (
                 <ChatThread conv={activeConv} messages={messages} userId={user.id} onBack={() => setSearchParams({})} onSend={(text) => sendMessage.mutate(text)} onNavigateProfile={(id) => navigate(`/profile/${id}`)} t={t} />
               ) : (
-                <div className="flex-1 flex items-center justify-center text-[#9CA3AF]">
+                <div className="flex-1 flex items-center justify-center text-[#94A3B8]">
                   <div className="text-center">
                     <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-20" />
                     <p className="text-xs">{t("messages.select_conversation", "Bir konuşma seçin veya yeni bir konuşma başlatın")}</p>

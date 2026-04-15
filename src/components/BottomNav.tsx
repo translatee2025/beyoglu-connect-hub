@@ -16,22 +16,22 @@ const BottomNav = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border lg:hidden" style={{ height: '56px' }}>
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t lg:hidden" style={{ height: '56px', borderColor: '#E2EBFC' }}>
       <div className="flex items-center justify-around h-full px-1">
         {items.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             className="flex flex-col items-center gap-0.5 px-2 py-1 min-w-[56px] min-h-[44px] justify-center"
-            activeClassName="[&_.nav-icon-wrap]:bg-primary [&_.nav-icon-wrap]:text-white [&_.nav-label]:text-primary [&_.nav-label]:font-medium [&_.nav-dot]:block"
+            activeClassName="[&_.nav-icon-wrap]:bg-[#1E3A5F] [&_.nav-icon-wrap]:text-white [&_.nav-label]:text-[#1E3A5F] [&_.nav-label]:font-semibold [&_.nav-indicator]:block"
           >
             <div className="relative">
-              <div className="nav-dot hidden w-[3px] h-[3px] rounded-full bg-primary absolute -top-1 left-1/2 -translate-x-1/2" />
-              <div className="nav-icon-wrap w-7 h-7 rounded flex items-center justify-center bg-[#F3F4F6] text-[#9CA3AF] transition-colors">
-                <item.icon className="w-4 h-4" />
+              <div className="nav-indicator hidden w-8 h-[3px] rounded-full absolute -top-1.5 left-1/2 -translate-x-1/2" style={{ backgroundColor: '#E74C3C' }} />
+              <div className="nav-icon-wrap w-7 h-7 rounded flex items-center justify-center text-[#94A3B8] transition-colors" style={{ backgroundColor: '#F0F4FF' }}>
+                <item.icon className="w-3.5 h-3.5" />
               </div>
             </div>
-            <span className="nav-label text-[9px] text-[#9CA3AF] leading-none">{item.label}</span>
+            <span className="nav-label text-[9px] text-[#94A3B8] leading-none">{item.label}</span>
           </NavLink>
         ))}
       </div>
