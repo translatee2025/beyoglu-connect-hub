@@ -40,7 +40,7 @@ const Wall = () => {
   const { data: wallPosts = [] } = useQuery({
     queryKey: ["wall-posts"],
     queryFn: async () => {
-      const { data } = await supabase.from("wall_posts").select("id, content, photos, user_id, created_at").order("created_at", { ascending: false }).limit(20);
+      const { data } = await supabase.from("wall_posts").select("id, content, photos, user_id, created_at").is("group_id", null).order("created_at", { ascending: false }).limit(20);
       return (data || []).map((item: any) => ({ id: item.id, source: "wall", title: item.content?.slice(0, 80), description: item.content?.length > 80 ? item.content : undefined, photos: item.photos || [], created_at: item.created_at, badge: "post", icon: MessageSquare, entityType: "wall_post" as EntityType, user_id: item.user_id }));
     },
   });
