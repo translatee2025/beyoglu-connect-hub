@@ -8,11 +8,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, Clock, MapPin, Users, ArrowLeft, Trash2, Check } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, ArrowLeft, Trash2, Check, Flag } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useRef } from "react";
+import { ReportDialog } from "@/components/shared/ReportDialog";
 
 const markerIcon = L.icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -45,6 +46,7 @@ function EventMap({ lat, lng }: { lat: number; lng: number }) {
 }
 
 const EventDetail = () => {
+  const [reportOpen, setReportOpen] = useState(false);
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -194,6 +196,11 @@ const EventDetail = () => {
             >
               {isAttending ? <><Check className="w-4 h-4" /> {t("events.attending_btn", "Katılıyorum")}</> : t("events.rsvp", "Katıl")}
             </Button>
+            {user && !isOwner && (
+              <Button variant="ghost" size="icon" className="text-muted-foreground" onClick={() => setReportOpen(true)}>
+                <Flag className="w-4 h-4" />
+              </Button>
+            )}
             {isOwner && (
               <Button variant="destructive" size="icon" onClick={() => deleteEvent.mutate()} disabled={deleteEvent.isPending}>
                 <Trash2 className="w-4 h-4" />
@@ -228,6 +235,9 @@ const EventDetail = () => {
           )}
         </div>
       </div>
+      {id && (
+        <ReportDialog open={reportOpen} onOpenChange={setReportOpen} contentType="event" contentId={id} />
+      )}
     </div>
   );
 };

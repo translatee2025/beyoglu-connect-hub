@@ -11,11 +11,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageSquare, Edit2, Save, X, MapPin, Camera, Users, Bell, Activity } from "lucide-react";
+import { MessageSquare, Edit2, Save, X, MapPin, Camera, Users, Bell, Activity, Flag } from "lucide-react";
 import { FriendButton } from "@/components/social/FriendButton";
 import { FriendsList } from "@/components/social/FriendsList";
 import { FriendRequestsList } from "@/components/social/FriendRequestsList";
 import { useToast } from "@/hooks/use-toast";
+import { ReportDialog } from "@/components/shared/ReportDialog";
 
 const Profile = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -27,6 +28,7 @@ const Profile = () => {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ display_name: "", bio: "", neighborhood: "", phone: "" });
   const [uploading, setUploading] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const isOwn = user?.id === userId;
 
   const { data: profile, isLoading } = useQuery({
@@ -132,6 +134,7 @@ const Profile = () => {
                     <>
                       <FriendButton targetUserId={userId!} />
                       <Button size="sm" variant="outline" onClick={startConversation}><MessageSquare className="w-4 h-4 mr-1" /> {t("profile.message", "Message")}</Button>
+                      <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={() => setReportOpen(true)}><Flag className="w-4 h-4 mr-1" /> Report</Button>
                     </>
                   )}
                 </div>
@@ -159,6 +162,9 @@ const Profile = () => {
           {isOwn && (<><TabsContent value="friends"><FriendsList /></TabsContent><TabsContent value="requests"><FriendRequestsList /></TabsContent></>)}
         </Tabs>
       </div>
+      {userId && !isOwn && (
+        <ReportDialog open={reportOpen} onOpenChange={setReportOpen} contentType="user" contentId={userId} />
+      )}
     </div>
   );
 };
