@@ -16,6 +16,7 @@ import Classifieds from "./pages/Classifieds";
 import Rentals from "./pages/Rentals";
 import Parking from "./pages/Parking";
 import Wall from "./pages/Wall";
+import GroupDetail from "./pages/GroupDetail";
 import Pets from "./pages/Pets";
 import Venues from "./pages/Venues";
 import NeighborHelp from "./pages/NeighborHelp";
@@ -70,6 +71,7 @@ const App = () => (
                   <Route element={<PublicLayout />}>
                     <Route path="/" element={<Index />} />
                     <Route path="/groups" element={<Groups />} />
+                    <Route path="/groups/:id" element={<GroupDetail />} />
                     <Route path="/events" element={<Events />} />
                     <Route path="/events/:id" element={<EventDetail />} />
                     <Route path="/classifieds" element={<Classifieds />} />

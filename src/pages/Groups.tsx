@@ -304,7 +304,7 @@ const Groups = () => {
                 const isPending = membershipRole === "pending";
 
                 return (
-                  <Card key={group.id} className="hover:shadow-md transition-shadow">
+                  <Card key={group.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/groups/${group.id}`)}>
                     <CardHeader>
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-center gap-3 min-w-0">
@@ -342,7 +342,7 @@ const Groups = () => {
                         variant={isJoined || isPending ? "secondary" : "outline"}
                         className="w-full"
                         disabled={isJoined || isPending || group.group_type === "private" || joinMutation.isPending}
-                        onClick={() => handleJoin(group)}
+                        onClick={(e) => { e.stopPropagation(); handleJoin(group); }}
                       >
                         {isJoined
                           ? t("groups.action.joined", "Joined")
