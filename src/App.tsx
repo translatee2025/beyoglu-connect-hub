@@ -11,6 +11,7 @@ import PublicLayout from "./components/PublicLayout";
 import Index from "./pages/Index";
 import Groups from "./pages/Groups";
 import Events from "./pages/Events";
+import EventDetail from "./pages/EventDetail";
 import Classifieds from "./pages/Classifieds";
 import Rentals from "./pages/Rentals";
 import Parking from "./pages/Parking";
@@ -67,6 +68,7 @@ const App = () => (
                     <Route path="/" element={<Index />} />
                     <Route path="/groups" element={<Groups />} />
                     <Route path="/events" element={<Events />} />
+                    <Route path="/events/:id" element={<EventDetail />} />
                     <Route path="/classifieds" element={<Classifieds />} />
                     <Route path="/rentals" element={<Rentals />} />
                     <Route path="/parking" element={<Parking />} />
