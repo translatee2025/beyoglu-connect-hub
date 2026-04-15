@@ -290,19 +290,10 @@ const Wall = () => {
                   >
                     {/* Header row */}
                     <div className="flex items-start gap-2.5">
-                      {item.user_id ? (
-                        <Link to={`/profile/${item.user_id}`} className="flex-shrink-0">
-                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-xxs font-medium" style={{ backgroundColor: avatarColor.bg, color: avatarColor.text }}>
-                            {item.user_id.slice(0, 2).toUpperCase()}
-                          </div>
-                        </Link>
-                      ) : (
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-xxs font-medium" style={{ backgroundColor: avatarColor.bg, color: avatarColor.text }}>?</div>
-                      )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            {item.user_id && <UserName userId={item.user_id} showAvatar={false} />}
+                            {item.user_id && <UserName userId={item.user_id} showAvatar avatarSize="w-8 h-8" />}
                             <span className="text-xs text-[#94A3B8]">· {timeAgo(item.created_at)}</span>
                           </div>
                           <div className="flex items-center gap-1.5">
