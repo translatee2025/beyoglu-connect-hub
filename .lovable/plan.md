@@ -1,31 +1,49 @@
 
 
-# Enable Realtime for Wall Feed
+# Desktop Sidebar Layout — Implementation Plan
 
-## Overview
-Two changes: a migration to add `wall_posts` to the realtime publication, and a `useEffect` in `Wall.tsx` that subscribes to INSERT events and prepends new posts (skipping group posts).
+## Problem
+All pages render as a centered mobile column with only a top header bar. No desktop sidebar exists.
 
-## Change 1 — Migration
+## Approach
+Create a new `AppSidebar` component and refactor `PublicLayout` to show sidebar on desktop (≥1024px) and header+bottom-nav on mobile (<1024px). No page content, routing logic, or data queries change.
 
-Create a migration with:
-```sql
-ALTER PUBLICATION supabase_realtime ADD TABLE public.wall_posts;
-```
+## Files to Create
 
-## Change 2 — Realtime subscription in `Wall.tsx`
+### 1. `src/components/AppSidebar.tsx` (new)
+A fixed 220px left sidebar visible only on `lg:` breakpoint (1024px+). Contains:
+- App name "beyoğlu" (16px, weight 800, color #1E3A5F)
+- District scope pills (İstanbul active default, Beyoğlu, Şişli, Kadıköy, Beşiktaş) — static display only, no query filtering
+- Three nav sections with labeled dividers:
+  - **DISCOVER**: Feed `/wall`, Venues `/venues`, Events `/events`, Reels `/reels`
+  - **COMMUNITY**: Groups `/groups`, Pets `/pets`, Families (placeholder), Lost & Found `/lost-found`
+  - **SERVICES**: Rentals `/rentals`, Parking `/parking`, Help `/help`, Classifieds `/classifieds`, Jobs (placeholder)
+- Nav items use `NavLink` with active style: bg `#EFF4FF`, color `#1E3A5F`, weight 500, left border 3px solid `#E74C3C`
+- Bottom section: user avatar + name + district + language toggle (TR | EN)
+- Uses `useAuth`, `useLanguage`, `useLocation` for active state and user info
 
-Add a `useEffect` that:
+## Files to Modify
 
-1. Creates a Supabase channel subscribing to `postgres_changes` INSERT events on `wall_posts`
-2. On each payload, checks `new.group_id` — if not null, ignores it
-3. If `group_id` is null, converts the row to a `FeedItem` (same mapping as the existing query) and prepends it to the `wall-posts` query cache via `queryClient.setQueryData`
-4. Returns a cleanup function that unsubscribes the channel
+### 2. `src/components/PublicLayout.tsx`
+- Import `AppSidebar`
+- Desktop: render `AppSidebar` fixed left + main content with `lg:ml-[220px] lg:p-6 lg:max-w-[860px]`
+- Mobile: keep existing `Navigation` (header) + `BottomNav` (bottom tabs)
+- Hide `Navigation` on desktop (`lg:hidden`), hide `AppSidebar` on mobile (`hidden lg:block`)
 
-**Note on district filtering**: The current Wall component has no district/scope selector, so there is no district state to filter by. The subscription will accept all non-group posts. If a scope selector is added later, the subscription can be updated to filter by `district_id`.
+### 3. `src/components/Navigation.tsx`
+- Add `lg:hidden` to the root `<nav>` so the header bar only shows on mobile
 
-## Files changed
-| File | Change |
-|------|--------|
-| New migration SQL | `ALTER PUBLICATION supabase_realtime ADD TABLE public.wall_posts` |
-| `src/pages/Wall.tsx` | Add `useEffect` import, add realtime subscription effect |
+### 4. `src/components/BottomNav.tsx`
+- Already has `lg:hidden` — no change needed
+
+## What Does NOT Change
+- No routing changes
+- No page content changes
+- No Supabase queries
+- No data logic
+- Admin routes, Auth, Reels keep their own layouts
+
+## Visual Result
+- **Desktop**: White sidebar left with sections, main content scrolls in the remaining space
+- **Mobile**: Unchanged — header bar + bottom tabs
 
