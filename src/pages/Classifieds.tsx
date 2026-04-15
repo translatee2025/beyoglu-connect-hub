@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import ClassifiedPostForm from "@/components/classifieds/ClassifiedPostForm";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { UserName } from "@/components/shared/UserName";
 
 const Classifieds = () => {
   const [search, setSearch] = useState("");
@@ -36,7 +37,7 @@ const Classifieds = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("classifieds")
-        .select("*")
+      .select("*, user_id")
         .eq("section", "classifieds")
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -114,6 +115,7 @@ const Classifieds = () => {
                         <CardTitle className="text-xl mb-1">{item.title}</CardTitle>
                         {item.description && <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>}
                         {item.price && <p className="text-primary font-semibold mt-2">{item.currency}{item.price}</p>}
+                        {item.user_id && <div className="mt-1"><UserName userId={item.user_id} showAvatar /></div>}
                         {item.neighborhood && (
                           <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                             <MapPin className="w-3 h-3" /> {item.neighborhood}

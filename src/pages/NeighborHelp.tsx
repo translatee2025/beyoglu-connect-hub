@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { UserName } from "@/components/shared/UserName";
 
 const helpCategories = ["All", "Plumbing & Bathroom", "Painting", "Furniture Repair", "Electrical", "Assembly & Hanging", "Mixed / Other"];
 
@@ -109,6 +110,7 @@ const NeighborHelp = () => {
                             <DollarSign className="w-3 h-3" /> ₺{post.price} {post.price_type === "per_hour" ? "/ hour" : "(fixed)"}
                           </p>
                         )}
+                        {post.user_id && <div className="mt-1"><UserName userId={post.user_id} showAvatar /></div>}
                         {post.neighborhood && <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><MapPin className="w-3 h-3" /> {post.neighborhood}</p>}
                       </div>
                     </div>
