@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { MessageSquare, Share2, Home, Car, Dog, Store, Wrench } from "lucide-react";
+import { useState, useRef } from "react";
+import { MessageSquare, Share2, Home, Car, Dog, Store, Wrench, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
@@ -15,33 +16,26 @@ import { MediaUpload } from "@/components/shared/MediaUpload";
 import { MediaGrid } from "@/components/shared/MediaGrid";
 
 type FeedItem = {
-  id: string;
-  source: string;
-  title: string;
-  description?: string;
-  photos?: string[];
-  created_at: string;
-  badge: string;
-  icon: any;
-  entityType: EntityType;
+  id: string; source: string; title: string; description?: string; photos?: string[];
+  created_at: string; badge: string; icon: any; entityType: EntityType;
 };
 
 const Wall = () => {
   const [newPost, setNewPost] = useState("");
   const [newPhotos, setNewPhotos] = useState<string[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogPost, setDialogPost] = useState("");
+  const [dialogPhotos, setDialogPhotos] = useState<string[]>([]);
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const composerRef = useRef<HTMLTextAreaElement>(null);
 
-  // Wall posts
   const { data: wallPosts = [] } = useQuery({
     queryKey: ["wall-posts"],
     queryFn: async () => {
       const { data } = await supabase.from("wall_posts").select("id, content, photos, user_id, created_at").order("created_at", { ascending: false }).limit(20);
-      return (data || []).map((item: any) => ({
-        id: item.id, source: "wall", title: item.content?.slice(0, 80), description: item.content?.length > 80 ? item.content : undefined,
-        photos: item.photos || [], created_at: item.created_at, badge: "Post", icon: MessageSquare, entityType: "wall_post" as EntityType,
-      }));
+      return (data || []).map((item: any) => ({ id: item.id, source: "wall", title: item.content?.slice(0, 80), description: item.content?.length > 80 ? item.content : undefined, photos: item.photos || [], created_at: item.created_at, badge: "Post", icon: MessageSquare, entityType: "wall_post" as EntityType }));
     },
   });
 
@@ -49,11 +43,7 @@ const Wall = () => {
     queryKey: ["wall-classifieds"],
     queryFn: async () => {
       const { data } = await supabase.from("classifieds").select("id, title, description, section, created_at").order("created_at", { ascending: false }).limit(20);
-      return (data || []).map((item: any) => ({
-        id: item.id, source: "classifieds", title: item.title, description: item.description, created_at: item.created_at,
-        badge: item.section === "rental" ? "Rental" : item.section === "parking" ? "Parking" : "Classified",
-        icon: item.section === "rental" ? Home : item.section === "parking" ? Car : Store, entityType: "classified" as EntityType,
-      }));
+      return (data || []).map((item: any) => ({ id: item.id, source: "classifieds", title: item.title, description: item.description, created_at: item.created_at, badge: item.section === "rental" ? "Rental" : item.section === "parking" ? "Parking" : "Classified", icon: item.section === "rental" ? Home : item.section === "parking" ? Car : Store, entityType: "classified" as EntityType }));
     },
   });
 
@@ -61,10 +51,7 @@ const Wall = () => {
     queryKey: ["wall-pets"],
     queryFn: async () => {
       const { data } = await supabase.from("pet_posts").select("id, title, description, post_type, created_at").order("created_at", { ascending: false }).limit(20);
-      return (data || []).map((item: any) => ({
-        id: item.id, source: "pets", title: item.title, description: item.description, created_at: item.created_at,
-        badge: "Pets", icon: Dog, entityType: "pet_post" as EntityType,
-      }));
+      return (data || []).map((item: any) => ({ id: item.id, source: "pets", title: item.title, description: item.description, created_at: item.created_at, badge: "Pets", icon: Dog, entityType: "pet_post" as EntityType }));
     },
   });
 
@@ -72,10 +59,7 @@ const Wall = () => {
     queryKey: ["wall-venues"],
     queryFn: async () => {
       const { data } = await supabase.from("venues").select("id, name, description, created_at").order("created_at", { ascending: false }).limit(20);
-      return (data || []).map((item: any) => ({
-        id: item.id, source: "venues", title: item.name, description: item.description, created_at: item.created_at,
-        badge: "Venue", icon: Store, entityType: "venue" as EntityType,
-      }));
+      return (data || []).map((item: any) => ({ id: item.id, source: "venues", title: item.name, description: item.description, created_at: item.created_at, badge: "Venue", icon: Store, entityType: "venue" as EntityType }));
     },
   });
 
@@ -83,28 +67,23 @@ const Wall = () => {
     queryKey: ["wall-help"],
     queryFn: async () => {
       const { data } = await supabase.from("neighbor_help_posts").select("id, title, description, help_type, created_at").order("created_at", { ascending: false }).limit(20);
-      return (data || []).map((item: any) => ({
-        id: item.id, source: "help", title: item.title, description: item.description, created_at: item.created_at,
-        badge: item.help_type === "offer" ? "Help Offer" : "Help Wanted", icon: Wrench, entityType: "help_post" as EntityType,
-      }));
+      return (data || []).map((item: any) => ({ id: item.id, source: "help", title: item.title, description: item.description, created_at: item.created_at, badge: item.help_type === "offer" ? "Help Offer" : "Help Wanted", icon: Wrench, entityType: "help_post" as EntityType }));
     },
   });
 
   const postToWall = useMutation({
-    mutationFn: async () => {
-      if (!user || (!newPost.trim() && newPhotos.length === 0)) return;
-      await supabase.from("wall_posts").insert({ content: newPost.trim(), user_id: user.id, photos: newPhotos.length > 0 ? newPhotos : [] });
+    mutationFn: async (params: { content: string; photos: string[] }) => {
+      if (!user || (!params.content.trim() && params.photos.length === 0)) return;
+      await supabase.from("wall_posts").insert({ content: params.content.trim(), user_id: user.id, photos: params.photos.length > 0 ? params.photos : [] });
     },
     onSuccess: () => {
-      setNewPost("");
-      setNewPhotos([]);
+      setNewPost(""); setNewPhotos([]); setDialogPost(""); setDialogPhotos([]); setDialogOpen(false);
       queryClient.invalidateQueries({ queryKey: ["wall-posts"] });
     },
   });
 
   const allItems: FeedItem[] = [...wallPosts, ...classifieds, ...petPosts, ...venues, ...helpPosts]
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 50);
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 50);
 
   const timeAgo = (date: string) => {
     const diff = Date.now() - new Date(date).getTime();
@@ -135,29 +114,37 @@ const Wall = () => {
             <p className="text-muted-foreground">See what's happening in your neighborhood</p>
           </div>
 
-          {/* Create Post */}
-          <Card className="mb-6">
+          {/* Desktop composer */}
+          <Card className="mb-6 hidden sm:block">
             <CardContent className="pt-6">
               <div className="flex gap-4">
-                <Avatar>
-                  <AvatarFallback className="bg-primary text-primary-foreground">You</AvatarFallback>
-                </Avatar>
+                <Avatar><AvatarFallback className="bg-primary text-primary-foreground">You</AvatarFallback></Avatar>
                 <div className="flex-1 space-y-3">
-                  <Textarea
-                    placeholder="Share something with your community..."
-                    className="resize-none"
-                    rows={3}
-                    value={newPost}
-                    onChange={(e) => setNewPost(e.target.value)}
-                  />
+                  <Textarea ref={composerRef} placeholder="Share something with your community..." className="resize-none" rows={3} value={newPost} onChange={(e) => setNewPost(e.target.value)} />
                   <MediaUpload value={newPhotos} onChange={setNewPhotos} maxFiles={6} />
-                  <Button disabled={(!newPost.trim() && newPhotos.length === 0) || !user} onClick={() => { if (!user) navigate("/auth"); else postToWall.mutate(); }}>Post</Button>
+                  <Button disabled={(!newPost.trim() && newPhotos.length === 0) || !user} onClick={() => { if (!user) navigate("/auth"); else postToWall.mutate({ content: newPost, photos: newPhotos }); }}>Post</Button>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Feed */}
+          {/* Mobile Add Post button + dialog */}
+          <div className="sm:hidden mb-6">
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="w-full gap-2"><Plus className="w-4 h-4" /> Add Post</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+                <DialogHeader><DialogTitle>New Post</DialogTitle></DialogHeader>
+                <div className="space-y-3">
+                  <Textarea placeholder="What's on your mind?" className="resize-none" rows={4} value={dialogPost} onChange={(e) => setDialogPost(e.target.value)} />
+                  <MediaUpload value={dialogPhotos} onChange={setDialogPhotos} maxFiles={6} />
+                  <Button className="w-full" disabled={(!dialogPost.trim() && dialogPhotos.length === 0) || !user} onClick={() => { if (!user) navigate("/auth"); else postToWall.mutate({ content: dialogPost, photos: dialogPhotos }); }}>Post</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+
           {allItems.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-50" />
@@ -180,26 +167,18 @@ const Wall = () => {
                             <span className="text-xs text-muted-foreground">{timeAgo(item.created_at)}</span>
                           </div>
                           <h3 className="font-semibold text-foreground">{item.title}</h3>
-                          {item.description && (
-                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
-                          )}
+                          {item.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{item.description}</p>}
                         </div>
                       </div>
                     </CardHeader>
                     {item.photos && item.photos.length > 0 && (
-                      <div className="px-6 pb-2">
-                        <MediaGrid urls={item.photos} />
-                      </div>
+                      <div className="px-6 pb-2"><MediaGrid urls={item.photos} /></div>
                     )}
                     <CardContent>
                       <div className="flex items-center gap-4 pt-2 border-t border-border">
                         <LikeButton entityType={item.entityType} entityId={item.id} />
-                        <Button variant="ghost" size="sm" className="gap-1">
-                          <MessageSquare className="w-4 h-4" /> Comment
-                        </Button>
-                        <Button variant="ghost" size="sm" className="gap-1">
-                          <Share2 className="w-4 h-4" /> Share
-                        </Button>
+                        <Button variant="ghost" size="sm" className="gap-1"><MessageSquare className="w-4 h-4" /> Comment</Button>
+                        <Button variant="ghost" size="sm" className="gap-1"><Share2 className="w-4 h-4" /> Share</Button>
                       </div>
                     </CardContent>
                   </Card>
