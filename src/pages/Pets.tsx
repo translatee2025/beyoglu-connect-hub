@@ -10,6 +10,7 @@ import PetPostChooser from "@/components/pets/PetPostChooser";
 import FriendFinder from "@/components/pets/FriendFinder";
 import PetMap from "@/components/pets/PetMap";
 import PetFilters, { PetFilterState, defaultFilters } from "@/components/pets/PetFilters";
+import LostFoundSection from "@/components/pets/LostFoundSection";
 import PetSwipeCards from "@/components/pets/PetSwipeCards";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -150,81 +151,7 @@ const Pets = () => {
             </TabsContent>
 
             <TabsContent value="lost">
-              <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-lg border border-destructive/30 bg-destructive/5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
-                      <AlertTriangle className="w-5 h-5 text-destructive" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">{t("pets.lost_alerts", "Lost & Found Alerts")}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {(lostPets.length + lostFoundPosts.length) > 0
-                          ? `${lostPets.length + lostFoundPosts.length} active report(s)`
-                          : t("pets.no_missing", "No missing pets — help keep it that way!")}
-                      </p>
-                    </div>
-                  </div>
-                  <Button variant="destructive" className="gap-2 whitespace-nowrap" onClick={() => setPostChooserOpen(true)}>
-                    <AlertTriangle className="w-4 h-4" /> {t("pets.report_lost", "Report Lost / Found")}
-                  </Button>
-                </div>
-
-                {lostPets.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-destructive" /> {t("pets.last_seen", "Last Seen Locations")}
-                    </h4>
-                    <PetMap pets={lostPets} showFilters={false} />
-                  </div>
-                )}
-
-                {lostPets.length === 0 && lostFoundPosts.length === 0 ? (
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-50 flex items-center justify-center">
-                      <span className="text-3xl">✅</span>
-                    </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">{t("pets.all_safe", "All pets safe!")}</h3>
-                    <p className="text-muted-foreground">{t("pets.no_lost", "No lost pets reported right now.")}</p>
-                  </div>
-                ) : (
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {lostPets.map((pet: any) => (
-                      <Card key={pet.id} className="border-destructive/50 bg-destructive/5 overflow-hidden">
-                        <div className="bg-destructive text-white px-4 py-1.5 text-xs font-bold flex items-center gap-2">
-                          <span className="animate-pulse">🚨</span> LOST PET
-                          {pet.lost_at && <span className="ml-auto font-normal opacity-80 flex items-center gap-1"><Clock className="w-3 h-3" /> {getTimeAgo(pet.lost_at)}</span>}
-                        </div>
-                        <CardHeader className="pb-3">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="w-16 h-16 ring-2 ring-destructive ring-offset-2">
-                              {pet.photo_url && <AvatarImage src={pet.photo_url} alt={pet.name} />}
-                              <AvatarFallback className="bg-destructive/20 text-destructive text-2xl">{speciesEmoji[pet.species] || "🐾"}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <CardTitle className="text-lg">{pet.name}</CardTitle>
-                              <p className="text-sm text-muted-foreground">{pet.breed || pet.species}</p>
-                            </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                          {pet.lost_details && <p className="text-sm text-foreground">{pet.lost_details}</p>}
-                          {pet.lost_location && (
-                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                              <MapPin className="w-3 h-3 text-destructive" /> Last seen: <span className="font-medium text-foreground">{pet.lost_location}</span>
-                            </div>
-                          )}
-                          {pet.owner_id && <div className="mt-1"><UserName userId={pet.owner_id} showAvatar /></div>}
-                          <Button variant="destructive" size="sm" className="w-full gap-1" onClick={() => pet.owner_id && handleContact(pet.owner_id)}><Phone className="w-3 h-3" /> {t("pets.ive_seen", "I've Seen This Pet")}</Button>
-                        </CardContent>
-                      </Card>
-                    ))}
-                    {lostFoundPosts.map((post: any) => (
-                      <PostCard key={post.id} post={post} badgeLabel={post.post_type === "lost" ? t("pets.lost", "Lost") : t("pets.found", "Found")} isUrgent onContact={handleContact} />
-                    ))}
-                  </div>
-                )}
-              </div>
+              <LostFoundSection onReport={() => setPostChooserOpen(true)} />
             </TabsContent>
 
             <TabsContent value="shops">
