@@ -136,7 +136,7 @@ const Parking = () => {
                 </Dialog>
               </div>
               <div className="flex flex-wrap gap-2 mb-6">
-                {parkingTypes.map((cat) => <Button key={cat} variant={category === cat ? "default" : "outline"} size="sm" onClick={() => setCategory(cat)}>{cat}</Button>)}
+                {parkingTypeKeys.map((cat) => <Button key={cat.key} variant={category === cat.key ? "default" : "outline"} size="sm" onClick={() => setCategory(cat.key)}>{t(cat.tKey, cat.fallback)}</Button>)}
               </div>
               {lookingLoading ? <div className="text-center py-12 text-muted-foreground">{t("common.loading", "Loading...")}</div>
                 : filterItems(lookingListings).length === 0 ? <EmptyState message={t("parking.no_listings", "No listings yet")} />
@@ -157,7 +157,7 @@ const Parking = () => {
                 </Dialog>
               </div>
               <div className="flex flex-wrap gap-2 mb-4">
-                {parkingTypes.map((cat) => <Button key={cat} variant={category === cat ? "default" : "outline"} size="sm" onClick={() => setCategory(cat)}>{cat}</Button>)}
+                {parkingTypeKeys.map((cat) => <Button key={cat.key} variant={category === cat.key ? "default" : "outline"} size="sm" onClick={() => setCategory(cat.key)}>{t(cat.tKey, cat.fallback)}</Button>)}
               </div>
               <div className="flex gap-2 mb-4">
                 <Button variant={viewMode === "list" ? "default" : "outline"} size="sm" onClick={() => setViewMode("list")} className="gap-1"><List className="w-4 h-4" /> {t("common.list", "List")}</Button>
@@ -183,6 +183,7 @@ const ParkingPostForm = ({ mode, onSuccess }: { mode: "looking" | "offer"; onSuc
   const [form, setForm] = useState({ title: "", description: "", category: "", price: "", neighborhood: "", phone: "" });
   const [photos, setPhotos] = useState<string[]>([]);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const mutation = useMutation({
     mutationFn: async () => {
