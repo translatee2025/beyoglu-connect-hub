@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Clock, MapPin, Users, Map as MapIcon, Plus, Check } from "lucide-react";
 import EventsMap from "@/components/EventsMap";
 import CreateEventForm from "@/components/events/CreateEventForm";
+import { createNotification, getDisplayName } from "@/lib/notifications";
 
 const formatEventDate = (dateStr: string) => {
   const d = new Date(dateStr);
@@ -73,16 +74,33 @@ const Events = () => {
 
   const toggleRsvp = useMutation({
     mutationFn: async (eventId: string) => {
-      if (!user) { navigate("/auth"); return; }
+      if (!user) { navigate("/auth"); return "none"; }
       if (myRsvps.has(eventId)) {
         await supabase.from("event_attendees").delete().eq("event_id", eventId).eq("user_id", user.id);
+        return "removed";
       } else {
         await supabase.from("event_attendees").insert({ event_id: eventId, user_id: user.id });
+        return eventId;
       }
     },
-    onSuccess: () => {
+    onSuccess: async (eventId) => {
       queryClient.invalidateQueries({ queryKey: ["my-rsvps"] });
       queryClient.invalidateQueries({ queryKey: ["event-attendee-counts"] });
+      // Notify event creator on RSVP (not on un-RSVP)
+      if (eventId && eventId !== "removed" && eventId !== "none" && user) {
+        try {
+          const event = events.find(e => e.id === eventId);
+          if (event && event.user_id !== user.id) {
+            const displayName = await getDisplayName(user.id);
+            await createNotification({
+              userId: event.user_id,
+              type: "event_rsvp",
+              body: `${displayName} is attending your event`,
+              link: `/events/${eventId}`,
+            });
+          }
+        } catch {}
+      }
     },
   });
 

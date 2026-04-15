@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, MessageCircle, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UserName } from "@/components/shared/UserName";
+import { createNotification, getDisplayName, getContentOwnerId, getEntityLink } from "@/lib/notifications";
 
 interface CommentsProps {
   entityType: string;
@@ -101,10 +102,25 @@ export function CommentsSection({ entityType, entityId }: CommentsProps) {
       });
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       setNewComment("");
       refetch();
       queryClient.invalidateQueries({ queryKey: ["comment-count", entityType, entityId] });
+      // Notify content owner
+      try {
+        if (user) {
+          const ownerId = await getContentOwnerId(entityType, entityId);
+          if (ownerId && ownerId !== user.id) {
+            const displayName = await getDisplayName(user.id);
+            await createNotification({
+              userId: ownerId,
+              type: "comment",
+              body: `${displayName} commented on your post`,
+              link: getEntityLink(entityType),
+            });
+          }
+        }
+      } catch {}
     },
     onError: () => toast({ title: "Error posting comment", variant: "destructive" }),
   });

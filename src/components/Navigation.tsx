@@ -1,6 +1,7 @@
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
 import { Users, Calendar, ShoppingBag, MessageSquare, Dog, Menu, X, Home, Car, Globe, Store, Wrench, ChevronDown, Mail, User, TrendingUp, Film } from "lucide-react";
+import { NotificationBell } from "@/components/NotificationBell";
 import { useState } from "react";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useAuth } from "@/providers/AuthProvider";
@@ -118,6 +119,7 @@ const Navigation = () => {
             <LanguageSwitcher />
             {user ? (
               <>
+                <NotificationBell />
                 <NavLink to="/messages" className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors">
                   <Mail className="w-5 h-5" />
                 </NavLink>
@@ -143,6 +145,7 @@ const Navigation = () => {
 
           {/* Mobile: Language + Hamburger */}
           <div className="flex lg:hidden items-center gap-2">
+            {user && <NotificationBell />}
             <LanguageSwitcher />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
