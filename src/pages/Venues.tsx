@@ -85,35 +85,103 @@ const Venues = () => {
           </div>
 
           {/* Category grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-            {displayTypes.map((vt: any) => {
-              const icon = CATEGORY_ICONS[vt.name?.toLowerCase()] || vt.icon || "📍";
-              const isActive = selectedType === vt.id;
-              return (
-                <button
-                  key={vt.id}
-                  onClick={() => setSelectedType(isActive ? "all" : vt.id)}
-                  className="bg-card rounded-xl p-2.5 text-center transition-all"
-                  style={{
-                    border: isActive ? '1px solid #1E3A5F' : '1px solid #E2EBFC',
-                    backgroundColor: isActive ? '#EFF4FF' : 'white',
-                  }}
-                >
-                  <div className="w-6 h-6 mx-auto mb-1 rounded-md flex items-center justify-center text-sm">{icon}</div>
-                  <span className="text-xs" style={{ color: isActive ? '#1E3A5F' : '#64748B' }}>{vt.name}</span>
-                </button>
-              );
-            })}
-            {venueTypes.length > 7 && (
-              <button
-                onClick={() => {}}
-                className="bg-card rounded-xl p-2.5 text-center"
-                style={{ border: '1px solid #E2EBFC' }}
-              >
-                <div className="w-6 h-6 mx-auto mb-1 rounded-md flex items-center justify-center text-sm">+</div>
-                <span className="text-xs text-[#64748B]">{t("venues.more", "More")}</span>
-              </button>
-            )}
+          <div className="grid grid-cols-4 gap-2 mb-4">
+            <button
+              onClick={() => setSelectedType(selectedType === 'restaurants' ? 'all' : 'restaurants')}
+              className="rounded-xl text-center transition-all"
+              style={{
+                border: selectedType === 'restaurants' ? '2px solid #1E3A5F' : '1px solid #E2EBFC',
+                backgroundColor: selectedType === 'restaurants' ? '#EFF4FF' : 'white',
+                padding: '16px 10px',
+              }}
+            >
+              <div className="text-[28px] mb-1">🍽️</div>
+              <span className="text-xs block" style={{ color: selectedType === 'restaurants' ? '#1E3A5F' : '#64748B' }}>Restaurants & Bars</span>
+            </button>
+            <button
+              onClick={() => setSelectedType(selectedType === 'cafes' ? 'all' : 'cafes')}
+              className="rounded-xl text-center transition-all"
+              style={{
+                border: selectedType === 'cafes' ? '2px solid #1E3A5F' : '1px solid #E2EBFC',
+                backgroundColor: selectedType === 'cafes' ? '#EFF4FF' : 'white',
+                padding: '16px 10px',
+              }}
+            >
+              <div className="text-[28px] mb-1">☕</div>
+              <span className="text-xs block" style={{ color: selectedType === 'cafes' ? '#1E3A5F' : '#64748B' }}>Cafés</span>
+            </button>
+            <button
+              onClick={() => setSelectedType(selectedType === 'nightlife' ? 'all' : 'nightlife')}
+              className="rounded-xl text-center transition-all"
+              style={{
+                border: selectedType === 'nightlife' ? '2px solid #1E3A5F' : '1px solid #E2EBFC',
+                backgroundColor: selectedType === 'nightlife' ? '#EFF4FF' : 'white',
+                padding: '16px 10px',
+              }}
+            >
+              <div className="text-[28px] mb-1">🍸</div>
+              <span className="text-xs block" style={{ color: selectedType === 'nightlife' ? '#1E3A5F' : '#64748B' }}>Nightlife</span>
+            </button>
+            <button
+              onClick={() => setSelectedType(selectedType === 'health' ? 'all' : 'health')}
+              className="rounded-xl text-center transition-all"
+              style={{
+                border: selectedType === 'health' ? '2px solid #1E3A5F' : '1px solid #E2EBFC',
+                backgroundColor: selectedType === 'health' ? '#EFF4FF' : 'white',
+                padding: '16px 10px',
+              }}
+            >
+              <div className="text-[28px] mb-1">🏥</div>
+              <span className="text-xs block" style={{ color: selectedType === 'health' ? '#1E3A5F' : '#64748B' }}>Health</span>
+            </button>
+            <button
+              onClick={() => setSelectedType(selectedType === 'culture' ? 'all' : 'culture')}
+              className="rounded-xl text-center transition-all"
+              style={{
+                border: selectedType === 'culture' ? '2px solid #1E3A5F' : '1px solid #E2EBFC',
+                backgroundColor: selectedType === 'culture' ? '#EFF4FF' : 'white',
+                padding: '16px 10px',
+              }}
+            >
+              <div className="text-[28px] mb-1">🎨</div>
+              <span className="text-xs block" style={{ color: selectedType === 'culture' ? '#1E3A5F' : '#64748B' }}>Culture</span>
+            </button>
+            <button
+              onClick={() => setSelectedType(selectedType === 'sports' ? 'all' : 'sports')}
+              className="rounded-xl text-center transition-all"
+              style={{
+                border: selectedType === 'sports' ? '2px solid #1E3A5F' : '1px solid #E2EBFC',
+                backgroundColor: selectedType === 'sports' ? '#EFF4FF' : 'white',
+                padding: '16px 10px',
+              }}
+            >
+              <div className="text-[28px] mb-1">💪</div>
+              <span className="text-xs block" style={{ color: selectedType === 'sports' ? '#1E3A5F' : '#64748B' }}>Sports & Wellness</span>
+            </button>
+            <button
+              onClick={() => setSelectedType(selectedType === 'pets' ? 'all' : 'pets')}
+              className="rounded-xl text-center transition-all"
+              style={{
+                border: selectedType === 'pets' ? '2px solid #1E3A5F' : '1px solid #E2EBFC',
+                backgroundColor: selectedType === 'pets' ? '#EFF4FF' : 'white',
+                padding: '16px 10px',
+              }}
+            >
+              <div className="text-[28px] mb-1">🐾</div>
+              <span className="text-xs block" style={{ color: selectedType === 'pets' ? '#1E3A5F' : '#64748B' }}>Pets</span>
+            </button>
+            <button
+              onClick={() => setSelectedType(selectedType === 'other' ? 'all' : 'other')}
+              className="rounded-xl text-center transition-all"
+              style={{
+                border: selectedType === 'other' ? '2px solid #1E3A5F' : '1px solid #E2EBFC',
+                backgroundColor: selectedType === 'other' ? '#EFF4FF' : 'white',
+                padding: '16px 10px',
+              }}
+            >
+              <div className="text-[28px] mb-1">📍</div>
+              <span className="text-xs block" style={{ color: selectedType === 'other' ? '#1E3A5F' : '#64748B' }}>Other</span>
+            </button>
           </div>
 
           {/* View mode */}
