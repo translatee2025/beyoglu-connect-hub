@@ -138,7 +138,7 @@ const Parking = () => {
       )}
 
       <div className="flex items-center gap-2" style={{ marginBottom: 6 }}>
-        {item.user_id && <UserName userId={item.user_id} showAvatar avatarSize={16} />}
+        {item.user_id && <UserName userId={item.user_id} showAvatar avatarSize="w-4 h-4" />}
         <span style={{ fontSize: 11, color: "#94A3B8" }}>· {formatTimeAgo(item.created_at)}</span>
       </div>
 
