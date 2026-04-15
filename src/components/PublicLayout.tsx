@@ -14,7 +14,7 @@ const PublicLayout = () => (
       <Navigation />
 
       {/* Page content */}
-      <main className="flex-1 pb-16 lg:pb-0 lg:ml-[220px] lg:py-6 lg:px-6">
+      <main className="flex-1 pb-[60px] lg:pb-0 lg:ml-[220px] lg:py-6 lg:px-6">
         <div className="lg:max-w-[860px]">
           <Outlet />
         </div>
