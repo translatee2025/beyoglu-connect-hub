@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { MessageSquare, Share2, Home, Car, Dog, Store, Wrench, Plus, MoreHorizontal, Flag } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -84,6 +84,38 @@ const Wall = () => {
     },
     onSuccess: () => { setNewPost(""); setNewPhotos([]); setDialogPost(""); setDialogPhotos([]); setDialogOpen(false); queryClient.invalidateQueries({ queryKey: ["wall-posts"] }); },
   });
+
+  // Realtime subscription for new wall posts
+  useEffect(() => {
+    const channel = supabase
+      .channel('wall-realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'wall_posts' },
+        (payload) => {
+          const row = payload.new as any;
+          if (row.group_id) return; // skip group posts
+          const newItem: FeedItem = {
+            id: row.id,
+            source: "wall",
+            title: row.content?.slice(0, 80),
+            description: row.content?.length > 80 ? row.content : undefined,
+            photos: row.photos || [],
+            created_at: row.created_at,
+            badge: "post",
+            icon: MessageSquare,
+            entityType: "wall_post" as EntityType,
+            user_id: row.user_id,
+          };
+          queryClient.setQueryData<FeedItem[]>(["wall-posts"], (old) =>
+            old ? [newItem, ...old] : [newItem]
+          );
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [queryClient]);
 
   const allItems: FeedItem[] = [...wallPosts, ...classifieds, ...petPosts, ...venues, ...helpPosts].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 50);
 
