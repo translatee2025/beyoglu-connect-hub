@@ -33,7 +33,7 @@ const aptCategoryKeys = [
 ];
 
 const Rentals = () => {
-  const [mainTab, setMainTab] = useState("looking");
+  const [mainTab, setMainTab] = useState("offering");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [listingMode, setListingMode] = useState<"rent" | "sell">("rent");
@@ -118,10 +118,20 @@ const Rentals = () => {
 
 
           <Tabs value={mainTab} onValueChange={setMainTab}>
-            <TabsList className="w-full mb-6">
-              <TabsTrigger value="looking" className="flex-1 gap-1"><Search className="w-4 h-4" /> {t("rentals.i_need", "I Need a Place")}</TabsTrigger>
-              <TabsTrigger value="offering" className="flex-1 gap-1"><Home className="w-4 h-4" /> {t("rentals.for_rent_sale", "For Rent / Sale")}</TabsTrigger>
-            </TabsList>
+            <div className="flex border-b border-[#E2EBFC] mb-6">
+              <button
+                onClick={() => setMainTab("offering")}
+                className={`flex-1 py-3 text-sm font-medium text-center transition-colors ${mainTab === "offering" ? "text-[#1E3A5F] border-b-2 border-[#1E3A5F]" : "text-[#94A3B8] hover:text-[#64748B]"}`}
+              >
+                {t("rentals.offers", "İlanlar")}
+              </button>
+              <button
+                onClick={() => setMainTab("looking")}
+                className={`flex-1 py-3 text-sm font-medium text-center transition-colors ${mainTab === "looking" ? "text-[#1E3A5F] border-b-2 border-[#1E3A5F]" : "text-[#94A3B8] hover:text-[#64748B]"}`}
+              >
+                {t("rentals.requests", "Arıyorum")}
+              </button>
+            </div>
 
             <TabsContent value="looking">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
