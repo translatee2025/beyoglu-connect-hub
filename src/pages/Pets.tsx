@@ -10,6 +10,7 @@ import PetPostChooser from "@/components/pets/PetPostChooser";
 import FriendFinder from "@/components/pets/FriendFinder";
 import PetMap from "@/components/pets/PetMap";
 import PetFilters, { PetFilterState, defaultFilters } from "@/components/pets/PetFilters";
+import LostFoundSection from "@/components/pets/LostFoundSection";
 import PetSwipeCards from "@/components/pets/PetSwipeCards";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
