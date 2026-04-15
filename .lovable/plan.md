@@ -1,98 +1,56 @@
 
 
-# In-App Notification System
+# Group Feed & Group Posts
 
 ## Overview
-Add notification triggers to 4 existing actions (like, comment, message, RSVP), a bell icon with badge to the header, a dropdown panel, and realtime subscription. No existing features are redesigned.
+Three changes: filter group posts out of the main wall, create a group detail page with Feed and Members tabs, and add a route for `/groups/:id`.
 
-## Database Migration
+## Step 1 — Filter main wall feed
 
-1. Add `notifications` table to `supabase_realtime` publication so the bell badge updates in real time.
+**File: `src/pages/Wall.tsx`** (line 43)
 
-## New Component: NotificationBell
+Add `.is("group_id", null)` to the wall_posts query so group posts don't appear in the public feed.
 
-**File: `src/components/NotificationBell.tsx`**
+## Step 2 — Create GroupDetail page
 
-A self-contained component that:
-- Queries unread count: `SELECT count(*) FROM notifications WHERE user_id = auth.uid() AND read = false`
-- Queries 20 most recent notifications ordered by `created_at DESC`
-- Renders a bell icon (`Bell` from lucide) with a red circular badge showing unread count (hidden when 0)
-- Uses `Popover` (from existing ui/popover) for the dropdown panel
-- Each row shows: type-based icon (Heart/MessageCircle/Mail/Calendar/Settings), body text, relative time, distinct background for unread
-- Clicking a row: navigates to `link`, sets `read = true` via UPDATE
-- "Mark all as read" button: `UPDATE notifications SET read = true WHERE user_id = auth.uid() AND read = false`
-- Realtime subscription on `notifications` table filtered by `user_id = auth.uid()` for INSERT events — increments badge and prepends to list
+**New file: `src/pages/GroupDetail.tsx`**
 
-## Navigation.tsx Changes
+A page at `/groups/:id` with two tabs (Feed, Members) using the existing Tabs component.
 
-- Import `NotificationBell`
-- Place it in the desktop header between `LanguageSwitcher` and the mail icon (line ~121), only when `user` is authenticated
-- Place it in the mobile header area as well, next to the language switcher
+**Feed tab:**
+- Query `wall_posts` where `group_id = id` and `(status = 'active' OR status IS NULL)`, ordered by `created_at DESC`
+- Render posts with the same card layout as Wall.tsx: UserName, timeAgo, content, MediaGrid, LikeButton, CommentsSection
+- "Post to Group" button (visible only to members) opens a Dialog with Textarea + MediaUpload. On submit: INSERT into `wall_posts` with `group_id`, `user_id`, `content`, `photos`, `status: 'active'`
+- Empty state: "Be the first to post in this group"
 
-## Notification Trigger: Likes
+**Members tab:**
+- Query `group_members` where `group_id = id`, then fetch `profiles` for each `user_id`
+- Show avatar, display_name (linked to `/profile/:userId`), role badge (admin/owner/member)
+- Message button per member (skip for self) — opens/creates a DM conversation, same pattern as LostFound contact button
 
-**File: `src/hooks/useLikes.ts`**
+**Header area:**
+- Shows group name, description, category badge, member count
+- Join/Leave button based on membership status
 
-After a successful like INSERT (not unlike), look up the content owner's `user_id` from the relevant table based on `entityType`:
-- `wall_post` → query `wall_posts` 
-- `classified` → query `classifieds`
-- `pet_post` → query `pet_posts`
-- `reel` → query `reels` (add "reel" to EntityType)
+## Step 3 — Add route
 
-Skip if liker === owner. Fetch current user's display_name from profiles. Insert notification row.
+**File: `src/App.tsx`**
 
-## Notification Trigger: Comments
+Add import for GroupDetail and route: `<Route path="/groups/:id" element={<GroupDetail />} />`
 
-**File: `src/components/shared/CommentsSection.tsx`**
+## Step 4 — Make group cards clickable
 
-In `addComment` mutation's `onSuccess`, look up the content owner based on `entityType`/`entityId` (same table mapping as likes). Skip if commenter === owner. Insert notification with type `'comment'`.
+**File: `src/pages/Groups.tsx`**
 
-## Notification Trigger: Messages
+Wrap the group card title or the card itself with a link/onClick to navigate to `/groups/${group.id}` so users can reach the detail page.
 
-**File: `src/pages/Messages.tsx`**
-
-In `sendMessage` mutation's `onSuccess`, look up the other participant in the conversation. Insert notification with type `'message'`, link `'/messages'`. Only when conversation status is `'accepted'`.
-
-## Notification Trigger: Event RSVP
-
-**File: `src/pages/Events.tsx`**
-
-In `toggleRsvp` mutation, after a successful INSERT (not delete), look up the event's `user_id`. Skip if RSVP user === event creator. Insert notification with type `'event_rsvp'`, link `'/events/' + eventId`.
-
-## Helper Utility
-
-**File: `src/lib/notifications.ts`**
-
-A small helper function used by all triggers:
-```typescript
-async function createNotification(params: {
-  userId: string;       // recipient
-  type: string;
-  body: string;
-  link: string;
-}) {
-  await supabase.from("notifications").insert({
-    user_id: params.userId,
-    type: params.type,
-    body: params.body,
-    link: params.link,
-  });
-}
-```
-
-And a helper to get the current user's display name from profiles cache or a quick query.
-
-## Files Changed
+## Files changed
 | File | Change |
 |------|--------|
-| Migration SQL | Add notifications to supabase_realtime |
-| `src/lib/notifications.ts` | New helper utility |
-| `src/components/NotificationBell.tsx` | New component |
-| `src/components/Navigation.tsx` | Add bell icon |
-| `src/hooks/useLikes.ts` | Add notification on like |
-| `src/components/shared/CommentsSection.tsx` | Add notification on comment |
-| `src/pages/Messages.tsx` | Add notification on message send |
-| `src/pages/Events.tsx` | Add notification on RSVP |
+| `src/pages/Wall.tsx` | Add `.is("group_id", null)` to wall_posts query |
+| `src/pages/GroupDetail.tsx` | New page with Feed + Members tabs |
+| `src/App.tsx` | Add route `/groups/:id` |
+| `src/pages/Groups.tsx` | Make group cards navigate to detail page |
 
-No other pages, components, or tables are touched.
+No database migrations needed — `group_id` and `status` columns already exist on `wall_posts`.
 
