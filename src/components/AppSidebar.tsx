@@ -1,4 +1,5 @@
 import { NavLink } from "@/components/NavLink";
+import { GlobalSearchDesktop } from "@/components/GlobalSearch";
 import { useAuth } from "@/providers/AuthProvider";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useNavigate } from "react-router-dom";
@@ -66,6 +67,9 @@ const AppSidebar = () => {
           beyoğlu
         </span>
       </div>
+
+      {/* Search */}
+      <GlobalSearchDesktop />
 
       {/* District pills */}
       <div className="flex flex-wrap gap-1.5 px-3 pb-3">

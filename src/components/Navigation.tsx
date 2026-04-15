@@ -1,5 +1,6 @@
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
+import { GlobalSearchMobile } from "@/components/GlobalSearch";
 import { Users, Calendar, ShoppingBag, MessageSquare, Dog, Home, Car, Globe, Store, Wrench, ChevronDown, Mail, User, TrendingUp, Film, Search, Plus } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useState } from "react";
@@ -138,8 +139,9 @@ const Navigation = () => {
             )}
           </div>
 
-          {/* Mobile: app name left + avatar right */}
+          {/* Mobile: search + avatar */}
           <div className="flex lg:hidden items-center gap-2">
+            <GlobalSearchMobile />
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
