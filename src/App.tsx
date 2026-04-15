@@ -60,12 +60,7 @@ const App = () => (
 
                   {/* Auth */}
                   <Route path="/auth" element={<Auth />} />
-                  <Route path="/profile/:userId" element={<Profile />} />
-                  <Route path="/messages" element={<Messages />} />
-                  <Route path="/charts" element={<VenueCharts />} />
-                  <Route path="/venue/:venueId" element={<VenueDetail />} />
                   <Route path="/reels" element={<Reels />} />
-                  <Route path="/charts" element={<VenueCharts />} />
 
                   {/* Public routes with navigation */}
                   <Route element={<PublicLayout />}>
@@ -79,6 +74,10 @@ const App = () => (
                     <Route path="/pets" element={<Pets />} />
                     <Route path="/venues" element={<Venues />} />
                     <Route path="/help" element={<NeighborHelp />} />
+                    <Route path="/profile/:userId" element={<Profile />} />
+                    <Route path="/messages" element={<Messages />} />
+                    <Route path="/charts" element={<VenueCharts />} />
+                    <Route path="/venue/:venueId" element={<VenueDetail />} />
                   </Route>
 
                   <Route path="*" element={<NotFound />} />
