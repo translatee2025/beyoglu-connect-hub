@@ -455,6 +455,8 @@ export type Database = {
           id: string
           neighborhood: string | null
           phone: string | null
+          price: string | null
+          price_type: string | null
           status: string
           title: string
           updated_at: string
@@ -469,6 +471,8 @@ export type Database = {
           id?: string
           neighborhood?: string | null
           phone?: string | null
+          price?: string | null
+          price_type?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -483,6 +487,8 @@ export type Database = {
           id?: string
           neighborhood?: string | null
           phone?: string | null
+          price?: string | null
+          price_type?: string | null
           status?: string
           title?: string
           updated_at?: string
