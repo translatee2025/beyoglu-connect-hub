@@ -18,7 +18,22 @@ import { useLanguage } from "@/providers/LanguageProvider";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
 
-const helpCategories = ["All", "Plumbing & Bathroom", "Painting", "Furniture Repair", "Electrical", "Assembly & Hanging", "Mixed / Other"];
+const helpCategoryKeys = [
+  { key: "All", tKey: "filter.all", fallback: "All" },
+  { key: "Plumbing & Bathroom", tKey: "help.category.plumbing", fallback: "Plumbing & Bathroom" },
+  { key: "Painting", tKey: "help.category.painting", fallback: "Painting" },
+  { key: "Electrical", tKey: "help.category.electrical", fallback: "Electrical" },
+  { key: "Assembly & Hanging", tKey: "help.category.assembly", fallback: "Assembly & Hanging" },
+  { key: "Cleaning", tKey: "help.category.cleaning", fallback: "Cleaning" },
+  { key: "Moving", tKey: "help.category.moving", fallback: "Moving" },
+  { key: "Computer Repair", tKey: "help.category.computer", fallback: "Computer Repair" },
+  { key: "Drilling & Mounting", tKey: "help.category.drilling", fallback: "Drilling & Mounting" },
+  { key: "Car Wash", tKey: "help.category.carwash", fallback: "Car Wash" },
+  { key: "Ironing", tKey: "help.category.ironing", fallback: "Ironing" },
+  { key: "Babysitting", tKey: "help.category.babysitting", fallback: "Babysitting" },
+  { key: "Gardening", tKey: "help.category.gardening", fallback: "Gardening" },
+  { key: "Mixed / Other", tKey: "help.category.other", fallback: "Mixed / Other" },
+];
 
 const NeighborHelp = () => {
   const [search, setSearch] = useState("");
@@ -52,10 +67,11 @@ const NeighborHelp = () => {
   const timeAgo = (date: string) => {
     const diff = Date.now() - new Date(date).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins}m ago`;
+    if (mins < 1) return t("time.just_now", "just now");
+    if (mins < 60) return `${mins} ${t("time.minutes_ago", "m ago")}`;
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.floor(hrs / 24)}d ago`;
+    if (hrs < 24) return `${hrs} ${t("time.hours_ago", "h ago")}`;
+    return `${Math.floor(hrs / 24)} ${t("time.days_ago", "d ago")}`;
   };
 
   return (
@@ -84,8 +100,8 @@ const NeighborHelp = () => {
           </div>
 
           <div className="flex flex-wrap gap-2 mb-6">
-            {helpCategories.map((cat) => (
-              <Button key={cat} variant={category === cat ? "default" : "outline"} size="sm" onClick={() => setCategory(cat)}>{cat}</Button>
+            {helpCategoryKeys.map((cat) => (
+              <Button key={cat.key} variant={category === cat.key ? "default" : "outline"} size="sm" onClick={() => setCategory(cat.key)}>{t(cat.tKey, cat.fallback)}</Button>
             ))}
           </div>
 
@@ -144,6 +160,7 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const [form, setForm] = useState({ title: "", description: "", category: "Mixed / Other", helpType: "offer", neighborhood: "", phone: "", whatsapp: "", price: "", priceType: "fixed" });
   const [photos, setPhotos] = useState<string[]>([]);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -157,43 +174,43 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
       } as any);
       if (error) throw error;
     },
-    onSuccess: () => { toast({ title: "Posted!" }); onSuccess(); },
-    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onSuccess: () => { toast({ title: t("common.posted", "Posted!") }); onSuccess(); },
+    onError: (e: any) => toast({ title: t("common.error", "Error"), description: e.message, variant: "destructive" }),
   });
 
   return (
     <div className="space-y-4">
-      <DialogHeader><DialogTitle>Post Help Offer or Request</DialogTitle></DialogHeader>
+      <DialogHeader><DialogTitle>{t("help.post_title", "Post Help Offer or Request")}</DialogTitle></DialogHeader>
       <Progress value={(step / 2) * 100} className="h-1.5" />
-      <p className="text-xs text-muted-foreground text-center">Step {step} of 2</p>
+      <p className="text-xs text-muted-foreground text-center">{t("common.step_of", "Step")} {step} / 2</p>
 
       {step === 1 && (
         <div className="space-y-3">
           <div className="flex gap-2">
             <Button variant={form.helpType === "offer" ? "default" : "outline"} className="flex-1 gap-2" onClick={() => setForm({ ...form, helpType: "offer" })}>
-              <Wrench className="w-4 h-4" /> I Can Help
+              <Wrench className="w-4 h-4" /> {t("help.i_can_help", "I Can Help")}
             </Button>
             <Button variant={form.helpType === "want" ? "default" : "outline"} className="flex-1 gap-2" onClick={() => setForm({ ...form, helpType: "want" })}>
-              <User className="w-4 h-4" /> I Need Help
+              <User className="w-4 h-4" /> {t("help.i_need_help", "I Need Help")}
             </Button>
           </div>
-          <div><Label>Category</Label>
+          <div><Label>{t("common.category", "Category")}</Label>
             <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{helpCategories.filter(c => c !== "All").map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+              <SelectContent>{helpCategoryKeys.filter(c => c.key !== "All").map(c => <SelectItem key={c.key} value={c.key}>{t(c.tKey, c.fallback)}</SelectItem>)}</SelectContent>
             </Select>
           </div>
-          <div><Label>Title *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Can fix bathroom leaks" /></div>
-          <div><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} /></div>
+          <div><Label>{t("common.title", "Title")} *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder={t("help.title_placeholder", "e.g. Can fix bathroom leaks")} /></div>
+          <div><Label>{t("common.description", "Description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} /></div>
           {form.helpType === "offer" && (
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Price (₺)</Label><Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="e.g. 500" /></div>
-              <div><Label>Price Type</Label>
+              <div><Label>{t("common.price", "Price")} (₺)</Label><Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="500" /></div>
+              <div><Label>{t("common.price_type", "Price Type")}</Label>
                 <Select value={form.priceType} onValueChange={(v) => setForm({ ...form, priceType: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="fixed">Fixed</SelectItem>
-                    <SelectItem value="per_hour">Per Hour</SelectItem>
+                    <SelectItem value="fixed">{t("common.fixed", "Fixed")}</SelectItem>
+                    <SelectItem value="per_hour">{t("common.per_hour", "Per Hour")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -204,21 +221,21 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
 
       {step === 2 && (
         <div className="space-y-3">
-          <div><Label>Photos / Videos</Label><MediaUpload value={photos} onChange={setPhotos} maxFiles={5} /></div>
-          <div><Label>Neighborhood</Label><Input value={form.neighborhood} onChange={(e) => setForm({ ...form, neighborhood: e.target.value })} /></div>
+          <div><Label>{t("common.photos", "Photos / Videos")}</Label><MediaUpload value={photos} onChange={setPhotos} maxFiles={5} /></div>
+          <div><Label>{t("common.neighborhood", "Neighborhood")}</Label><Input value={form.neighborhood} onChange={(e) => setForm({ ...form, neighborhood: e.target.value })} /></div>
           <div className="grid grid-cols-2 gap-3">
-            <div><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+90 5xx" /></div>
+            <div><Label>{t("common.phone", "Phone")}</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+90 5xx" /></div>
             <div><Label>WhatsApp</Label><Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} /></div>
           </div>
         </div>
       )}
 
       <div className="flex gap-2">
-        {step > 1 && <Button variant="outline" onClick={() => setStep(1)} className="gap-1"><ArrowLeft className="w-4 h-4" /> Back</Button>}
+        {step > 1 && <Button variant="outline" onClick={() => setStep(1)} className="gap-1"><ArrowLeft className="w-4 h-4" /> {t("common.back", "Back")}</Button>}
         {step < 2 ? (
-          <Button className="flex-1 gap-1" onClick={() => setStep(2)} disabled={!form.title.trim()}>Next <ArrowRight className="w-4 h-4" /></Button>
+          <Button className="flex-1 gap-1" onClick={() => setStep(2)} disabled={!form.title.trim()}>{t("common.next", "Next")} <ArrowRight className="w-4 h-4" /></Button>
         ) : (
-          <Button className="flex-1" onClick={() => mutation.mutate()} disabled={!form.title || mutation.isPending}>{mutation.isPending ? "Posting..." : "Post"}</Button>
+          <Button className="flex-1" onClick={() => mutation.mutate()} disabled={!form.title || mutation.isPending}>{mutation.isPending ? t("common.posting", "Posting...") : t("common.post", "Post")}</Button>
         )}
       </div>
     </div>

@@ -20,7 +20,17 @@ import { useLanguage } from "@/providers/LanguageProvider";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
 
-const aptCategories = ["All", "1+0 Studio", "1+1", "2+1", "3+1", "4+1", "Villa", "Shared Room"];
+const aptCategoryKeys = [
+  { key: "All", tKey: "filter.all", fallback: "All" },
+  { key: "1+0 Studio", tKey: "rental.type.studio", fallback: "1+0 Studio" },
+  { key: "1+1", tKey: "rental.type.1_1", fallback: "1+1" },
+  { key: "2+1", tKey: "rental.type.2_1", fallback: "2+1" },
+  { key: "3+1", tKey: "rental.type.3_1", fallback: "3+1" },
+  { key: "4+1", tKey: "rental.type.4_1", fallback: "4+1" },
+  { key: "Villa", tKey: "rental.type.villa", fallback: "Villa" },
+  { key: "Shared Room", tKey: "rental.type.shared_room", fallback: "Shared Room" },
+  { key: "Office", tKey: "rental.type.office", fallback: "Office" },
+];
 
 const Rentals = () => {
   const [mainTab, setMainTab] = useState("looking");
@@ -132,7 +142,7 @@ const Rentals = () => {
                 </Dialog>
               </div>
               <div className="flex flex-wrap gap-2 mb-6">
-                {aptCategories.map((cat) => <Button key={cat} variant={category === cat ? "default" : "outline"} size="sm" onClick={() => setCategory(cat)}>{cat}</Button>)}
+                {aptCategoryKeys.map((cat) => <Button key={cat.key} variant={category === cat.key ? "default" : "outline"} size="sm" onClick={() => setCategory(cat.key)}>{t(cat.tKey, cat.fallback)}</Button>)}
               </div>
               {lookingLoading ? <div className="text-center py-12 text-muted-foreground">{t("common.loading", "Loading...")}</div>
                 : filterItems(lookingListings).length === 0 ? <EmptyState message={t("rentals.no_listings", "No listings yet")} />
@@ -159,7 +169,7 @@ const Rentals = () => {
                 </Dialog>
               </div>
               <div className="flex flex-wrap gap-2 mb-4">
-                {aptCategories.map((cat) => <Button key={cat} variant={category === cat ? "default" : "outline"} size="sm" onClick={() => setCategory(cat)}>{cat}</Button>)}
+                {aptCategoryKeys.map((cat) => <Button key={cat.key} variant={category === cat.key ? "default" : "outline"} size="sm" onClick={() => setCategory(cat.key)}>{t(cat.tKey, cat.fallback)}</Button>)}
               </div>
               <div className="flex gap-2 mb-4">
                 <Button variant={viewMode === "list" ? "default" : "outline"} size="sm" onClick={() => setViewMode("list")} className="gap-1"><List className="w-4 h-4" /> {t("common.list", "List")}</Button>
@@ -185,7 +195,7 @@ const RentalPostForm = ({ mode, onSuccess }: { mode: "looking" | "offer"; onSucc
   const [form, setForm] = useState({ title: "", description: "", category: "", price: "", neighborhood: "", phone: "", listingMode: mode === "looking" ? "looking" : "rent" });
   const [photos, setPhotos] = useState<string[]>([]);
   const { toast } = useToast();
-
+  const { t } = useLanguage();
   const mutation = useMutation({
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -197,15 +207,15 @@ const RentalPostForm = ({ mode, onSuccess }: { mode: "looking" | "offer"; onSucc
       });
       if (error) throw error;
     },
-    onSuccess: () => { toast({ title: "Posted!" }); onSuccess(); },
-    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onSuccess: () => { toast({ title: t("common.posted", "Posted!") }); onSuccess(); },
+    onError: (e: any) => toast({ title: t("common.error", "Error"), description: e.message, variant: "destructive" }),
   });
 
   return (
     <div className="space-y-4">
-      <DialogHeader><DialogTitle>{mode === "looking" ? "I'm Looking for a Place" : "List an Apartment"}</DialogTitle></DialogHeader>
+      <DialogHeader><DialogTitle>{mode === "looking" ? t("rentals.i_need", "I'm Looking for a Place") : t("rentals.list_apt", "List an Apartment")}</DialogTitle></DialogHeader>
       <Progress value={(step / 2) * 100} className="h-1.5" />
-      <p className="text-xs text-muted-foreground text-center">Step {step} of 2</p>
+      <p className="text-xs text-muted-foreground text-center">{t("common.step_of", "Step")} {step} / 2</p>
 
       {step === 1 && (
         <div className="space-y-3">
@@ -214,14 +224,14 @@ const RentalPostForm = ({ mode, onSuccess }: { mode: "looking" | "offer"; onSucc
             <div><Label>Listing Type</Label>
               <Select value={form.listingMode} onValueChange={(v) => setForm({ ...form, listingMode: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent><SelectItem value="rent">For Rent</SelectItem><SelectItem value="sell">For Sale</SelectItem></SelectContent>
+                <SelectContent><SelectItem value="rent">{t("rentals.for_rent", "For Rent")}</SelectItem><SelectItem value="sell">{t("rentals.for_sale", "For Sale")}</SelectItem></SelectContent>
               </Select>
             </div>
           )}
           <div><Label>Category</Label>
             <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
               <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-              <SelectContent>{aptCategories.filter(c => c !== "All").map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+              <SelectContent>{aptCategoryKeys.filter(c => c.key !== "All").map(c => <SelectItem key={c.key} value={c.key}>{t(c.tKey, c.fallback)}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div><Label>{mode === "looking" ? "Budget (₺)" : "Price (₺)"}</Label><Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="15,000" /></div>
@@ -242,7 +252,7 @@ const RentalPostForm = ({ mode, onSuccess }: { mode: "looking" | "offer"; onSucc
         {step < 2 ? (
           <Button className="flex-1 gap-1" onClick={() => setStep(2)} disabled={!form.title.trim()}>Next <ArrowRight className="w-4 h-4" /></Button>
         ) : (
-          <Button className="flex-1" onClick={() => mutation.mutate()} disabled={!form.title || mutation.isPending}>{mutation.isPending ? "Posting..." : "Post"}</Button>
+          <Button className="flex-1" onClick={() => mutation.mutate()} disabled={!form.title || mutation.isPending}>{mutation.isPending ? t("common.posting", "Posting...") : t("common.post", "Post")}</Button>
         )}
       </div>
     </div>
