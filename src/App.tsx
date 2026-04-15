@@ -11,6 +11,7 @@ import PublicLayout from "./components/PublicLayout";
 import Index from "./pages/Index";
 import Groups from "./pages/Groups";
 import Events from "./pages/Events";
+import EventDetail from "./pages/EventDetail";
 import Classifieds from "./pages/Classifieds";
 import Rentals from "./pages/Rentals";
 import Parking from "./pages/Parking";
