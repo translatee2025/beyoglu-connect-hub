@@ -44,6 +44,7 @@ const useTimeAgo = () => {
 function LostFoundPhotoUpload({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -99,7 +100,7 @@ function ReportForm({ type, onSuccess }: { type: "lost" | "found"; onSuccess: ()
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     title: "", category: "", description: "", neighborhood: "",
