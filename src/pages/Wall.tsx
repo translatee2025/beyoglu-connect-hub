@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { MessageSquare, Share2, Home, Car, Dog, Store, Wrench, Plus, MoreHorizontal, Flag } from "lucide-react";
+import { MessageSquare, Share2, Home, Car, Dog, Store, Wrench, Plus, MoreHorizontal, Flag, Heart, MessageCircle } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -21,6 +21,20 @@ import { ReportDialog } from "@/components/shared/ReportDialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 type FeedItem = { id: string; source: string; title: string; description?: string; photos?: string[]; created_at: string; badge: string; icon: any; entityType: EntityType; user_id?: string; };
+
+const AVATAR_COLORS = [
+  { bg: '#BBF7D0', text: '#166534' },
+  { bg: '#FEF3C7', text: '#92400E' },
+  { bg: '#EDE9FE', text: '#5B21B6' },
+  { bg: '#E0F2FE', text: '#0369A1' },
+  { bg: '#FECACA', text: '#991B1B' },
+];
+
+const getAvatarColor = (userId: string) => {
+  let hash = 0;
+  for (let i = 0; i < userId.length; i++) hash = userId.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+};
 
 const Wall = () => {
   const [reportTarget, setReportTarget] = useState<{ type: string; id: string } | null>(null);
@@ -79,7 +93,7 @@ const Wall = () => {
     queryKey: ["wall-pets"],
     queryFn: async () => {
       const { data } = await supabase.from("pet_posts").select("id, title, description, post_type, created_at, user_id").order("created_at", { ascending: false }).limit(20);
-      return (data || []).map((item: any) => ({ id: item.id, source: "pets", title: item.title, description: item.description, created_at: item.created_at, badge: "pets", icon: Dog, entityType: "pet_post" as EntityType, user_id: item.user_id }));
+      return (data || []).map((item: any) => ({ id: item.id, source: "pets", title: item.title, description: item.description, created_at: item.created_at, badge: "pet", icon: Dog, entityType: "pet_post" as EntityType, user_id: item.user_id }));
     },
   });
 
@@ -95,7 +109,7 @@ const Wall = () => {
     queryKey: ["wall-help"],
     queryFn: async () => {
       const { data } = await supabase.from("neighbor_help_posts").select("id, title, description, help_type, created_at, user_id").order("created_at", { ascending: false }).limit(20);
-      return (data || []).map((item: any) => ({ id: item.id, source: "help", title: item.title, description: item.description, created_at: item.created_at, badge: item.help_type === "offer" ? "help_offer" : "help_wanted", icon: Wrench, entityType: "help_post" as EntityType, user_id: item.user_id }));
+      return (data || []).map((item: any) => ({ id: item.id, source: "help", title: item.title, description: item.description, created_at: item.created_at, badge: "helper", icon: Wrench, entityType: "help_post" as EntityType, user_id: item.user_id }));
     },
   });
 
@@ -107,42 +121,23 @@ const Wall = () => {
     onSuccess: () => { setNewPost(""); setNewPhotos([]); setDialogPost(""); setDialogPhotos([]); setDialogOpen(false); queryClient.invalidateQueries({ queryKey: ["wall-posts"] }); },
   });
 
-  // Realtime subscription for new wall posts
   useEffect(() => {
     const filter = selectedDistrict
       ? `group_id=is.null,district_id=eq.${selectedDistrict}`
       : `group_id=is.null`;
     const channel = supabase
       .channel(`wall-realtime-${selectedDistrict ?? 'all'}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'wall_posts', filter },
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'wall_posts', filter },
         (payload) => {
           const row = payload.new as any;
-          if (row.group_id) return; // skip group posts
-          const newItem: FeedItem = {
-            id: row.id,
-            source: "wall",
-            title: row.content?.slice(0, 80),
-            description: row.content?.length > 80 ? row.content : undefined,
-            photos: row.photos || [],
-            created_at: row.created_at,
-            badge: "post",
-            icon: MessageSquare,
-            entityType: "wall_post" as EntityType,
-            user_id: row.user_id,
-          };
-          queryClient.setQueryData<FeedItem[]>(["wall-posts"], (old) =>
-            old ? [newItem, ...old] : [newItem]
-          );
+          if (row.group_id) return;
+          const newItem: FeedItem = { id: row.id, source: "wall", title: row.content?.slice(0, 80), description: row.content?.length > 80 ? row.content : undefined, photos: row.photos || [], created_at: row.created_at, badge: "post", icon: MessageSquare, entityType: "wall_post" as EntityType, user_id: row.user_id };
+          queryClient.setQueryData<FeedItem[]>(["wall-posts"], (old) => old ? [newItem, ...old] : [newItem]);
         }
-      )
-      .subscribe();
-
+      ).subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [queryClient, selectedDistrict]);
 
-  // Auto-scroll pills to center the selected district on load
   useEffect(() => {
     if (!pillsRef.current || districts.length === 0) return;
     const container = pillsRef.current;
@@ -159,137 +154,191 @@ const Wall = () => {
 
   const timeAgo = (date: string) => { const diff = Date.now() - new Date(date).getTime(); const mins = Math.floor(diff / 60000); if (mins < 60) return `${mins}m`; const hrs = Math.floor(mins / 60); if (hrs < 24) return `${hrs}h`; return `${Math.floor(hrs / 24)}d`; };
 
-  const BADGE_MAP: Record<string, { label: string; color: string }> = {
-    post: { label: badgeLabel("post", "Post"), color: "secondary" },
-    rental: { label: badgeLabel("rental", "Rental"), color: "default" },
-    parking: { label: badgeLabel("parking", "Parking"), color: "secondary" },
-    classified: { label: badgeLabel("classified", "Classified"), color: "secondary" },
-    pets: { label: badgeLabel("pets", "Pets"), color: "outline" },
-    venue: { label: badgeLabel("venue", "Venue"), color: "default" },
-    help_offer: { label: badgeLabel("help_offer", "Help Offer"), color: "default" },
-    help_wanted: { label: badgeLabel("help_wanted", "Help Wanted"), color: "secondary" },
+  const BADGE_MAP: Record<string, { label: string; variant: string }> = {
+    post: { label: badgeLabel("post", "Post"), variant: "post" },
+    rental: { label: badgeLabel("rental", "Rental"), variant: "rental" },
+    parking: { label: badgeLabel("parking", "Parking"), variant: "classified" },
+    classified: { label: badgeLabel("classified", "Classified"), variant: "classified" },
+    pet: { label: badgeLabel("pets", "Pets"), variant: "pet" },
+    venue: { label: badgeLabel("venue", "Venue"), variant: "venue" },
+    helper: { label: badgeLabel("help_offer", "Help"), variant: "helper" },
+    help_offer: { label: badgeLabel("help_offer", "Help Offer"), variant: "helper" },
+    help_wanted: { label: badgeLabel("help_wanted", "Help Wanted"), variant: "helper" },
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center"><MessageSquare className="w-8 h-8 text-primary" /></div>
-            <h1 className="font-display font-bold text-3xl md:text-4xl text-foreground mb-2">{t("wall.title", "Community Wall")}</h1>
-            <p className="text-muted-foreground">{t("wall.subtitle", "See what's happening in your neighborhood")}</p>
-          </div>
-          <div
-            ref={pillsRef}
-            className="mb-6 flex gap-2 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-1"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+      {/* Scope selector bar */}
+      <div className="sticky top-[48px] z-40 bg-card border-b border-border" style={{ padding: '8px 16px' }}>
+        <div
+          ref={pillsRef}
+          className="flex gap-2 overflow-x-auto scrollbar-hide max-w-app mx-auto"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          <button
+            onClick={() => setSelectedDistrict(null)}
+            className="flex-shrink-0 transition-all text-xs"
+            style={{
+              padding: '4px 14px', borderRadius: '20px',
+              ...(selectedDistrict === null
+                ? { backgroundColor: '#DCFCE7', color: '#166534', border: '1px solid #166534', fontWeight: 500 }
+                : { backgroundColor: 'white', border: '0.5px solid #BBF7D0', color: '#6B7280' }),
+            }}
           >
+            İstanbul
+          </button>
+          {districts.map((d) => (
             <button
-              onClick={() => setSelectedDistrict(null)}
-              className="snap-center flex-shrink-0 transition-colors text-sm"
+              key={d.id}
+              data-district-id={d.id}
+              onClick={() => setSelectedDistrict(d.id)}
+              className="flex-shrink-0 transition-all text-xs"
               style={{
-                padding: '6px 16px',
-                borderRadius: '20px',
-                ...(selectedDistrict === null
-                  ? { backgroundColor: '#1D9E75', color: 'white', border: 'none' }
-                  : { backgroundColor: 'transparent', border: '0.5px solid hsl(var(--border))', color: 'hsl(var(--muted-foreground))' }),
+                padding: '4px 14px', borderRadius: '20px',
+                ...(selectedDistrict === d.id
+                  ? { backgroundColor: '#DCFCE7', color: '#166534', border: '1px solid #166534', fontWeight: 500 }
+                  : { backgroundColor: 'white', border: '0.5px solid #BBF7D0', color: '#6B7280' }),
               }}
             >
-              İstanbul
+              {d.name}
             </button>
-            {districts.map((d) => (
-              <button
-                key={d.id}
-                data-district-id={d.id}
-                onClick={() => setSelectedDistrict(d.id)}
-                className="snap-center flex-shrink-0 transition-colors text-sm"
-                style={{
-                  padding: '6px 16px',
-                  borderRadius: '20px',
-                  ...(selectedDistrict === d.id
-                    ? { backgroundColor: '#1D9E75', color: 'white', border: 'none' }
-                    : { backgroundColor: 'transparent', border: '0.5px solid hsl(var(--border))', color: 'hsl(var(--muted-foreground))' }),
-                }}
-              >
-                {d.name}
-              </button>
-            ))}
-          </div>
-          <Card className="mb-6 hidden sm:block">
-            <CardContent className="pt-6">
-              <div className="flex gap-4">
-                <Avatar><AvatarFallback className="bg-primary text-primary-foreground">You</AvatarFallback></Avatar>
-                <div className="flex-1 space-y-3">
-                  <Textarea ref={composerRef} placeholder={t("wall.placeholder", "Share something with your community...")} className="resize-none" rows={3} value={newPost} onChange={(e) => setNewPost(e.target.value)} />
-                  <MediaUpload value={newPhotos} onChange={setNewPhotos} maxFiles={6} />
-                  <Button disabled={(!newPost.trim() && newPhotos.length === 0) || !user} onClick={() => { if (!user) navigate("/auth"); else postToWall.mutate({ content: newPost, photos: newPhotos }); }}>{t("wall.post_btn", "Post")}</Button>
+          ))}
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-4">
+        <div className="max-w-2xl mx-auto">
+          {/* Post Composer - desktop */}
+          <div className="mb-4 hidden sm:block rounded-xl p-3" style={{ backgroundColor: '#DCFCE7' }}>
+            <div className="flex gap-3">
+              <div className="w-[34px] h-[34px] rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-medium" style={{ backgroundColor: '#166534' }}>
+                {user?.email?.slice(0, 2).toUpperCase() || 'U'}
+              </div>
+              <div className="flex-1 space-y-2">
+                <div className="bg-card rounded-full border border-border" style={{ borderColor: '#BBF7D0' }}>
+                  <Textarea
+                    ref={composerRef}
+                    placeholder={t("wall.placeholder", "Share something with your community...")}
+                    className="resize-none border-0 bg-transparent rounded-full min-h-[40px] py-2.5 px-4 text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
+                    style={{ color: '#111827' }}
+                    rows={1}
+                    value={newPost}
+                    onChange={(e) => setNewPost(e.target.value)}
+                  />
+                </div>
+                <MediaUpload value={newPhotos} onChange={setNewPhotos} maxFiles={6} />
+                <div className="flex items-center justify-between">
+                  <div className="flex gap-1.5">
+                    {[
+                      { label: '📸 Photo', key: 'photo' },
+                      { label: '📍 Location', key: 'location' },
+                      { label: '🏠 Rental', key: 'rental' },
+                    ].map((btn) => (
+                      <span key={btn.key} className="text-xxs px-2 py-0.5 rounded-md border cursor-pointer hover:border-primary hover:text-primary transition-colors" style={{ borderColor: '#BBF7D0', color: '#6B7280' }}>
+                        {btn.label}
+                      </span>
+                    ))}
+                  </div>
+                  <Button
+                    size="sm"
+                    disabled={(!newPost.trim() && newPhotos.length === 0) || !user}
+                    onClick={() => { if (!user) navigate("/auth"); else postToWall.mutate({ content: newPost, photos: newPhotos }); }}
+                    className="text-xs"
+                  >
+                    {t("wall.post_btn", "Post")}
+                  </Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-          <div className="sm:hidden mb-6">
+            </div>
+          </div>
+
+          {/* Mobile compose button */}
+          <div className="sm:hidden mb-4">
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild><Button className="w-full gap-2"><Plus className="w-4 h-4" /> {t("wall.add_post", "Add Post")}</Button></DialogTrigger>
-              <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-                <DialogHeader><DialogTitle>{t("wall.new_post", "New Post")}</DialogTitle></DialogHeader>
+              <DialogTrigger asChild>
+                <Button className="w-full gap-2 text-xs"><Plus className="w-4 h-4" /> {t("wall.add_post", "Add Post")}</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-t-[20px] sm:rounded-xl">
+                <div className="w-9 h-1 bg-[#D1D5DB] rounded-full mx-auto mb-2 sm:hidden" />
+                <DialogHeader><DialogTitle className="text-sm font-semibold">{t("wall.new_post", "New Post")}</DialogTitle></DialogHeader>
                 <div className="space-y-3">
-                  <Textarea placeholder={t("wall.whats_on_mind", "What's on your mind?")} className="resize-none" rows={4} value={dialogPost} onChange={(e) => setDialogPost(e.target.value)} />
+                  <Textarea placeholder={t("wall.whats_on_mind", "What's on your mind?")} className="resize-none text-sm" rows={4} value={dialogPost} onChange={(e) => setDialogPost(e.target.value)} />
                   <MediaUpload value={dialogPhotos} onChange={setDialogPhotos} maxFiles={6} />
-                  <Button className="w-full" disabled={(!dialogPost.trim() && dialogPhotos.length === 0) || !user} onClick={() => { if (!user) navigate("/auth"); else postToWall.mutate({ content: dialogPost, photos: dialogPhotos }); }}>{t("wall.post_btn", "Post")}</Button>
+                  <Button className="w-full text-xs" disabled={(!dialogPost.trim() && dialogPhotos.length === 0) || !user} onClick={() => { if (!user) navigate("/auth"); else postToWall.mutate({ content: dialogPost, photos: dialogPhotos }); }}>{t("wall.post_btn", "Post")}</Button>
                 </div>
               </DialogContent>
             </Dialog>
           </div>
+
+          {/* Feed */}
           {allItems.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground"><MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-50" /><p>{t("wall.no_activity", "No activity yet. Be the first to post!")}</p></div>
+            <div className="text-center py-12 text-[#9CA3AF]">
+              <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-40" />
+              <p className="text-sm">{t("wall.no_activity", "No activity yet. Be the first to post!")}</p>
+            </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-2.5">
               {allItems.map((item) => {
-                const Icon = item.icon;
-                const badge = BADGE_MAP[item.badge] || { label: item.badge, color: "secondary" };
+                const badge = BADGE_MAP[item.badge] || { label: item.badge, variant: "post" };
+                const avatarColor = item.user_id ? getAvatarColor(item.user_id) : AVATAR_COLORS[0];
                 return (
-                  <Card key={`${item.source}-${item.id}`}>
-                    <CardHeader className="pb-2">
-                      <div className="flex items-start gap-3">
-                        {item.user_id ? (
-                          <Link to={`/profile/${item.user_id}`} className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0 hover:ring-2 hover:ring-primary/30 transition-all">
-                            <Icon className="w-5 h-5 text-primary" />
-                          </Link>
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0"><Icon className="w-5 h-5 text-primary" /></div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            {item.user_id && <UserName userId={item.user_id} showAvatar />}
-                            <Badge variant={badge.color as any}>{badge.label}</Badge>
-                            <span className="text-xs text-muted-foreground">{timeAgo(item.created_at)}</span>
+                  <div
+                    key={`${item.source}-${item.id}`}
+                    className="bg-card rounded-xl border border-border p-3.5 hover:bg-[#FAFFFE] transition-colors"
+                  >
+                    {/* Header row */}
+                    <div className="flex items-start gap-2.5">
+                      {item.user_id ? (
+                        <Link to={`/profile/${item.user_id}`} className="flex-shrink-0">
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-xxs font-medium" style={{ backgroundColor: avatarColor.bg, color: avatarColor.text }}>
+                            {item.user_id.slice(0, 2).toUpperCase()}
                           </div>
-                          <h3 className="font-semibold text-foreground">{item.title}</h3>
-                          {item.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{item.description}</p>}
+                        </Link>
+                      ) : (
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-xxs font-medium" style={{ backgroundColor: avatarColor.bg, color: avatarColor.text }}>?</div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {item.user_id && <UserName userId={item.user_id} showAvatar={false} />}
+                            <span className="text-xs text-[#9CA3AF]">· {timeAgo(item.created_at)}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Badge variant={badge.variant as any}>{badge.label}</Badge>
+                            {user && item.user_id && item.user_id !== user.id && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <button className="p-1 text-[#9CA3AF] hover:text-foreground"><MoreHorizontal className="w-3.5 h-3.5" /></button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => setReportTarget({ type: item.source === "wall" ? "wall_post" : item.source === "classifieds" ? "classified" : item.source === "venues" ? "venue" : item.source === "help" ? "help_post" : item.entityType, id: item.id })} className="text-xs">
+                                    <Flag className="w-3.5 h-3.5 mr-2" /> {t("common.report", "Report")}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </div>
                         </div>
-                        {user && item.user_id && item.user_id !== user.id && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button className="p-1 text-muted-foreground hover:text-foreground"><MoreHorizontal className="w-4 h-4" /></button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => setReportTarget({ type: item.source === "wall" ? "wall_post" : item.source === "classifieds" ? "classified" : item.source === "venues" ? "venue" : item.source === "help" ? "help_post" : item.entityType, id: item.id })}>
-                                <Flag className="w-4 h-4 mr-2" /> {t("common.report", "Report")}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )}
+                        {/* Post content */}
+                        {item.title && <p className="text-sm font-medium text-foreground mt-1">{item.title}</p>}
+                        {item.description && <p className="text-sm text-foreground mt-0.5 line-clamp-3" style={{ lineHeight: '1.6' }}>{item.description}</p>}
                       </div>
-                    </CardHeader>
-                    {item.photos && item.photos.length > 0 && <div className="px-6 pb-2"><MediaGrid urls={item.photos} /></div>}
-                    <CardContent>
-                      <div className="flex items-center gap-4 pt-2 border-t border-border">
-                        <LikeButton entityType={item.entityType} entityId={item.id} />
-                        <CommentsSection entityType={item.entityType} entityId={item.id} />
-                        <Button variant="ghost" size="sm" className="gap-1"><Share2 className="w-4 h-4" /> {t("wall.share", "Share")}</Button>
+                    </div>
+
+                    {/* Photos */}
+                    {item.photos && item.photos.length > 0 && (
+                      <div className="mt-2.5 rounded-lg overflow-hidden">
+                        <MediaGrid urls={item.photos} />
                       </div>
-                    </CardContent>
-                  </Card>
+                    )}
+
+                    {/* Action row */}
+                    <div className="flex items-center gap-3.5 mt-2.5 pt-2 border-t border-border">
+                      <LikeButton entityType={item.entityType} entityId={item.id} />
+                      <CommentsSection entityType={item.entityType} entityId={item.id} />
+                      <button className="text-xs font-medium text-primary hover:underline ml-auto">{t("wall.message", "Message")}</button>
+                    </div>
+                  </div>
                 );
               })}
             </div>

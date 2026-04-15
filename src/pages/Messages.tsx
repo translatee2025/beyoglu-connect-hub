@@ -4,10 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
 import { useLanguage } from "@/providers/LanguageProvider";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Send, ArrowLeft, MessageSquare, Trash2, Plus, Search } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
@@ -23,6 +21,20 @@ interface ConvItem {
   lastMessage: string;
   lastMessageAt: string;
 }
+
+const AVATAR_COLORS = [
+  { bg: '#BBF7D0', text: '#166534' },
+  { bg: '#FEF3C7', text: '#92400E' },
+  { bg: '#EDE9FE', text: '#5B21B6' },
+  { bg: '#E0F2FE', text: '#0369A1' },
+  { bg: '#FECACA', text: '#991B1B' },
+];
+
+const getAvatarColor = (id: string) => {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+};
 
 function useConversations(userId?: string) {
   return useQuery({
@@ -76,52 +88,55 @@ const ConversationList = ({ conversations, activeConvId, onSelect, onDelete, onN
   conversations: ConvItem[]; activeConvId: string | null; onSelect: (id: string) => void; onDelete: (id: string) => void; onNewChat: () => void; t: (key: string, fallback: string) => string;
 }) => (
   <div className="flex flex-col h-full">
-    <div className="flex items-center justify-between mb-3">
-      <h1 className="font-display font-bold text-xl text-foreground">{t("messages.title", "Mesajlar")}</h1>
-      <Button size="sm" variant="outline" onClick={onNewChat} className="gap-1">
-        <Plus className="w-4 h-4" /> {t("messages.new", "Yeni")}
+    <div className="flex items-center justify-between mb-3 px-3 pt-3">
+      <h1 className="text-[15px] font-semibold text-foreground">{t("messages.title", "Mesajlar")}</h1>
+      <Button size="sm" variant="outline" onClick={onNewChat} className="gap-1 text-xs h-7">
+        <Plus className="w-3.5 h-3.5" /> {t("messages.new", "Yeni")}
       </Button>
     </div>
-    <div className="flex-1 overflow-y-auto space-y-1">
+    <div className="flex-1 overflow-y-auto">
       {conversations.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
-          <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">{t("messages.no_conversations", "Henüz konuşma yok")}</p>
+        <div className="text-center py-12 text-[#9CA3AF]">
+          <MessageSquare className="w-10 h-10 mx-auto mb-2 opacity-30" />
+          <p className="text-xs">{t("messages.no_conversations", "Henüz konuşma yok")}</p>
         </div>
       ) : (
-        conversations.map((conv) => (
-          <div key={conv.id} className={`group flex items-center rounded-lg transition-colors ${activeConvId === conv.id ? "bg-muted" : "hover:bg-muted/50"}`}>
-            <button onClick={() => onSelect(conv.id)} className="flex-1 flex items-center gap-3 p-3 text-left min-w-0">
-              <Avatar className="w-10 h-10 flex-shrink-0">
-                <AvatarFallback className="bg-primary text-primary-foreground">{conv.otherName.slice(0, 2).toUpperCase()}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium text-sm text-foreground truncate">{conv.otherName}</span>
-                  <span className="text-xs text-muted-foreground ml-2">{timeAgo(conv.lastMessageAt)}</span>
+        conversations.map((conv) => {
+          const colors = getAvatarColor(conv.otherUserId);
+          return (
+            <div key={conv.id} className={`group flex items-center transition-colors ${activeConvId === conv.id ? "bg-[#DCFCE7]" : "hover:bg-accent/30"}`}>
+              <button onClick={() => onSelect(conv.id)} className="flex-1 flex items-center gap-2.5 p-3 text-left min-w-0">
+                <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-medium" style={{ backgroundColor: colors.bg, color: colors.text }}>
+                  {conv.otherName.slice(0, 2).toUpperCase()}
                 </div>
-                <p className="text-xs text-muted-foreground truncate">{conv.lastMessage}</p>
-              </div>
-            </button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <button className="p-2 mr-1 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{t("messages.delete_title", "Konuşmayı sil?")}</AlertDialogTitle>
-                  <AlertDialogDescription>{t("messages.delete_desc", "Bu konuşma ve tüm mesajlar kalıcı olarak silinecek.")}</AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>{t("common.cancel", "İptal")}</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => onDelete(conv.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">{t("common.delete", "Sil")}</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        ))
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-foreground truncate">{conv.otherName}</span>
+                    <span className="text-xs text-[#9CA3AF] ml-2">{timeAgo(conv.lastMessageAt)}</span>
+                  </div>
+                  <p className="text-xs text-[#9CA3AF] truncate">{conv.lastMessage}</p>
+                </div>
+              </button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button className="p-2 mr-1 opacity-0 group-hover:opacity-100 text-[#9CA3AF] hover:text-destructive transition-all min-w-[44px] min-h-[44px] flex items-center justify-center">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-sm">{t("messages.delete_title", "Konuşmayı sil?")}</AlertDialogTitle>
+                    <AlertDialogDescription className="text-xs">{t("messages.delete_desc", "Bu konuşma ve tüm mesajlar kalıcı olarak silinecek.")}</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="text-xs">{t("common.cancel", "İptal")}</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => onDelete(conv.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs">{t("common.delete", "Sil")}</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          );
+        })
       )}
     </div>
   </div>
@@ -140,25 +155,28 @@ const NewChatSearch = ({ onStart, userId, t }: { onStart: (otherUserId: string) 
   });
 
   return (
-    <Card className="p-3 mb-3">
+    <div className="p-3 border-b border-border">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder={t("messages.search_users", "Kullanıcı ara...")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF]" />
+        <Input placeholder={t("messages.search_users", "Kullanıcı ara...")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 text-xs" />
       </div>
       <div className="mt-2 max-h-48 overflow-y-auto">
-        {results.map((u) => (
-          <button key={u.user_id} className="flex items-center gap-2 w-full p-2 rounded-lg hover:bg-muted text-left" onClick={() => onStart(u.user_id)}>
-            <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-primary text-primary-foreground text-xs">{(u.display_name || "U").slice(0, 2).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <span className="text-sm text-foreground">{u.display_name || "User"}</span>
-          </button>
-        ))}
+        {results.map((u) => {
+          const colors = getAvatarColor(u.user_id);
+          return (
+            <button key={u.user_id} className="flex items-center gap-2 w-full p-2 rounded-lg hover:bg-accent/50 text-left min-h-[44px]" onClick={() => onStart(u.user_id)}>
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-xxs font-medium" style={{ backgroundColor: colors.bg, color: colors.text }}>
+                {(u.display_name || "U").slice(0, 2).toUpperCase()}
+              </div>
+              <span className="text-xs text-foreground">{u.display_name || "User"}</span>
+            </button>
+          );
+        })}
         {search.length >= 2 && results.length === 0 && (
-          <p className="text-xs text-muted-foreground text-center py-2">{t("messages.no_users", "Kullanıcı bulunamadı")}</p>
+          <p className="text-xxs text-[#9CA3AF] text-center py-2">{t("messages.no_users", "Kullanıcı bulunamadı")}</p>
         )}
       </div>
-    </Card>
+    </div>
   );
 };
 
@@ -169,24 +187,25 @@ const ChatThread = ({ conv, messages, userId, onBack, onSend, onNavigateProfile,
   const endRef = useRef<HTMLDivElement>(null);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
   const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); if (!text.trim()) return; onSend(text.trim()); setText(""); };
+  const colors = getAvatarColor(conv.otherUserId);
 
   return (
     <>
-      <div className="flex items-center gap-3 p-4 border-b border-border">
-        <button className="md:hidden" onClick={onBack}><ArrowLeft className="w-5 h-5 text-foreground" /></button>
-        <Avatar className="w-8 h-8">
-          <AvatarFallback className="bg-primary text-primary-foreground text-xs">{conv.otherName.slice(0, 2).toUpperCase()}</AvatarFallback>
-        </Avatar>
-        <span className="font-medium text-foreground cursor-pointer hover:underline" onClick={() => onNavigateProfile(conv.otherUserId)}>{conv.otherName}</span>
+      <div className="flex items-center gap-2.5 p-3 border-b border-border">
+        <button className="md:hidden min-w-[44px] min-h-[44px] flex items-center justify-center" onClick={onBack}><ArrowLeft className="w-4 h-4 text-foreground" /></button>
+        <div className="w-8 h-8 rounded-full flex items-center justify-center text-xxs font-medium" style={{ backgroundColor: colors.bg, color: colors.text }}>
+          {conv.otherName.slice(0, 2).toUpperCase()}
+        </div>
+        <span className="text-sm font-medium text-foreground cursor-pointer hover:text-primary hover:underline" onClick={() => onNavigateProfile(conv.otherUserId)}>{conv.otherName}</span>
       </div>
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {messages.map((msg) => {
           const isOwn = msg.sender_id === userId;
           return (
             <div key={msg.id} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[75%] px-3.5 py-2.5 rounded-2xl text-sm ${isOwn ? "bg-primary text-primary-foreground rounded-br-md" : "bg-muted text-foreground rounded-bl-md"}`}>
+              <div className={`max-w-[75%] px-3 py-2 rounded-2xl text-xs ${isOwn ? "bg-primary text-primary-foreground rounded-br-md" : "bg-accent text-foreground rounded-bl-md"}`}>
                 {msg.content}
-                <div className={`text-[10px] mt-1 ${isOwn ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                <div className={`text-[10px] mt-0.5 ${isOwn ? "text-primary-foreground/70" : "text-[#9CA3AF]"}`}>
                   {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </div>
               </div>
@@ -197,8 +216,8 @@ const ChatThread = ({ conv, messages, userId, onBack, onSend, onNavigateProfile,
       </div>
       <div className="p-3 border-t border-border">
         <form className="flex gap-2" onSubmit={handleSubmit}>
-          <Input value={text} onChange={(e) => setText(e.target.value)} placeholder={t("messages.type_message", "Mesaj yazın...")} className="flex-1" />
-          <Button type="submit" size="icon" disabled={!text.trim()}><Send className="w-4 h-4" /></Button>
+          <Input value={text} onChange={(e) => setText(e.target.value)} placeholder={t("messages.type_message", "Mesaj yazın...")} className="flex-1 text-xs" />
+          <Button type="submit" size="icon" disabled={!text.trim()} className="h-9 w-9"><Send className="w-3.5 h-3.5" /></Button>
         </form>
       </div>
     </>
@@ -241,7 +260,6 @@ const Messages = () => {
   const { data: conversations = [] } = useConversations(user?.id);
   const { data: messages = [] } = useMessages(activeConvId);
 
-  // Realtime: conversation list updates (new conversations, updated timestamps)
   useEffect(() => {
     if (!user) return;
     const channel = supabase
@@ -256,7 +274,6 @@ const Messages = () => {
     return () => { supabase.removeChannel(channel); };
   }, [user, queryClient]);
 
-  // Realtime: messages in active conversation
   useEffect(() => {
     if (!activeConvId) return;
     const channel = supabase
@@ -276,7 +293,6 @@ const Messages = () => {
     },
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["messages", activeConvId] });
-      // Notify other participant
       try {
         if (activeConvId && user) {
           const { data: conv } = await supabase.from("conversations").select("status").eq("id", activeConvId).maybeSingle();
@@ -284,12 +300,7 @@ const Messages = () => {
             const { data: parts } = await supabase.from("conversation_participants").select("user_id").eq("conversation_id", activeConvId).neq("user_id", user.id);
             if (parts?.[0]) {
               const displayName = await getDisplayName(user.id);
-              await createNotification({
-                userId: parts[0].user_id,
-                type: "message",
-                body: `${displayName} sent you a message`,
-                link: "/messages",
-              });
+              await createNotification({ userId: parts[0].user_id, type: "message", body: `${displayName} sent you a message`, link: "/messages" });
             }
           }
         }
@@ -334,21 +345,23 @@ const Messages = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex gap-4 h-[calc(100vh-8rem)]">
-            <div className={`${activeConvId ? "hidden md:flex" : "flex"} flex-col w-full md:w-80 flex-shrink-0`}>
+      <div className="container mx-auto px-4 py-3">
+        <div className="max-w-app mx-auto">
+          <div className="flex gap-0 h-[calc(100vh-7rem)] md:gap-0">
+            {/* Conversation list */}
+            <div className={`${activeConvId ? "hidden md:flex" : "flex"} flex-col w-full md:w-[280px] flex-shrink-0 bg-card rounded-l-xl border border-border overflow-hidden`}>
               {showNewChat && <NewChatSearch onStart={startNewConversation} userId={user.id} t={t} />}
               <ConversationList conversations={conversations} activeConvId={activeConvId} onSelect={(id) => setSearchParams({ conv: id })} onDelete={(id) => deleteConversation.mutate(id)} onNewChat={() => setShowNewChat(!showNewChat)} t={t} />
             </div>
-            <div className={`${activeConvId ? "flex" : "hidden md:flex"} flex-col flex-1 bg-card rounded-xl border border-border`}>
+            {/* Chat thread */}
+            <div className={`${activeConvId ? "flex" : "hidden md:flex"} flex-col flex-1 bg-card rounded-r-xl border border-l-0 border-border`}>
               {activeConvId && activeConv ? (
                 <ChatThread conv={activeConv} messages={messages} userId={user.id} onBack={() => setSearchParams({})} onSend={(text) => sendMessage.mutate(text)} onNavigateProfile={(id) => navigate(`/profile/${id}`)} t={t} />
               ) : (
-                <div className="flex-1 flex items-center justify-center text-muted-foreground">
+                <div className="flex-1 flex items-center justify-center text-[#9CA3AF]">
                   <div className="text-center">
-                    <MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                    <p>{t("messages.select_conversation", "Bir konuşma seçin veya yeni bir konuşma başlatın")}</p>
+                    <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                    <p className="text-xs">{t("messages.select_conversation", "Bir konuşma seçin veya yeni bir konuşma başlatın")}</p>
                   </div>
                 </div>
               )}
