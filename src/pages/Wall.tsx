@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageSquare, Share2, Home, Car, Dog, Store, Wrench, Plus, MoreHorizontal, Flag } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { LikeButton } from "@/components/social/LikeButton";
 import { type EntityType } from "@/hooks/useLikes";
@@ -29,11 +29,12 @@ const Wall = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogPost, setDialogPost] = useState("");
   const [dialogPhotos, setDialogPhotos] = useState<string[]>([]);
-  const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
+  const [selectedDistrict, setSelectedDistrict] = useState<string | null>("49d72979-361f-422b-b3fd-0407b947ee94");
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const composerRef = useRef<HTMLTextAreaElement>(null);
+  const pillsRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
 
   const { data: districts = [] } = useQuery({
@@ -141,6 +142,19 @@ const Wall = () => {
     return () => { supabase.removeChannel(channel); };
   }, [queryClient, selectedDistrict]);
 
+  // Auto-scroll pills to center the selected district on load
+  useEffect(() => {
+    if (!pillsRef.current || districts.length === 0) return;
+    const container = pillsRef.current;
+    const activeBtn = selectedDistrict
+      ? container.querySelector(`[data-district-id="${selectedDistrict}"]`) as HTMLElement
+      : container.querySelector('button') as HTMLElement;
+    if (activeBtn) {
+      const scrollLeft = activeBtn.offsetLeft - container.offsetWidth / 2 + activeBtn.offsetWidth / 2;
+      container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+    }
+  }, [districts, selectedDistrict]);
+
   const allItems: FeedItem[] = [...wallPosts, ...classifieds, ...petPosts, ...venues, ...helpPosts].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 50);
 
   const timeAgo = (date: string) => { const diff = Date.now() - new Date(date).getTime(); const mins = Math.floor(diff / 60000); if (mins < 60) return `${mins}m`; const hrs = Math.floor(mins / 60); if (hrs < 24) return `${hrs}h`; return `${Math.floor(hrs / 24)}d`; };
@@ -165,12 +179,16 @@ const Wall = () => {
             <h1 className="font-display font-bold text-3xl md:text-4xl text-foreground mb-2">{t("wall.title", "Community Wall")}</h1>
             <p className="text-muted-foreground">{t("wall.subtitle", "See what's happening in your neighborhood")}</p>
           </div>
-          <div className="mb-6 overflow-x-auto" style={{ whiteSpace: 'nowrap' }}>
+          <div
+            ref={pillsRef}
+            className="mb-6 flex gap-2 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-1"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+          >
             <button
               onClick={() => setSelectedDistrict(null)}
-              className="inline-block mr-2 transition-colors"
+              className="snap-center flex-shrink-0 transition-colors text-sm"
               style={{
-                padding: '4px 14px',
+                padding: '6px 16px',
                 borderRadius: '20px',
                 ...(selectedDistrict === null
                   ? { backgroundColor: '#1D9E75', color: 'white', border: 'none' }
@@ -182,10 +200,11 @@ const Wall = () => {
             {districts.map((d) => (
               <button
                 key={d.id}
+                data-district-id={d.id}
                 onClick={() => setSelectedDistrict(d.id)}
-                className="inline-block mr-2 transition-colors"
+                className="snap-center flex-shrink-0 transition-colors text-sm"
                 style={{
-                  padding: '4px 14px',
+                  padding: '6px 16px',
                   borderRadius: '20px',
                   ...(selectedDistrict === d.id
                     ? { backgroundColor: '#1D9E75', color: 'white', border: 'none' }
@@ -232,7 +251,13 @@ const Wall = () => {
                   <Card key={`${item.source}-${item.id}`}>
                     <CardHeader className="pb-2">
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0"><Icon className="w-5 h-5 text-primary" /></div>
+                        {item.user_id ? (
+                          <Link to={`/profile/${item.user_id}`} className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0 hover:ring-2 hover:ring-primary/30 transition-all">
+                            <Icon className="w-5 h-5 text-primary" />
+                          </Link>
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0"><Icon className="w-5 h-5 text-primary" /></div>
+                        )}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
                             {item.user_id && <UserName userId={item.user_id} showAvatar />}
