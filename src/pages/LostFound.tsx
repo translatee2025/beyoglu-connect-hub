@@ -101,6 +101,7 @@ function ReportForm({ type, onSuccess }: { type: "lost" | "found"; onSuccess: ()
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     title: "", category: "", description: "", neighborhood: "",
