@@ -14,6 +14,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { UserName } from "@/components/shared/UserName";
+import { useLanguage } from "@/providers/LanguageProvider";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/providers/AuthProvider";
 
 const helpCategories = ["All", "Plumbing & Bathroom", "Painting", "Furniture Repair", "Electrical", "Assembly & Hanging", "Mixed / Other"];
 
@@ -22,6 +25,14 @@ const NeighborHelp = () => {
   const [category, setCategory] = useState("All");
   const [postOpen, setPostOpen] = useState(false);
   const queryClient = useQueryClient();
+  const { t } = useLanguage();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleContact = (userId: string) => {
+    if (!user) { navigate("/auth"); return; }
+    navigate(`/messages?to=${userId}`);
+  };
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ["neighbor-help", category],
@@ -55,17 +66,17 @@ const NeighborHelp = () => {
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
               <HandHelping className="w-8 h-8 text-primary" />
             </div>
-            <h1 className="font-display font-bold text-3xl md:text-4xl text-foreground mb-2">Neighbor Help</h1>
-            <p className="text-muted-foreground">Offer or ask for help from your neighbors</p>
+            <h1 className="font-display font-bold text-3xl md:text-4xl text-foreground mb-2">{t("help.title", "Neighbor Help")}</h1>
+            <p className="text-muted-foreground">{t("help.subtitle", "Offer or ask for help from your neighbors")}</p>
           </div>
 
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div className="relative w-full sm:w-80">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+              <Input placeholder={t("common.search", "Search...")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
             </div>
             <Dialog open={postOpen} onOpenChange={setPostOpen}>
-              <DialogTrigger asChild><Button className="gap-2"><Plus className="w-4 h-4" /> Post</Button></DialogTrigger>
+              <DialogTrigger asChild><Button className="gap-2"><Plus className="w-4 h-4" /> {t("common.post", "Post")}</Button></DialogTrigger>
               <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                 <HelpPostForm onSuccess={() => { setPostOpen(false); queryClient.invalidateQueries({ queryKey: ["neighbor-help"] }); }} />
               </DialogContent>
@@ -79,12 +90,12 @@ const NeighborHelp = () => {
           </div>
 
           {isLoading ? (
-            <div className="text-center py-12 text-muted-foreground">Loading...</div>
+            <div className="text-center py-12 text-muted-foreground">{t("common.loading", "Loading...")}</div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-12">
               <Wrench className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">No posts yet</h3>
-              <p className="text-muted-foreground">Be the first to offer or ask for help!</p>
+              <h3 className="text-lg font-semibold text-foreground mb-2">{t("help.empty", "No posts yet")}</h3>
+              <p className="text-muted-foreground">{t("help.be_first", "Be the first to offer or ask for help!")}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -98,7 +109,7 @@ const NeighborHelp = () => {
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <Badge variant={post.help_type === "offer" ? "default" : "secondary"}>
-                            {post.help_type === "offer" ? "I Can Help" : "I Need Help"}
+                            {post.help_type === "offer" ? t("help.i_can_help", "I Can Help") : t("help.i_need_help", "I Need Help")}
                           </Badge>
                           <Badge variant="outline">{post.category}</Badge>
                           <span className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</span>
@@ -116,7 +127,7 @@ const NeighborHelp = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <Button variant="outline" className="w-full">Contact</Button>
+                    <Button variant="outline" className="w-full" onClick={() => post.user_id && handleContact(post.user_id)}>{t("common.contact", "Contact")}</Button>
                   </CardContent>
                 </Card>
               ))}
