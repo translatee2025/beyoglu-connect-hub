@@ -21,6 +21,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
 import { SkeletonGrid } from "@/components/shared/SkeletonCard";
 import { EmptyState as EmptyStateComponent } from "@/components/shared/EmptyState";
+import { DistanceLabel } from "@/components/shared/DistanceLabel";
 
 const aptCategoryKeys = [
   { key: "All", tKey: "filter.all", fallback: "All" },
@@ -96,7 +97,7 @@ const Rentals = () => {
             {item.description && <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>}
             {item.price && <p className="text-primary font-semibold mt-2">{item.currency || "₺"}{item.price}{item.listing_mode !== "sell" ? "/month" : ""}</p>}
             {item.user_id && <div className="mt-1"><UserName userId={item.user_id} showAvatar /></div>}
-            {item.neighborhood && <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1"><MapPin className="w-3 h-3" /> {item.neighborhood}</div>}
+            <div className="mt-1"><DistanceLabel lat={item.lat} lng={item.lng} neighborhood={item.neighborhood} /></div>
           </div>
         </div>
       </CardHeader>

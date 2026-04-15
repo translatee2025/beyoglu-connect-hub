@@ -13,6 +13,7 @@ import CreateEventForm from "@/components/events/CreateEventForm";
 import { createNotification, getDisplayName } from "@/lib/notifications";
 import { SkeletonGrid } from "@/components/shared/SkeletonCard";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { DistanceLabel } from "@/components/shared/DistanceLabel";
 
 const CATEGORY_PLACEHOLDERS: Record<string, { bg: string; emoji: string }> = {
   sports: { bg: "#DCFCE7", emoji: "⚽" },
@@ -261,10 +262,11 @@ const Events = () => {
                           📅 {formatEventDate(event.start_at)}
                         </p>
                         {(event.venue_name || event.address) && (
-                          <p className="text-[11px] flex items-center gap-1 truncate mb-1" style={{ color: "#94A3B8" }}>
+                          <p className="text-[11px] flex items-center gap-1 truncate mb-0.5" style={{ color: "#94A3B8" }}>
                             📍 {event.venue_name || event.address}
                           </p>
                         )}
+                        <div className="mb-1"><DistanceLabel lat={event.lat} lng={event.lng} neighborhood={event.neighborhood} /></div>
                         <div className="flex items-center justify-between mb-2">
                           {event.user_id && (
                             <div onClick={(e) => e.stopPropagation()}>

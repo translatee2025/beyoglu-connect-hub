@@ -16,6 +16,7 @@ import { UserName } from "@/components/shared/UserName";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { SkeletonGrid } from "@/components/shared/SkeletonCard";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { DistanceLabel } from "@/components/shared/DistanceLabel";
 
 const CATEGORY_PLACEHOLDERS: Record<string, { bg: string; emoji: string }> = {
   restaurant: { bg: "#FEF3C7", emoji: "🍽️" },
@@ -212,8 +213,9 @@ const Venues = () => {
                       <div className="p-3">
                         <h3 className="text-[13px] font-semibold mb-0.5" style={{ color: "#1E3A5F" }}>{venue.name}</h3>
                         {venue.address && (
-                          <p className="text-[11px] truncate mb-1" style={{ color: "#94A3B8" }}>{venue.address}</p>
+                          <p className="text-[11px] truncate mb-0.5" style={{ color: "#94A3B8" }}>{venue.address}</p>
                         )}
+                        <div className="mb-1"><DistanceLabel lat={venue.lat} lng={venue.lng} neighborhood={venue.neighborhood} /></div>
                         {/* Rating row */}
                         {stats && (
                           <div className="flex items-center gap-1 mb-2">
