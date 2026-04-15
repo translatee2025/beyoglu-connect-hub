@@ -140,7 +140,8 @@ const Navigation = () => {
           </div>
 
           {/* Mobile: app name left + avatar right */}
-          <div className="flex lg:hidden items-center gap-2">
+            <GlobalSearchMobile />
+            <div className="flex lg:hidden items-center gap-2">
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
