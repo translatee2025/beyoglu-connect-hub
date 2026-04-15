@@ -14,10 +14,11 @@ import { LikeButton } from "@/components/social/LikeButton";
 import { type EntityType } from "@/hooks/useLikes";
 import { MediaUpload } from "@/components/shared/MediaUpload";
 import { MediaGrid } from "@/components/shared/MediaGrid";
+import { UserName } from "@/components/shared/UserName";
 
 type FeedItem = {
   id: string; source: string; title: string; description?: string; photos?: string[];
-  created_at: string; badge: string; icon: any; entityType: EntityType;
+  created_at: string; badge: string; icon: any; entityType: EntityType; user_id?: string;
 };
 
 const Wall = () => {
@@ -35,39 +36,39 @@ const Wall = () => {
     queryKey: ["wall-posts"],
     queryFn: async () => {
       const { data } = await supabase.from("wall_posts").select("id, content, photos, user_id, created_at").order("created_at", { ascending: false }).limit(20);
-      return (data || []).map((item: any) => ({ id: item.id, source: "wall", title: item.content?.slice(0, 80), description: item.content?.length > 80 ? item.content : undefined, photos: item.photos || [], created_at: item.created_at, badge: "Post", icon: MessageSquare, entityType: "wall_post" as EntityType }));
+      return (data || []).map((item: any) => ({ id: item.id, source: "wall", title: item.content?.slice(0, 80), description: item.content?.length > 80 ? item.content : undefined, photos: item.photos || [], created_at: item.created_at, badge: "Post", icon: MessageSquare, entityType: "wall_post" as EntityType, user_id: item.user_id }));
     },
   });
 
   const { data: classifieds = [] } = useQuery({
     queryKey: ["wall-classifieds"],
     queryFn: async () => {
-      const { data } = await supabase.from("classifieds").select("id, title, description, section, created_at").order("created_at", { ascending: false }).limit(20);
-      return (data || []).map((item: any) => ({ id: item.id, source: "classifieds", title: item.title, description: item.description, created_at: item.created_at, badge: item.section === "rental" ? "Rental" : item.section === "parking" ? "Parking" : "Classified", icon: item.section === "rental" ? Home : item.section === "parking" ? Car : Store, entityType: "classified" as EntityType }));
+      const { data } = await supabase.from("classifieds").select("id, title, description, section, created_at, user_id").order("created_at", { ascending: false }).limit(20);
+      return (data || []).map((item: any) => ({ id: item.id, source: "classifieds", title: item.title, description: item.description, created_at: item.created_at, badge: item.section === "rental" ? "Rental" : item.section === "parking" ? "Parking" : "Classified", icon: item.section === "rental" ? Home : item.section === "parking" ? Car : Store, entityType: "classified" as EntityType, user_id: item.user_id }));
     },
   });
 
   const { data: petPosts = [] } = useQuery({
     queryKey: ["wall-pets"],
     queryFn: async () => {
-      const { data } = await supabase.from("pet_posts").select("id, title, description, post_type, created_at").order("created_at", { ascending: false }).limit(20);
-      return (data || []).map((item: any) => ({ id: item.id, source: "pets", title: item.title, description: item.description, created_at: item.created_at, badge: "Pets", icon: Dog, entityType: "pet_post" as EntityType }));
+      const { data } = await supabase.from("pet_posts").select("id, title, description, post_type, created_at, user_id").order("created_at", { ascending: false }).limit(20);
+      return (data || []).map((item: any) => ({ id: item.id, source: "pets", title: item.title, description: item.description, created_at: item.created_at, badge: "Pets", icon: Dog, entityType: "pet_post" as EntityType, user_id: item.user_id }));
     },
   });
 
   const { data: venues = [] } = useQuery({
     queryKey: ["wall-venues"],
     queryFn: async () => {
-      const { data } = await supabase.from("venues").select("id, name, description, created_at").order("created_at", { ascending: false }).limit(20);
-      return (data || []).map((item: any) => ({ id: item.id, source: "venues", title: item.name, description: item.description, created_at: item.created_at, badge: "Venue", icon: Store, entityType: "venue" as EntityType }));
+      const { data } = await supabase.from("venues").select("id, name, description, created_at, created_by_user_id").order("created_at", { ascending: false }).limit(20);
+      return (data || []).map((item: any) => ({ id: item.id, source: "venues", title: item.name, description: item.description, created_at: item.created_at, badge: "Venue", icon: Store, entityType: "venue" as EntityType, user_id: item.created_by_user_id }));
     },
   });
 
   const { data: helpPosts = [] } = useQuery({
     queryKey: ["wall-help"],
     queryFn: async () => {
-      const { data } = await supabase.from("neighbor_help_posts").select("id, title, description, help_type, created_at").order("created_at", { ascending: false }).limit(20);
-      return (data || []).map((item: any) => ({ id: item.id, source: "help", title: item.title, description: item.description, created_at: item.created_at, badge: item.help_type === "offer" ? "Help Offer" : "Help Wanted", icon: Wrench, entityType: "help_post" as EntityType }));
+      const { data } = await supabase.from("neighbor_help_posts").select("id, title, description, help_type, created_at, user_id").order("created_at", { ascending: false }).limit(20);
+      return (data || []).map((item: any) => ({ id: item.id, source: "help", title: item.title, description: item.description, created_at: item.created_at, badge: item.help_type === "offer" ? "Help Offer" : "Help Wanted", icon: Wrench, entityType: "help_post" as EntityType, user_id: item.user_id }));
     },
   });
 
@@ -162,7 +163,8 @@ const Wall = () => {
                           <Icon className="w-5 h-5 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            {item.user_id && <UserName userId={item.user_id} showAvatar />}
                             <Badge variant={badgeColor(item.badge) as any}>{item.badge}</Badge>
                             <span className="text-xs text-muted-foreground">{timeAgo(item.created_at)}</span>
                           </div>
