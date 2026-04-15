@@ -28,7 +28,20 @@ const ReportLostPetForm = ({ onSuccess }: ReportLostPetFormProps) => {
     setLoading(true);
     try {
       const coords = getNeighborhoodCoords(form.lost_location);
-      const { error } = await supabase.from("pet_profiles").insert({ owner_id: user.id, name: form.name.trim(), species: form.species as any, breed: form.breed || null, gender: form.gender || null, photo_url: form.photo_url || null, is_lost: true, lost_location: form.lost_location, lost_details: form.lost_details || null, lost_at: new Date().toISOString(), neighborhood: form.lost_location, latitude: coords[0], longitude: coords[1] } as any);
+      const { error } = await supabase.from("lost_found_posts").insert({
+        user_id: user.id,
+        type: mode === "my_pet" ? "lost" : "found",
+        category: "Pet",
+        title: form.name.trim(),
+        description: form.lost_details || null,
+        neighborhood: form.lost_location,
+        last_seen_lat: coords[0],
+        last_seen_lng: coords[1],
+        phone: form.contact_info || null,
+        photo_urls: form.photo_url ? [form.photo_url] : [],
+        status: "active",
+        last_seen_at: new Date().toISOString(),
+      });
       if (error) throw error;
       toast({ title: "🚨 " + t("pets.post_lost_alert", "Lost pet alert posted!") });
       onSuccess();
