@@ -44,6 +44,16 @@ const Wall = () => {
     },
   });
 
+  const { data: userDistrictId = null } = useQuery({
+    queryKey: ["user-district", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase.from("profiles").select("district_id").eq("user_id", user.id).limit(1).single();
+      return data?.district_id || null;
+    },
+    enabled: !!user,
+  });
+
   const badgeLabel = (key: string, fallback: string) => t(`wall.badge.${key}`, fallback);
 
   const { data: wallPosts = [] } = useQuery({
@@ -91,7 +101,7 @@ const Wall = () => {
   const postToWall = useMutation({
     mutationFn: async (params: { content: string; photos: string[] }) => {
       if (!user || (!params.content.trim() && params.photos.length === 0)) return;
-      await supabase.from("wall_posts").insert({ content: params.content.trim(), user_id: user.id, photos: params.photos.length > 0 ? params.photos : [] });
+      await supabase.from("wall_posts").insert({ content: params.content.trim(), user_id: user.id, photos: params.photos.length > 0 ? params.photos : [], district_id: userDistrictId });
     },
     onSuccess: () => { setNewPost(""); setNewPhotos([]); setDialogPost(""); setDialogPhotos([]); setDialogOpen(false); queryClient.invalidateQueries({ queryKey: ["wall-posts"] }); },
   });
