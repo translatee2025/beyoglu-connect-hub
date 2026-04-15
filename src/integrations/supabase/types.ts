@@ -208,18 +208,158 @@ export type Database = {
       conversations: {
         Row: {
           created_at: string
+          group_id: string | null
           id: string
+          last_message_at: string | null
+          status: string | null
+          type: string | null
           updated_at: string
+          venue_id: string | null
         }
         Insert: {
           created_at?: string
+          group_id?: string | null
           id?: string
+          last_message_at?: string | null
+          status?: string | null
+          type?: string | null
           updated_at?: string
+          venue_id?: string | null
         }
         Update: {
           created_at?: string
+          group_id?: string | null
           id?: string
+          last_message_at?: string | null
+          status?: string | null
+          type?: string | null
           updated_at?: string
+          venue_id?: string | null
+        }
+        Relationships: []
+      }
+      districts: {
+        Row: {
+          city: string | null
+          created_at: string | null
+          id: string
+          name: string
+          slug: string | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string | null
+          id?: string
+          name: string
+          slug?: string | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          slug?: string | null
+        }
+        Relationships: []
+      }
+      event_attendees: {
+        Row: {
+          created_at: string | null
+          event_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_attendees_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          address: string | null
+          category: string | null
+          cover_photo: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          end_at: string | null
+          id: string
+          is_free: boolean | null
+          lat: number | null
+          lng: number | null
+          max_attendees: number | null
+          neighborhood: string | null
+          photos: string[] | null
+          price: number | null
+          start_at: string
+          status: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+          venue_name: string | null
+        }
+        Insert: {
+          address?: string | null
+          category?: string | null
+          cover_photo?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          end_at?: string | null
+          id?: string
+          is_free?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          max_attendees?: number | null
+          neighborhood?: string | null
+          photos?: string[] | null
+          price?: number | null
+          start_at: string
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+          venue_name?: string | null
+        }
+        Update: {
+          address?: string | null
+          category?: string | null
+          cover_photo?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          end_at?: string | null
+          id?: string
+          is_free?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          max_attendees?: number | null
+          neighborhood?: string | null
+          photos?: string[] | null
+          price?: number | null
+          start_at?: string
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+          venue_name?: string | null
         }
         Relationships: []
       }
@@ -262,6 +402,7 @@ export type Database = {
           created_at: string
           created_by: string
           description: string | null
+          district_id: string | null
           group_type: string
           id: string
           member_count: number
@@ -275,6 +416,7 @@ export type Database = {
           created_at?: string
           created_by: string
           description?: string | null
+          district_id?: string | null
           group_type?: string
           id?: string
           member_count?: number
@@ -288,6 +430,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           description?: string | null
+          district_id?: string | null
           group_type?: string
           id?: string
           member_count?: number
@@ -295,7 +438,15 @@ export type Database = {
           neighborhood?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "groups_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       languages: {
         Row: {
@@ -360,6 +511,7 @@ export type Database = {
           contact_preference: string | null
           created_at: string | null
           description: string | null
+          district_id: string | null
           id: string
           last_seen_at: string | null
           last_seen_lat: number | null
@@ -378,6 +530,7 @@ export type Database = {
           contact_preference?: string | null
           created_at?: string | null
           description?: string | null
+          district_id?: string | null
           id?: string
           last_seen_at?: string | null
           last_seen_lat?: number | null
@@ -396,6 +549,7 @@ export type Database = {
           contact_preference?: string | null
           created_at?: string | null
           description?: string | null
+          district_id?: string | null
           id?: string
           last_seen_at?: string | null
           last_seen_lat?: number | null
@@ -409,7 +563,15 @@ export type Database = {
           type?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "lost_found_posts_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       messages: {
         Row: {
@@ -417,6 +579,7 @@ export type Database = {
           conversation_id: string
           created_at: string
           id: string
+          read_at: string | null
           sender_id: string
         }
         Insert: {
@@ -424,6 +587,7 @@ export type Database = {
           conversation_id: string
           created_at?: string
           id?: string
+          read_at?: string | null
           sender_id: string
         }
         Update: {
@@ -431,6 +595,7 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           id?: string
+          read_at?: string | null
           sender_id?: string
         }
         Relationships: [
@@ -478,6 +643,7 @@ export type Database = {
           category: string
           created_at: string
           description: string | null
+          district_id: string | null
           help_type: string
           id: string
           neighborhood: string | null
@@ -494,6 +660,7 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          district_id?: string | null
           help_type?: string
           id?: string
           neighborhood?: string | null
@@ -510,6 +677,7 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          district_id?: string | null
           help_type?: string
           id?: string
           neighborhood?: string | null
@@ -521,6 +689,47 @@ export type Database = {
           updated_at?: string
           user_id?: string
           whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "neighbor_help_posts_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string | null
+          id: string
+          link: string | null
+          read: boolean | null
+          title: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string | null
+          id?: string
+          link?: string | null
+          read?: boolean | null
+          title?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string | null
+          id?: string
+          link?: string | null
+          read?: boolean | null
+          title?: string | null
+          type?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -602,6 +811,7 @@ export type Database = {
           breed: string | null
           created_at: string
           description: string | null
+          district_id: string | null
           gender: string | null
           id: string
           is_offering: boolean | null
@@ -625,6 +835,7 @@ export type Database = {
           breed?: string | null
           created_at?: string
           description?: string | null
+          district_id?: string | null
           gender?: string | null
           id?: string
           is_offering?: boolean | null
@@ -648,6 +859,7 @@ export type Database = {
           breed?: string | null
           created_at?: string
           description?: string | null
+          district_id?: string | null
           gender?: string | null
           id?: string
           is_offering?: boolean | null
@@ -665,7 +877,15 @@ export type Database = {
           user_id?: string
           whatsapp?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pet_posts_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pet_profiles: {
         Row: {
@@ -674,6 +894,7 @@ export type Database = {
           bio: string | null
           breed: string | null
           created_at: string
+          district_id: string | null
           energy_level: string | null
           gender: string | null
           gender_preference: string | null
@@ -706,6 +927,7 @@ export type Database = {
           bio?: string | null
           breed?: string | null
           created_at?: string
+          district_id?: string | null
           energy_level?: string | null
           gender?: string | null
           gender_preference?: string | null
@@ -738,6 +960,7 @@ export type Database = {
           bio?: string | null
           breed?: string | null
           created_at?: string
+          district_id?: string | null
           energy_level?: string | null
           gender?: string | null
           gender_preference?: string | null
@@ -764,7 +987,15 @@ export type Database = {
           updated_at?: string
           weight_kg?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pet_profiles_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -772,43 +1003,58 @@ export type Database = {
           bio: string | null
           created_at: string
           display_name: string | null
+          district_id: string | null
           id: string
           neighborhood: string | null
           phone: string | null
           updated_at: string
           user_id: string
           username: string | null
+          verified: boolean | null
         }
         Insert: {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
+          district_id?: string | null
           id?: string
           neighborhood?: string | null
           phone?: string | null
           updated_at?: string
           user_id: string
           username?: string | null
+          verified?: boolean | null
         }
         Update: {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
+          district_id?: string | null
           id?: string
           neighborhood?: string | null
           phone?: string | null
           updated_at?: string
           user_id?: string
           username?: string | null
+          verified?: boolean | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reels: {
         Row: {
           caption: string | null
           created_at: string
+          district_id: string | null
           id: string
           media_type: string
           media_url: string
@@ -819,6 +1065,7 @@ export type Database = {
         Insert: {
           caption?: string | null
           created_at?: string
+          district_id?: string | null
           id?: string
           media_type?: string
           media_url: string
@@ -829,6 +1076,7 @@ export type Database = {
         Update: {
           caption?: string | null
           created_at?: string
+          district_id?: string | null
           id?: string
           media_type?: string
           media_url?: string
@@ -838,6 +1086,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "reels_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "reels_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
@@ -845,6 +1100,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      reports: {
+        Row: {
+          actioned_by: string | null
+          admin_note: string | null
+          content_id: string
+          content_type: string
+          created_at: string | null
+          id: string
+          reason: string
+          reporter_id: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          actioned_by?: string | null
+          admin_note?: string | null
+          content_id: string
+          content_type: string
+          created_at?: string | null
+          id?: string
+          reason: string
+          reporter_id: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          actioned_by?: string | null
+          admin_note?: string | null
+          content_id?: string
+          content_type?: string
+          created_at?: string | null
+          id?: string
+          reason?: string
+          reporter_id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       site_settings: {
         Row: {
@@ -965,6 +1259,33 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string
+          rating: number
+          reviewer_id: string
+          target_user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          rating: number
+          reviewer_id: string
+          target_user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          rating?: number
+          reviewer_id?: string
+          target_user_id?: string
         }
         Relationships: []
       }
@@ -1472,6 +1793,8 @@ export type Database = {
         Row: {
           content: string
           created_at: string
+          district_id: string | null
+          group_id: string | null
           id: string
           photos: string[] | null
           user_id: string
@@ -1479,6 +1802,8 @@ export type Database = {
         Insert: {
           content: string
           created_at?: string
+          district_id?: string | null
+          group_id?: string | null
           id?: string
           photos?: string[] | null
           user_id: string
@@ -1486,11 +1811,28 @@ export type Database = {
         Update: {
           content?: string
           created_at?: string
+          district_id?: string | null
+          group_id?: string | null
           id?: string
           photos?: string[] | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "wall_posts_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wall_posts_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
