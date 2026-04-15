@@ -10,7 +10,7 @@ export const config = {
   navColor: 'rgba(10,10,10,0.85)',
   buttonColor: '#ffffff',
   borderColor: 'rgba(255,255,255,0.1)',
-  defaultLanguage: 'en',
+  defaultLanguage: 'tr',
   commerceEnabled: false,
   venueLabel: 'Venues',
   productLabel: 'Products',
