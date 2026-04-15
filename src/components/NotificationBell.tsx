@@ -28,6 +28,7 @@ const timeAgo = (date: string) => {
 
 export function NotificationBell() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
