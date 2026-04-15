@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Wrench, Search, Plus, User, ArrowLeft, ArrowRight, HandHelping, DollarSign } from "lucide-react";
+import { Wrench, Search, Plus, User, ArrowLeft, ArrowRight, HandHelping, DollarSign, MapPin } from "lucide-react";
 import { MediaUpload } from "@/components/shared/MediaUpload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
