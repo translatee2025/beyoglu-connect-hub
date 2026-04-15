@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Wrench, Search, Plus, User, ArrowLeft, ArrowRight, HandHelping } from "lucide-react";
+import { Wrench, Search, Plus, User, ArrowLeft, ArrowRight, HandHelping, DollarSign, MapPin } from "lucide-react";
 import { MediaUpload } from "@/components/shared/MediaUpload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -64,9 +64,7 @@ const NeighborHelp = () => {
               <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
             </div>
             <Dialog open={postOpen} onOpenChange={setPostOpen}>
-              <DialogTrigger asChild>
-                <Button className="gap-2"><Plus className="w-4 h-4" /> Post</Button>
-              </DialogTrigger>
+              <DialogTrigger asChild><Button className="gap-2"><Plus className="w-4 h-4" /> Post</Button></DialogTrigger>
               <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                 <HelpPostForm onSuccess={() => { setPostOpen(false); queryClient.invalidateQueries({ queryKey: ["neighbor-help"] }); }} />
               </DialogContent>
@@ -106,7 +104,12 @@ const NeighborHelp = () => {
                         </div>
                         <CardTitle className="text-lg">{post.title}</CardTitle>
                         {post.description && <p className="text-sm text-muted-foreground mt-1">{post.description}</p>}
-                        {post.neighborhood && <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><span>📍</span> {post.neighborhood}</p>}
+                        {post.price && (
+                          <p className="text-sm font-semibold text-primary mt-1 flex items-center gap-1">
+                            <DollarSign className="w-3 h-3" /> ₺{post.price} {post.price_type === "per_hour" ? "/ hour" : "(fixed)"}
+                          </p>
+                        )}
+                        {post.neighborhood && <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><MapPin className="w-3 h-3" /> {post.neighborhood}</p>}
                       </div>
                     </div>
                   </CardHeader>
@@ -125,7 +128,7 @@ const NeighborHelp = () => {
 
 const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({ title: "", description: "", category: "Mixed / Other", helpType: "offer", neighborhood: "", phone: "", whatsapp: "" });
+  const [form, setForm] = useState({ title: "", description: "", category: "Mixed / Other", helpType: "offer", neighborhood: "", phone: "", whatsapp: "", price: "", priceType: "fixed" });
   const [photos, setPhotos] = useState<string[]>([]);
   const { toast } = useToast();
 
@@ -137,7 +140,8 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
         user_id: user.id, help_type: form.helpType, category: form.category,
         title: form.title, description: form.description,
         neighborhood: form.neighborhood, phone: form.phone, whatsapp: form.whatsapp,
-      });
+        price: form.price || null, price_type: form.priceType,
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => { toast({ title: "Posted!" }); onSuccess(); },
@@ -168,6 +172,20 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
           </div>
           <div><Label>Title *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Can fix bathroom leaks" /></div>
           <div><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} /></div>
+          {form.helpType === "offer" && (
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Price (₺)</Label><Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="e.g. 500" /></div>
+              <div><Label>Price Type</Label>
+                <Select value={form.priceType} onValueChange={(v) => setForm({ ...form, priceType: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fixed">Fixed</SelectItem>
+                    <SelectItem value="per_hour">Per Hour</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -187,9 +205,7 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
         {step < 2 ? (
           <Button className="flex-1 gap-1" onClick={() => setStep(2)} disabled={!form.title.trim()}>Next <ArrowRight className="w-4 h-4" /></Button>
         ) : (
-          <Button className="flex-1" onClick={() => mutation.mutate()} disabled={!form.title || mutation.isPending}>
-            {mutation.isPending ? "Posting..." : "Post"}
-          </Button>
+          <Button className="flex-1" onClick={() => mutation.mutate()} disabled={!form.title || mutation.isPending}>{mutation.isPending ? "Posting..." : "Post"}</Button>
         )}
       </div>
     </div>
