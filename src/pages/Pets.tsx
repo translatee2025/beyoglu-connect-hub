@@ -96,17 +96,17 @@ const Pets = () => {
           <PetPostChooser open={postChooserOpen} onOpenChange={setPostChooserOpen} onSuccess={handleRefresh} />
 
           <Tabs defaultValue="adoption" className="w-full">
-            <TabsList className="mb-6 flex-wrap h-auto gap-1">
-              <TabsTrigger value="adoption" className="flex items-center gap-2"><Dog className="w-4 h-4" /> {t("pets.adoption", "Adoption")}</TabsTrigger>
-              <TabsTrigger value="sitting" className="flex items-center gap-2"><Home className="w-4 h-4" /> {t("pets.sitting", "Pet Sitting")}</TabsTrigger>
-              <TabsTrigger value="friends" className="flex items-center gap-2"><Heart className="w-4 h-4" /> {t("pets.friends", "Friends")}</TabsTrigger>
-              <TabsTrigger value="lost" className="flex items-center gap-2">
+            <TabsList className="mb-6 flex-wrap h-auto gap-1 bg-white border border-[#E2EBFC]">
+              <TabsTrigger value="adoption" className="flex items-center gap-2 text-[#374151] data-[state=active]:text-[#1E3A5F] data-[state=active]:bg-[#EFF4FF]"><Dog className="w-4 h-4" /> {t("pets.adoption", "Adoption")}</TabsTrigger>
+              <TabsTrigger value="sitting" className="flex items-center gap-2 text-[#374151] data-[state=active]:text-[#1E3A5F] data-[state=active]:bg-[#EFF4FF]"><Home className="w-4 h-4" /> {t("pets.sitting", "Pet Sitting")}</TabsTrigger>
+              <TabsTrigger value="friends" className="flex items-center gap-2 text-[#374151] data-[state=active]:text-[#1E3A5F] data-[state=active]:bg-[#EFF4FF]"><Heart className="w-4 h-4" /> {t("pets.friends", "Friends")}</TabsTrigger>
+              <TabsTrigger value="lost" className="flex items-center gap-2 text-[#374151] data-[state=active]:text-[#1E3A5F] data-[state=active]:bg-[#EFF4FF]">
                 <AlertTriangle className="w-4 h-4" /> {t("pets.lost_found", "Lost & Found")}
                 {(lostPets.length + lostFoundPosts.length) > 0 && (
                   <Badge variant="destructive" className="ml-1 text-xs px-1.5 py-0">{lostPets.length + lostFoundPosts.length}</Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="shops" className="flex items-center gap-2"><Stethoscope className="w-4 h-4" /> {t("pets.shops_vets", "Shops & Vets")}</TabsTrigger>
+              <TabsTrigger value="shops" className="flex items-center gap-2 text-[#374151] data-[state=active]:text-[#1E3A5F] data-[state=active]:bg-[#EFF4FF]"><Stethoscope className="w-4 h-4" /> {t("pets.shops_vets", "Shops & Vets")}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="adoption">

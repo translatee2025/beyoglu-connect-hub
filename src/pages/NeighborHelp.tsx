@@ -197,20 +197,20 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
           </div>
           <div><Label>{t("common.title", "Title")} *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder={t("help.title_placeholder", "e.g. Can fix bathroom leaks")} /></div>
           <div><Label>{t("common.description", "Description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} /></div>
-          {form.helpType === "offer" && (
-            <div className="grid grid-cols-2 gap-3">
-              <div><Label>{t("common.price", "Price")} (₺)</Label><Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="500" /></div>
-              <div><Label>{t("common.price_type", "Price Type")}</Label>
-                <Select value={form.priceType} onValueChange={(v) => setForm({ ...form, priceType: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="fixed">{t("common.fixed", "Fixed")}</SelectItem>
-                    <SelectItem value="per_hour">{t("common.per_hour", "Per Hour")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div><Label>{t("common.price", "Price")} (₺)</Label><Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="500" /></div>
+            <div><Label>{t("common.price_type", "Price Type")}</Label>
+              <Select value={form.priceType} onValueChange={(v) => setForm({ ...form, priceType: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="fixed">{t("common.fixed", "Fixed")}</SelectItem>
+                  <SelectItem value="per_hour">{t("common.per_hour", "Per Hour")}</SelectItem>
+                  <SelectItem value="per_day">{t("common.per_day", "Per Day")}</SelectItem>
+                  <SelectItem value="negotiable">{t("common.negotiable", "Negotiable")}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
+          </div>
         </div>
       )}
 
