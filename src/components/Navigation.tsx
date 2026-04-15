@@ -1,5 +1,6 @@
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
+import { GlobalSearchMobile } from "@/components/GlobalSearch";
 import { Users, Calendar, ShoppingBag, MessageSquare, Dog, Home, Car, Globe, Store, Wrench, ChevronDown, Mail, User, TrendingUp, Film, Search, Plus } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useState } from "react";
