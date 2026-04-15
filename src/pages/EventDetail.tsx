@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Clock, MapPin, Users, ArrowLeft, Trash2, Check, Flag } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { UserName } from "@/components/shared/UserName";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useRef } from "react";
