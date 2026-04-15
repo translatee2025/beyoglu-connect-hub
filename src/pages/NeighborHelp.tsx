@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { UserName } from "@/components/shared/UserName";
 
 const helpCategories = ["All", "Plumbing & Bathroom", "Painting", "Furniture Repair", "Electrical", "Assembly & Hanging", "Mixed / Other"];
 
