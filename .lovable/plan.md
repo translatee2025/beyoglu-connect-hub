@@ -1,59 +1,83 @@
 
 
-# Plan: User Profiles Everywhere + Contact DM + Turkish Translations
+# Plan: CMS-Managed Content + Complete Turkish Translation
 
-## Summary
+## Problem
 
-Three issues to fix:
-1. Several pages show placeholder icons instead of actual user avatars/names (Rentals, Parking, Pets)
-2. "Contact" buttons are dead — they should open a DM conversation with the poster
-3. Turkish translations are missing for all UI strings
+1. **Homepage and key content is hardcoded** — hero title, tagline, feature cards, CTA sections are all in `Index.tsx` as static strings. No way to edit from backend.
+2. **Turkish translation is incomplete** — 308 TR keys exist but large swaths of the app remain English: Auth page, Events page, Venues page, Wall badges, Profile page, Messages page, Reels page, VenueCharts page, all post forms (Rental, Parking, Classified, Pet sub-forms), Navigation dropdown items ("More", "My Profile", "Log Out"), and filter/category labels.
+3. **Default language should be Turkish** per user's choice.
 
-## Changes
+## Solution
 
-### 1. Add UserName component to pages missing it
+### Part A: CMS-Managed Content via `site_settings`
 
-**Rentals.tsx** — Add `UserName` import and show `<UserName userId={item.user_id} showAvatar />` in `RentalCard` (currently no user info shown at all).
+The `site_settings` table already exists with admin-only write access. We will:
 
-**Parking.tsx** — Same as Rentals: add `UserName` to `ParkingCard`.
+1. **Seed CMS content keys** into `site_settings` for all editable homepage sections:
+   - `hero_title`, `hero_subtitle`, `hero_cta_primary`, `hero_cta_secondary`
+   - `features_heading`, `features_subtitle`
+   - `feature_1_title`, `feature_1_desc`, `feature_2_title`, `feature_2_desc`, etc.
+   - `benefits_heading`, `benefit_1_title`, `benefit_1_desc`, etc.
+   - `cta_heading`, `cta_subtitle`, `cta_button`
+   
+   Each key stores a JSON object like `{"en": "Welcome to Beyoğlu Connect", "tr": "Beyoğlu Connect'e Hoş Geldiniz"}` so the value is multilingual.
 
-**Pets.tsx** — Add `UserName` to `PostCard` component (pet sitting, lost/found, adoption, shop posts all have `user_id`).
+2. **Update `Index.tsx`** to fetch from `site_settings` via react-query, using the current language to pick the right value. Falls back to hardcoded defaults if no setting exists.
 
-### 2. Make "Contact" buttons open DM
+3. **Expand Admin Settings page** (`AdminSettings.tsx`) to include a "Homepage Content" section where admin can edit hero text, feature cards, CTA text — with fields for each active language.
 
-Create a shared helper or inline logic: when "Contact" is clicked, check if user is logged in. If yes, navigate to `/messages?to={userId}`. If no, redirect to `/auth`.
+### Part B: Complete Turkish Translation
 
-Update all 5 pages with Contact buttons:
-- `Classifieds.tsx`
-- `NeighborHelp.tsx`
-- `Rentals.tsx`
-- `Parking.tsx`
-- `Pets.tsx`
+**Database insert** of ~200+ new translation rows covering every remaining hardcoded string:
 
-Update `Messages.tsx` to read `?to=` query param and auto-open a conversation with that user on mount.
+**Pages to wrap with `t()` and add TR translations:**
 
-### 3. Add Turkish translations via database migration
+| Page | Hardcoded strings to translate |
+|---|---|
+| **Auth.tsx** | "Welcome Back", "Create Account", "Set Password", "Your Info", "Email", "Password", "Choose Password", "Display Name", "Phone Number", "Log In", "Create Account", "Don't have an account?", "Already have an account?", step labels, validation messages |
+| **Events.tsx** | "Local Events", "Discover and join...", "Upcoming", "Past Events", "Create Event", "List View", "Map View", "RSVP", "attending", category badges |
+| **Venues.tsx** | "Venues", "Restaurants, pharmacies...", "Search venues...", "Add Venue", "All", "List", "Map", "View Details", weekday labels, venue form: "Name", "Type", "Address", "Phone", "Description", "Opening Hours", step labels |
+| **Wall.tsx** | "Community Wall", "What's happening...", badge labels ("Post", "Rental", "Parking", "Classified", "Pets", "Venue", "Help Offer", "Help Wanted"), "Share", "Post" button |
+| **Profile.tsx** | "Edit Profile", "Save", "Cancel", "About", "Activity", "Friends", tab labels, "Display Name", "Bio", "Neighborhood", "Phone", "No activity yet" |
+| **Messages.tsx** | "Messages", "New", "No conversations yet", "Search users...", "No users found", "Delete conversation?", "Type a message...", "Cancel", "Delete" |
+| **Reels.tsx** | "Create Reel", "Caption", "Neighborhood", "Post Reel", "No reels yet" |
+| **VenueCharts.tsx** | "Venue Charts", "Most loved places...", "All", "More Venues", "No venues ranked yet..." |
+| **Navigation.tsx** | "More", "My Profile", "Log Out", "Messages" (in mobile menu) |
+| **NeighborHelp.tsx** | Category array labels ("Plumbing & Bathroom", "Painting", etc.), form labels |
+| **Parking.tsx** | Type array labels ("Garage", "Open Air", etc.), form: "Title", "Parking Type", "Budget", "Description", "Photos", "Neighborhood", "Phone", step labels |
+| **Rentals.tsx** | Category labels ("1+0 Studio", etc.), form: "Title", "Listing Type", "For Rent", "For Sale", "Category", "Budget/Price", "Description", step labels |
+| **ClassifiedPostForm.tsx** | "Post a Classified Ad", "Title", "Type", "Offering", "Looking for", "Category", "Price", "Neighborhood", "Description", "Photos/Videos", "Phone", "Post Ad" |
+| **Pet sub-forms** | AdoptionForm, PetSittingForm, ReportLostPetForm — all labels and placeholders |
 
-Insert translation rows for all UI strings used across the app. This covers:
-- Navigation labels (nav.wall, nav.venues, nav.pets, nav.events, nav.groups, nav.classifieds, nav.rentals, nav.parking, nav.help, nav.reels, nav.charts, nav.login, nav.signup)
-- Page titles and subtitles for all modules
-- Common actions (Contact, Search, Post, Back, Next, Loading, etc.)
-- Form labels used in posting forms
-- Badge labels (Offering, Looking, I Can Help, I Need Help, etc.)
+### Part C: Default Language to Turkish
 
-All strings currently use `t("key", "English fallback")` pattern — the fallback works for English but Turkish needs DB rows. We'll insert ~80-100 translation rows for `language_code = 'tr'`.
+Update `src/config.ts`: change `defaultLanguage` from `'en'` to `'tr'`.
 
-### 4. Wire up `t()` calls in hardcoded pages
+## Files to create/modify
 
-Several pages (Classifieds, Rentals, Parking, NeighborHelp, Pets) have hardcoded English strings. Wrap them with `t()` calls using the `useLanguage` hook so they respond to language changes.
+**Database:**
+- Insert ~200 new Turkish translation rows (via insert tool)
+- Insert ~20 CMS content keys into `site_settings` (via insert tool)
 
-## Files to modify
-- `src/pages/Classifieds.tsx` — add `useLanguage`, `useNavigate`, wire Contact to DM, wrap strings with `t()`
-- `src/pages/NeighborHelp.tsx` — same
-- `src/pages/Rentals.tsx` — add `UserName`, same contact/translation fixes
-- `src/pages/Parking.tsx` — add `UserName`, same
-- `src/pages/Pets.tsx` — add `UserName`, same
-- `src/pages/Messages.tsx` — handle `?to=` query param to auto-start DM
-- `src/components/Navigation.tsx` — ensure all nav label keys match translation keys
-- **Database migration** — insert ~100 Turkish translation rows into `translations` table
+**Frontend files to modify:**
+- `src/config.ts` — change defaultLanguage to 'tr'
+- `src/pages/Index.tsx` — fetch from site_settings, use `t()` for all text
+- `src/pages/Auth.tsx` — add useLanguage, wrap all strings with `t()`
+- `src/pages/Events.tsx` — add useLanguage, wrap all strings
+- `src/pages/Venues.tsx` — add useLanguage, wrap all strings including form
+- `src/pages/Wall.tsx` — add useLanguage, translate badge labels
+- `src/pages/Profile.tsx` — add useLanguage, wrap all strings
+- `src/pages/Messages.tsx` — add useLanguage, wrap all strings
+- `src/pages/Reels.tsx` — add useLanguage, wrap all strings
+- `src/pages/VenueCharts.tsx` — add useLanguage, wrap all strings
+- `src/components/Navigation.tsx` — translate "More", "My Profile", "Log Out"
+- `src/pages/NeighborHelp.tsx` — translate category array
+- `src/pages/Parking.tsx` — translate type array + form labels
+- `src/pages/Rentals.tsx` — translate category array + form labels
+- `src/components/classifieds/ClassifiedPostForm.tsx` — add useLanguage, wrap all labels
+- `src/components/pets/AdoptionForm.tsx` — wrap labels
+- `src/components/pets/PetSittingForm.tsx` — wrap labels
+- `src/components/pets/ReportLostPetForm.tsx` — wrap labels
+- `src/pages/admin/AdminSettings.tsx` — add Homepage Content CMS editor section
 
