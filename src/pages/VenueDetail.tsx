@@ -1,25 +1,62 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Store, MapPin, Phone, Clock, Star, ArrowLeft, Globe, MessageSquare, Flag } from "lucide-react";
-import { LikeButton } from "@/components/social/LikeButton";
-import { CommentsSection } from "@/components/shared/CommentsSection";
+import { ArrowLeft, Flag, Share2, Bookmark } from "lucide-react";
 import { UserName } from "@/components/shared/UserName";
 import { MediaGrid } from "@/components/shared/MediaGrid";
 import { ReportDialog } from "@/components/shared/ReportDialog";
+import { useToast } from "@/hooks/use-toast";
+
+const CATEGORY_PLACEHOLDERS: Record<string, { bg: string; emoji: string }> = {
+  restaurant: { bg: "#FEF3C7", emoji: "🍽️" },
+  cafe: { bg: "#FEF3C7", emoji: "☕" },
+  bar: { bg: "#F5C4B3", emoji: "🍸" },
+  nightlife: { bg: "#F5C4B3", emoji: "🍸" },
+  health: { bg: "#E0F2FE", emoji: "🏥" },
+  pharmacy: { bg: "#E0F2FE", emoji: "🏥" },
+  culture: { bg: "#EDE9FE", emoji: "🎨" },
+  sports: { bg: "#DCFCE7", emoji: "💪" },
+  gym: { bg: "#DCFCE7", emoji: "💪" },
+  pets: { bg: "#DCFCE7", emoji: "🐾" },
+};
+
+const getPlaceholder = (typeName?: string) => {
+  if (!typeName) return { bg: "#EFF4FF", emoji: "📍" };
+  const key = typeName.toLowerCase();
+  for (const [k, v] of Object.entries(CATEGORY_PLACEHOLDERS)) {
+    if (key.includes(k)) return v;
+  }
+  return { bg: "#EFF4FF", emoji: "📍" };
+};
+
+const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+const DAY_LABELS: Record<string, string> = { mon: "Pazartesi", tue: "Salı", wed: "Çarşamba", thu: "Perşembe", fri: "Cuma", sat: "Cumartesi", sun: "Pazar" };
+
+const isVenueOpen = (hours: Record<string, { open: string; close: string }> | null): boolean | null => {
+  if (!hours || Object.keys(hours).length === 0) return null;
+  const now = new Date();
+  const dayKey = DAY_KEYS[now.getDay()];
+  const h = hours[dayKey];
+  if (!h) return false;
+  const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  return currentTime >= h.open && currentTime <= h.close;
+};
 
 const VenueDetail = () => {
   const { venueId } = useParams<{ venueId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [reportOpen, setReportOpen] = useState(false);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewRating, setReviewRating] = useState(5);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: venue, isLoading } = useQuery({
     queryKey: ["venue-detail", venueId],
@@ -74,169 +111,269 @@ const VenueDetail = () => {
     enabled: !!venueId,
   });
 
-  if (isLoading) return <div className="flex justify-center py-20 text-muted-foreground">Loading...</div>;
-  if (!venue) return <div className="flex justify-center py-20 text-muted-foreground">Venue not found</div>;
+  const submitReview = useMutation({
+    mutationFn: async () => {
+      if (!user || !venueId) throw new Error("Login required");
+      const { error } = await supabase.from("venue_reviews").insert({
+        venue_id: venueId,
+        user_id: user.id,
+        rating: reviewRating,
+        body: reviewText.trim() || null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setReviewText("");
+      setReviewRating(5);
+      queryClient.invalidateQueries({ queryKey: ["venue-reviews", venueId] });
+      toast({ title: "Yorum eklendi!" });
+    },
+    onError: (e: any) => toast({ title: "Hata", description: e.message, variant: "destructive" }),
+  });
 
+  if (isLoading) return <div className="flex justify-center py-20 text-[#94A3B8] text-sm">Yükleniyor...</div>;
+  if (!venue) return <div className="flex justify-center py-20 text-[#94A3B8] text-sm">Mekan bulunamadı</div>;
+
+  const typeName = (venue as any).venue_types?.name;
+  const ph = getPlaceholder(typeName);
   const hours = venue.hours as Record<string, { open: string; close: string }> | null;
+  const openStatus = isVenueOpen(hours);
+  const avgRating = reviews.length > 0 ? reviews.reduce((s: number, r: any) => s + r.rating, 0) / reviews.length : 0;
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6 max-w-3xl">
-        <div className="flex items-center justify-between mb-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-1">
-            <ArrowLeft className="w-4 h-4" /> Back
-          </Button>
-          {user && (
-            <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground" onClick={() => setReportOpen(true)}>
-              <Flag className="w-4 h-4" /> Report
-            </Button>
+      {/* Photo header */}
+      <div className="relative w-full h-[240px] overflow-hidden">
+        {venue.cover_photo || (venue.photos as string[])?.[0] ? (
+          <img src={venue.cover_photo || (venue.photos as string[])[0]} alt={venue.name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: ph.bg }}>
+            <span className="text-[48px]">{ph.emoji}</span>
+          </div>
+        )}
+        {/* Back button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="absolute top-3 left-3 w-9 h-9 rounded-full flex items-center justify-center"
+          style={{ backgroundColor: "rgba(0,0,0,0.3)" }}
+        >
+          <ArrowLeft className="w-5 h-5 text-white" />
+        </button>
+        {user && (
+          <button
+            onClick={() => setReportOpen(true)}
+            className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: "rgba(0,0,0,0.3)" }}
+          >
+            <Flag className="w-4 h-4 text-white" />
+          </button>
+        )}
+      </div>
+
+      <div className="container mx-auto px-4 max-w-3xl" style={{ marginTop: "-20px", position: "relative", zIndex: 10 }}>
+        <div className="bg-card rounded-xl p-4" style={{ border: "1px solid #E2EBFC" }}>
+          {/* Name + badges */}
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <h1 className="text-xl font-bold" style={{ color: "#1E3A5F" }}>{venue.name}</h1>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              {typeName && <Badge variant="outline" className="text-[10px]">{typeName}</Badge>}
+              {openStatus !== null && (
+                <span
+                  className="text-[10px] font-medium px-2 py-0.5 rounded"
+                  style={{
+                    backgroundColor: openStatus ? "#DCFCE7" : "#FEF2F2",
+                    color: openStatus ? "#166534" : "#DC2626",
+                  }}
+                >
+                  {openStatus ? "Açık" : "Kapalı"}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {venue.description && <p className="text-sm mb-3" style={{ color: "#64748B", lineHeight: "1.6" }}>{venue.description}</p>}
+
+          {/* Info section */}
+          <div className="space-y-1.5 mb-3">
+            {venue.address && (
+              <p className="text-[12px] flex items-center gap-1.5" style={{ color: "#64748B" }}>
+                <span>📍</span> {venue.address}
+              </p>
+            )}
+            {venue.phone && (
+              <a href={`tel:${venue.phone}`} className="text-[12px] flex items-center gap-1.5" style={{ color: "#1E3A5F" }}>
+                <span>📞</span> {venue.phone}
+              </a>
+            )}
+            {venue.website && (
+              <a href={venue.website} target="_blank" rel="noopener noreferrer" className="text-[12px] flex items-center gap-1.5 underline" style={{ color: "#1E3A5F" }}>
+                <span>🌐</span> {venue.website}
+              </a>
+            )}
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex gap-2 mb-3">
+            <button className="flex-1 py-2 rounded-lg text-white text-xs font-medium" style={{ backgroundColor: "#E74C3C" }}>
+              Mesaj Gönder
+            </button>
+            <button className="py-2 px-4 rounded-lg text-xs font-medium" style={{ border: "1px solid #1E3A5F", color: "#1E3A5F" }}>
+              <Bookmark className="w-3.5 h-3.5 inline mr-1" />Kaydet
+            </button>
+            <button
+              className="py-2 px-4 rounded-lg text-xs font-medium"
+              style={{ border: "1px solid #1E3A5F", color: "#1E3A5F" }}
+              onClick={() => navigator.share?.({ url: window.location.href, title: venue.name }).catch(() => {})}
+            >
+              <Share2 className="w-3.5 h-3.5 inline mr-1" />Paylaş
+            </button>
+          </div>
+
+          {/* Added by */}
+          {venue.created_by_user_id && (
+            <div className="flex items-center gap-1.5 text-[11px] mb-1" style={{ color: "#94A3B8" }}>
+              <UserName userId={venue.created_by_user_id} showAvatar avatarSize="w-4 h-4" className="text-[11px]" />
+              <span>ekledi</span>
+            </div>
           )}
         </div>
 
-        {/* Header */}
-        <Card className="mb-4">
-          <CardHeader>
-            {venue.cover_photo && (
-              <img src={venue.cover_photo} alt={venue.name} className="w-full h-48 object-cover rounded-lg mb-4" />
-            )}
-            <div className="flex items-start gap-4">
-              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Store className="w-7 h-7 text-primary" />
-              </div>
-              <div className="flex-1">
-                <CardTitle className="text-2xl mb-1">{venue.name}</CardTitle>
-                {(venue as any).venue_types?.name && <Badge variant="outline" className="mb-2">{(venue as any).venue_types.name}</Badge>}
-                {venue.is_verified && <Badge className="ml-2 bg-green-600">Verified</Badge>}
-                {venue.description && <p className="text-muted-foreground text-sm mt-2">{venue.description}</p>}
-
-                <div className="flex items-center gap-4 mt-3">
-                  {venue.rating_avg !== null && venue.rating_avg! > 0 && (
-                    <div className="flex items-center gap-1 text-sm">
-                      <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                      <span className="font-semibold">{Number(venue.rating_avg).toFixed(1)}</span>
-                      <span className="text-muted-foreground">({venue.review_count})</span>
-                    </div>
-                  )}
-                  <LikeButton entityType="venue" entityId={venue.id} />
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            {venue.address && <div className="flex items-center gap-2 text-muted-foreground"><MapPin className="w-4 h-4" /> {venue.address}</div>}
-            {venue.phone && <div className="flex items-center gap-2 text-muted-foreground"><Phone className="w-4 h-4" /> {venue.phone}</div>}
-            {venue.website && <div className="flex items-center gap-2 text-muted-foreground"><Globe className="w-4 h-4" /> <a href={venue.website} target="_blank" className="underline">{venue.website}</a></div>}
-            {venue.created_by_user_id && (
-              <div className="flex items-center gap-2 pt-2">
-                <span className="text-muted-foreground text-xs">Added by</span>
-                <UserName userId={venue.created_by_user_id} showAvatar />
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Photos */}
-        {venue.photos && (venue.photos as string[]).length > 0 && (
-          <Card className="mb-4">
-            <CardContent className="pt-4">
-              <MediaGrid urls={venue.photos as string[]} />
-            </CardContent>
-          </Card>
+        {/* Photos gallery */}
+        {venue.photos && (venue.photos as string[]).length > 1 && (
+          <div className="mt-3 bg-card rounded-xl p-3" style={{ border: "1px solid #E2EBFC" }}>
+            <MediaGrid urls={venue.photos as string[]} />
+          </div>
         )}
 
-        {/* Tabs */}
-        <Tabs defaultValue="reviews" className="w-full">
-          <TabsList className="w-full grid grid-cols-4">
-            <TabsTrigger value="reviews">Reviews</TabsTrigger>
-            <TabsTrigger value="menu">Menu</TabsTrigger>
-            <TabsTrigger value="deals">Deals</TabsTrigger>
-            <TabsTrigger value="hours">Hours</TabsTrigger>
-          </TabsList>
+        {/* Reviews section */}
+        <div className="mt-3 bg-card rounded-xl p-4" style={{ border: "1px solid #E2EBFC" }}>
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-sm font-semibold" style={{ color: "#1E3A5F" }}>Yorumlar</h2>
+              {reviews.length > 0 && (
+                <p className="text-[11px] mt-0.5" style={{ color: "#94A3B8" }}>
+                  ⭐ {avgRating.toFixed(1)} · {reviews.length} yorum
+                </p>
+              )}
+            </div>
+          </div>
 
-          <TabsContent value="reviews" className="space-y-3">
-            {reviews.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No reviews yet</p>
-            ) : reviews.map((review: any) => (
-              <Card key={review.id}>
-                <CardContent className="py-3 px-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <UserName userId={review.user_id} showAvatar />
-                    <div className="flex items-center gap-0.5 ml-auto">
+          {reviews.length === 0 ? (
+            <div className="text-center py-6">
+              <p className="text-sm mb-2" style={{ color: "#94A3B8" }}>Henüz yorum yok. İlk yorumu sen yap!</p>
+            </div>
+          ) : (
+            <div className="space-y-3 mb-4">
+              {reviews.map((review: any) => (
+                <div key={review.id} className="pb-3" style={{ borderBottom: "1px solid #E2EBFC" }}>
+                  <div className="flex items-center justify-between mb-1">
+                    <UserName userId={review.user_id} showAvatar avatarSize="w-6 h-6" className="text-[12px]" />
+                    <div className="flex items-center gap-0.5">
                       {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`w-3 h-3 ${i < review.rating ? "text-yellow-500 fill-yellow-500" : "text-muted"}`} />
+                        <span key={i} className="text-[12px]">{i < review.rating ? "⭐" : "☆"}</span>
                       ))}
                     </div>
                   </div>
-                  {review.body && <p className="text-sm text-foreground">{review.body}</p>}
+                  {review.body && <p className="text-[12px] mt-1" style={{ color: "#374151", lineHeight: "1.5" }}>{review.body}</p>}
+                  <p className="text-[10px] mt-1" style={{ color: "#94A3B8" }}>
+                    {new Date(review.created_at).toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" })}
+                  </p>
                   {review.reply_body && (
-                    <div className="mt-2 pl-3 border-l-2 border-primary/30">
-                      <p className="text-xs text-muted-foreground font-medium">Owner reply:</p>
-                      <p className="text-sm text-foreground">{review.reply_body}</p>
+                    <div className="mt-2 pl-3" style={{ borderLeft: "2px solid #E2EBFC" }}>
+                      <p className="text-[10px] font-medium" style={{ color: "#94A3B8" }}>İşletme yanıtı:</p>
+                      <p className="text-[12px]" style={{ color: "#374151" }}>{review.reply_body}</p>
                     </div>
                   )}
-                </CardContent>
-              </Card>
-            ))}
-            <CommentsSection entityType="venue" entityId={venue.id} />
-          </TabsContent>
+                </div>
+              ))}
+            </div>
+          )}
 
-          <TabsContent value="menu">
-            {menuItems.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No menu items yet</p>
-            ) : (
-              <div className="space-y-2">
-                {menuItems.map((item: any) => (
-                  <Card key={item.id}>
-                    <CardContent className="py-3 px-4 flex justify-between items-center">
-                      <div>
-                        <p className="font-medium text-foreground">{item.item_name}</p>
-                        {item.description && <p className="text-xs text-muted-foreground">{item.description}</p>}
-                      </div>
-                      {item.price && <span className="font-semibold text-primary">{item.currency || "₺"}{item.price}</span>}
-                    </CardContent>
-                  </Card>
+          {/* Write review */}
+          {user && (
+            <div className="pt-3" style={{ borderTop: reviews.length > 0 ? "none" : "1px solid #E2EBFC" }}>
+              <p className="text-xs font-medium mb-2" style={{ color: "#1E3A5F" }}>Yorum Yaz</p>
+              <div className="flex gap-1 mb-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button key={star} onClick={() => setReviewRating(star)} className="text-lg">
+                    {star <= reviewRating ? "⭐" : "☆"}
+                  </button>
                 ))}
               </div>
-            )}
-          </TabsContent>
+              <Textarea
+                placeholder="Deneyiminizi paylaşın..."
+                value={reviewText}
+                onChange={(e) => setReviewText(e.target.value)}
+                rows={2}
+                className="text-sm mb-2"
+              />
+              <Button
+                variant="cta"
+                size="sm"
+                className="text-xs"
+                disabled={submitReview.isPending}
+                onClick={() => submitReview.mutate()}
+              >
+                {submitReview.isPending ? "Gönderiliyor..." : "Yorum Gönder"}
+              </Button>
+            </div>
+          )}
+        </div>
 
-          <TabsContent value="deals">
-            {deals.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No active deals</p>
-            ) : deals.map((deal: any) => (
-              <Card key={deal.id} className="border-primary/30">
-                <CardContent className="py-3 px-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Badge className="bg-primary">{deal.discount_label || "Deal"}</Badge>
-                    <span className="font-semibold text-foreground">{deal.title}</span>
+        {/* Hours */}
+        {hours && Object.keys(hours).length > 0 && (
+          <div className="mt-3 mb-6 bg-card rounded-xl p-4" style={{ border: "1px solid #E2EBFC" }}>
+            <h2 className="text-sm font-semibold mb-2" style={{ color: "#1E3A5F" }}>Çalışma Saatleri</h2>
+            <div className="space-y-1">
+              {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map((day) => {
+                const h = hours[day];
+                const isToday = DAY_KEYS[new Date().getDay()] === day;
+                return (
+                  <div key={day} className="flex justify-between text-[12px]" style={{ fontWeight: isToday ? 600 : 400 }}>
+                    <span style={{ color: isToday ? "#1E3A5F" : "#64748B" }}>{DAY_LABELS[day]}</span>
+                    <span style={{ color: h ? "#374151" : "#94A3B8" }}>{h ? `${h.open} – ${h.close}` : "Kapalı"}</span>
                   </div>
-                  {deal.description && <p className="text-sm text-muted-foreground">{deal.description}</p>}
-                </CardContent>
-              </Card>
-            ))}
-          </TabsContent>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
-          <TabsContent value="hours">
-            {!hours || Object.keys(hours).length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">Hours not set</p>
-            ) : (
-              <Card>
-                <CardContent className="py-3 px-4 space-y-2">
-                  {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map((day) => {
-                    const h = hours[day];
-                    return (
-                      <div key={day} className="flex justify-between text-sm">
-                        <span className="font-medium capitalize text-foreground">{day}</span>
-                        <span className="text-muted-foreground">{h ? `${h.open} – ${h.close}` : "Closed"}</span>
-                      </div>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-        </Tabs>
+        {/* Menu */}
+        {menuItems.length > 0 && (
+          <div className="mt-3 mb-6 bg-card rounded-xl p-4" style={{ border: "1px solid #E2EBFC" }}>
+            <h2 className="text-sm font-semibold mb-2" style={{ color: "#1E3A5F" }}>Menü</h2>
+            <div className="space-y-2">
+              {menuItems.map((item: any) => (
+                <div key={item.id} className="flex justify-between items-center py-1.5" style={{ borderBottom: "1px solid #E2EBFC" }}>
+                  <div>
+                    <p className="text-[12px] font-medium" style={{ color: "#374151" }}>{item.item_name}</p>
+                    {item.description && <p className="text-[10px]" style={{ color: "#94A3B8" }}>{item.description}</p>}
+                  </div>
+                  {item.price && <span className="text-[12px] font-semibold" style={{ color: "#1E3A5F" }}>{item.currency || "₺"}{item.price}</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Deals */}
+        {deals.length > 0 && (
+          <div className="mt-3 mb-6 bg-card rounded-xl p-4" style={{ border: "1px solid #E2EBFC" }}>
+            <h2 className="text-sm font-semibold mb-2" style={{ color: "#1E3A5F" }}>Fırsatlar</h2>
+            {deals.map((deal: any) => (
+              <div key={deal.id} className="py-2" style={{ borderBottom: "1px solid #E2EBFC" }}>
+                <div className="flex items-center gap-2 mb-0.5">
+                  {deal.discount_label && <Badge className="text-[9px] bg-[#E74C3C]">{deal.discount_label}</Badge>}
+                  <span className="text-[12px] font-medium" style={{ color: "#374151" }}>{deal.title}</span>
+                </div>
+                {deal.description && <p className="text-[11px]" style={{ color: "#94A3B8" }}>{deal.description}</p>}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
+
       {venueId && (
         <ReportDialog open={reportOpen} onOpenChange={setReportOpen} contentType="venue" contentId={venueId} />
       )}
