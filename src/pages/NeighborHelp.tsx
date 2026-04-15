@@ -17,6 +17,8 @@ import { UserName } from "@/components/shared/UserName";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
+import { SkeletonList } from "@/components/shared/SkeletonCard";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 const helpCategoryKeys = [
   { key: "All", tKey: "filter.all", fallback: "All" },
@@ -101,13 +103,9 @@ const NeighborHelp = () => {
           </div>
 
           {isLoading ? (
-            <div className="text-center py-12 text-muted-foreground">{t("common.loading", "Loading...")}</div>
+            <SkeletonList count={3} />
           ) : filtered.length === 0 ? (
-            <div className="text-center py-12">
-              <Wrench className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">{t("help.empty", "No posts yet")}</h3>
-              <p className="text-muted-foreground">{t("help.be_first", "Be the first to offer or ask for help!")}</p>
-            </div>
+            <EmptyState emoji="🤝" message={t("empty.help", "Henüz ilan yok. Yardım iste veya yardım teklif et!")} actionLabel={t("help.post_title", "Yardım İlanı Paylaş")} onAction={() => setPostOpen(true)} />
           ) : (
             <div className="space-y-4">
               {filtered.map((post: any) => (

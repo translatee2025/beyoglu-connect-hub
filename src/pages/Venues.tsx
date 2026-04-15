@@ -14,6 +14,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { UserName } from "@/components/shared/UserName";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { SkeletonGrid } from "@/components/shared/SkeletonCard";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 const CATEGORY_PLACEHOLDERS: Record<string, { bg: string; emoji: string }> = {
   restaurant: { bg: "#FEF3C7", emoji: "🍽️" },
@@ -156,13 +158,9 @@ const Venues = () => {
           </div>
 
           {viewMode === "list" ? (
-            isLoading ? <div className="text-center py-12 text-[#94A3B8] text-xs">{t("venues.loading", "Loading venues...")}</div>
+            isLoading ? <SkeletonGrid count={3} hasPhoto photoHeight={140} cols={3} />
             : filtered.length === 0 ? (
-              <div className="text-center py-12">
-                <Store className="w-12 h-12 mx-auto text-[#94A3B8] mb-3" />
-                <h3 className="text-sm font-medium text-foreground mb-1">{t("venues.no_venues", "No venues found")}</h3>
-                <p className="text-xs text-[#94A3B8]">{t("venues.be_first", "Be the first to add a venue!")}</p>
-              </div>
+              <EmptyState emoji="📍" message={t("empty.venues", "Bu bölgede henüz mekan eklenmemiş. Favorin nerede?")} actionLabel={t("venues.add_venue", "Mekan Ekle")} onAction={() => {}} />
             ) : (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {filtered.map((venue: any) => {

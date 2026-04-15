@@ -17,6 +17,7 @@ import { UserName } from "@/components/shared/UserName";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
+import { SkeletonGrid } from "@/components/shared/SkeletonCard";
 
 const speciesEmoji: Record<string, string> = {
   dog: "🐕", cat: "🐈", bird: "🐦", rabbit: "🐇", fish: "🐟", other: "🐾",
@@ -111,7 +112,7 @@ const Pets = () => {
 
             <TabsContent value="adoption">
               {postsLoading ? (
-                <div className="text-center py-12 text-muted-foreground">{t("common.loading", "Loading...")}</div>
+                <SkeletonGrid count={2} hasPhoto photoHeight={140} />
               ) : adoptionPosts.length === 0 ? (
                 <EmptyState emoji="🐾" title={t("pets.no_adoption", "No adoption posts yet")} subtitle={t("pets.post_adoption", "Post a pet available for adoption!")} onAction={() => setPostChooserOpen(true)} />
               ) : (
@@ -132,7 +133,7 @@ const Pets = () => {
                 ))}
               </div>
               {postsLoading ? (
-                <div className="text-center py-12 text-muted-foreground">{t("common.loading", "Loading...")}</div>
+                <SkeletonGrid count={2} hasPhoto photoHeight={140} />
               ) : sittingPosts.length === 0 ? (
                 <EmptyState emoji="🏠" title={t("pets.no_sitting", "No pet sitting posts")} subtitle={t("pets.post_sitting", "Post a sitting service or request!")} onAction={() => setPostChooserOpen(true)} />
               ) : (

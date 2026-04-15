@@ -28,6 +28,7 @@ import VenueCharts from "./pages/VenueCharts";
 import VenueDetail from "./pages/VenueDetail";
 import Reels from "./pages/Reels";
 import LostFound from "./pages/LostFound";
+import Jobs from "./pages/Jobs";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminModules from "./pages/admin/AdminModules";
@@ -83,6 +84,7 @@ const App = () => (
                     <Route path="/venues" element={<Venues />} />
                     <Route path="/help" element={<NeighborHelp />} />
                     <Route path="/lost-found" element={<LostFound />} />
+                    <Route path="/jobs" element={<Jobs />} />
                     <Route path="/profile/edit" element={<EditProfile />} />
                     <Route path="/profile/:userId" element={<Profile />} />
                     <Route path="/messages" element={<Messages />} />

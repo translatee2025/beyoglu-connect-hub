@@ -19,6 +19,8 @@ import { UserName } from "@/components/shared/UserName";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
+import { SkeletonGrid } from "@/components/shared/SkeletonCard";
+import { EmptyState as EmptyStateComponent } from "@/components/shared/EmptyState";
 
 const aptCategoryKeys = [
   { key: "All", tKey: "filter.all", fallback: "All" },
@@ -149,8 +151,8 @@ const Rentals = () => {
               <div className="flex flex-wrap gap-2 mb-6">
                 {aptCategoryKeys.map((cat) => <Button key={cat.key} variant={category === cat.key ? "default" : "outline"} size="sm" onClick={() => setCategory(cat.key)}>{t(cat.tKey, cat.fallback)}</Button>)}
               </div>
-              {lookingLoading ? <div className="text-center py-12 text-muted-foreground">{t("common.loading", "Loading...")}</div>
-                : filterItems(lookingListings).length === 0 ? <EmptyState message={t("rentals.no_listings", "No listings yet")} />
+              {lookingLoading ? <SkeletonGrid count={3} hasPhoto photoHeight={140} />
+                : filterItems(lookingListings).length === 0 ? <EmptyStateComponent emoji="🏠" message={t("empty.rentals", "Bu bölgede henüz ilan yok. İlanını ekle!")} />
                 : <div className="space-y-4">{filterItems(lookingListings).map((item: any) => <RentalCard key={item.id} item={item} />)}</div>}
             </TabsContent>
 
@@ -181,8 +183,8 @@ const Rentals = () => {
                 <Button variant={viewMode === "map" ? "default" : "outline"} size="sm" onClick={() => setViewMode("map")} className="gap-1"><Map className="w-4 h-4" /> {t("common.map", "Map")}</Button>
               </div>
               {viewMode === "list" ? (
-                offeringLoading ? <div className="text-center py-12 text-muted-foreground">{t("common.loading", "Loading...")}</div>
-                : filterItems(offeringListings).length === 0 ? <EmptyState message={t("rentals.no_apts", "No apartments listed")} />
+                offeringLoading ? <SkeletonGrid count={3} hasPhoto photoHeight={140} />
+                : filterItems(offeringListings).length === 0 ? <EmptyStateComponent emoji="🏠" message={t("empty.rentals", "Bu bölgede henüz ilan yok. İlanını ekle!")} actionLabel={t("rentals.list_apt", "List Apartment")} onAction={() => setPostOpen(true)} />
                 : <div className="grid md:grid-cols-2 gap-6">{filterItems(offeringListings).map((item: any) => <RentalCard key={item.id} item={item} />)}</div>
               ) : (
                 <ListingMap items={mapPins(filterItems(offeringListings))} height="400px" />
