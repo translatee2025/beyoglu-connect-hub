@@ -155,6 +155,37 @@ const Wall = () => {
             <h1 className="font-display font-bold text-3xl md:text-4xl text-foreground mb-2">{t("wall.title", "Community Wall")}</h1>
             <p className="text-muted-foreground">{t("wall.subtitle", "See what's happening in your neighborhood")}</p>
           </div>
+          <div className="mb-6 overflow-x-auto" style={{ whiteSpace: 'nowrap' }}>
+            <button
+              onClick={() => setSelectedDistrict(null)}
+              className="inline-block mr-2 transition-colors"
+              style={{
+                padding: '4px 14px',
+                borderRadius: '20px',
+                ...(selectedDistrict === null
+                  ? { backgroundColor: '#1D9E75', color: 'white', border: 'none' }
+                  : { backgroundColor: 'transparent', border: '0.5px solid hsl(var(--border))', color: 'hsl(var(--muted-foreground))' }),
+              }}
+            >
+              İstanbul
+            </button>
+            {districts.map((d) => (
+              <button
+                key={d.id}
+                onClick={() => setSelectedDistrict(d.id)}
+                className="inline-block mr-2 transition-colors"
+                style={{
+                  padding: '4px 14px',
+                  borderRadius: '20px',
+                  ...(selectedDistrict === d.id
+                    ? { backgroundColor: '#1D9E75', color: 'white', border: 'none' }
+                    : { backgroundColor: 'transparent', border: '0.5px solid hsl(var(--border))', color: 'hsl(var(--muted-foreground))' }),
+                }}
+              >
+                {d.name}
+              </button>
+            ))}
+          </div>
           <Card className="mb-6 hidden sm:block">
             <CardContent className="pt-6">
               <div className="flex gap-4">
