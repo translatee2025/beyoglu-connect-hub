@@ -36,11 +36,11 @@ type FeedItem = {
 
 type FilterKey = "all" | "rentals" | "events" | "community";
 
-const FILTERS: { key: FilterKey; label: string; emoji?: string }[] = [
-  { key: "all", label: "All" },
-  { key: "rentals", label: "Rentals", emoji: "🏠" },
-  { key: "events", label: "Events", emoji: "📅" },
-  { key: "community", label: "Community", emoji: "👥" },
+const FILTER_KEYS: { key: FilterKey; tKey: string; fallback: string; emoji?: string }[] = [
+  { key: "all", tKey: "feed.filter.all", fallback: "All" },
+  { key: "rentals", tKey: "feed.filter.rentals", fallback: "Rentals", emoji: "🏠" },
+  { key: "events", tKey: "feed.filter.events", fallback: "Events", emoji: "📅" },
+  { key: "community", tKey: "feed.filter.community", fallback: "Community", emoji: "👥" },
 ];
 
 const ALLOWED_DISTRICTS = ["beyoğlu", "şişli", "kadıköy", "beşiktaş"];
@@ -207,13 +207,13 @@ const Wall = () => {
   };
 
   const BADGE_MAP: Record<string, { label: string; variant: string }> = {
-    post: { label: badgeLabel("post", "Post"), variant: "post" },
-    rental: { label: badgeLabel("rental", "Rental"), variant: "rental" },
-    parking: { label: badgeLabel("parking", "Parking"), variant: "classified" },
-    classified: { label: badgeLabel("classified", "Classified"), variant: "classified" },
-    pet: { label: badgeLabel("pets", "Pets"), variant: "pet" },
-    venue: { label: badgeLabel("venue", "Venue"), variant: "venue" },
-    helper: { label: badgeLabel("help_offer", "Help"), variant: "helper" },
+    post: { label: t("feed.badge.post", "Post"), variant: "post" },
+    rental: { label: t("feed.badge.rental", "Rental"), variant: "rental" },
+    parking: { label: t("feed.badge.parking", "Parking"), variant: "classified" },
+    classified: { label: t("feed.badge.classified", "Classified"), variant: "classified" },
+    pet: { label: t("feed.badge.pets", "Pets"), variant: "pet" },
+    venue: { label: t("feed.badge.venue", "Venue"), variant: "venue" },
+    helper: { label: t("feed.badge.help_offer", "Help"), variant: "helper" },
   };
 
   return (
@@ -255,7 +255,7 @@ const Wall = () => {
       <div className="mx-auto px-4 py-4" style={{ maxWidth: '680px' }}>
         {/* Filter bar */}
         <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide">
-          {FILTERS.map((f) => (
+          {FILTER_KEYS.map((f) => (
             <button
               key={f.key}
               onClick={() => setActiveFilter(f.key)}
@@ -268,7 +268,7 @@ const Wall = () => {
               }}
             >
               {f.emoji && <span>{f.emoji}</span>}
-              {f.label}
+              {t(f.tKey, f.fallback)}
             </button>
           ))}
         </div>
