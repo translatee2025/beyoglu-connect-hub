@@ -15,6 +15,7 @@ import { type EntityType } from "@/hooks/useLikes";
 import { MediaUpload } from "@/components/shared/MediaUpload";
 import { MediaGrid } from "@/components/shared/MediaGrid";
 import { UserName } from "@/components/shared/UserName";
+import { CommentsSection } from "@/components/shared/CommentsSection";
 
 type FeedItem = {
   id: string; source: string; title: string; description?: string; photos?: string[];
