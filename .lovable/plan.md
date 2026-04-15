@@ -1,83 +1,98 @@
 
 
-# Plan: CMS-Managed Content + Complete Turkish Translation
+# In-App Notification System
 
-## Problem
+## Overview
+Add notification triggers to 4 existing actions (like, comment, message, RSVP), a bell icon with badge to the header, a dropdown panel, and realtime subscription. No existing features are redesigned.
 
-1. **Homepage and key content is hardcoded** — hero title, tagline, feature cards, CTA sections are all in `Index.tsx` as static strings. No way to edit from backend.
-2. **Turkish translation is incomplete** — 308 TR keys exist but large swaths of the app remain English: Auth page, Events page, Venues page, Wall badges, Profile page, Messages page, Reels page, VenueCharts page, all post forms (Rental, Parking, Classified, Pet sub-forms), Navigation dropdown items ("More", "My Profile", "Log Out"), and filter/category labels.
-3. **Default language should be Turkish** per user's choice.
+## Database Migration
 
-## Solution
+1. Add `notifications` table to `supabase_realtime` publication so the bell badge updates in real time.
 
-### Part A: CMS-Managed Content via `site_settings`
+## New Component: NotificationBell
 
-The `site_settings` table already exists with admin-only write access. We will:
+**File: `src/components/NotificationBell.tsx`**
 
-1. **Seed CMS content keys** into `site_settings` for all editable homepage sections:
-   - `hero_title`, `hero_subtitle`, `hero_cta_primary`, `hero_cta_secondary`
-   - `features_heading`, `features_subtitle`
-   - `feature_1_title`, `feature_1_desc`, `feature_2_title`, `feature_2_desc`, etc.
-   - `benefits_heading`, `benefit_1_title`, `benefit_1_desc`, etc.
-   - `cta_heading`, `cta_subtitle`, `cta_button`
-   
-   Each key stores a JSON object like `{"en": "Welcome to Beyoğlu Connect", "tr": "Beyoğlu Connect'e Hoş Geldiniz"}` so the value is multilingual.
+A self-contained component that:
+- Queries unread count: `SELECT count(*) FROM notifications WHERE user_id = auth.uid() AND read = false`
+- Queries 20 most recent notifications ordered by `created_at DESC`
+- Renders a bell icon (`Bell` from lucide) with a red circular badge showing unread count (hidden when 0)
+- Uses `Popover` (from existing ui/popover) for the dropdown panel
+- Each row shows: type-based icon (Heart/MessageCircle/Mail/Calendar/Settings), body text, relative time, distinct background for unread
+- Clicking a row: navigates to `link`, sets `read = true` via UPDATE
+- "Mark all as read" button: `UPDATE notifications SET read = true WHERE user_id = auth.uid() AND read = false`
+- Realtime subscription on `notifications` table filtered by `user_id = auth.uid()` for INSERT events — increments badge and prepends to list
 
-2. **Update `Index.tsx`** to fetch from `site_settings` via react-query, using the current language to pick the right value. Falls back to hardcoded defaults if no setting exists.
+## Navigation.tsx Changes
 
-3. **Expand Admin Settings page** (`AdminSettings.tsx`) to include a "Homepage Content" section where admin can edit hero text, feature cards, CTA text — with fields for each active language.
+- Import `NotificationBell`
+- Place it in the desktop header between `LanguageSwitcher` and the mail icon (line ~121), only when `user` is authenticated
+- Place it in the mobile header area as well, next to the language switcher
 
-### Part B: Complete Turkish Translation
+## Notification Trigger: Likes
 
-**Database insert** of ~200+ new translation rows covering every remaining hardcoded string:
+**File: `src/hooks/useLikes.ts`**
 
-**Pages to wrap with `t()` and add TR translations:**
+After a successful like INSERT (not unlike), look up the content owner's `user_id` from the relevant table based on `entityType`:
+- `wall_post` → query `wall_posts` 
+- `classified` → query `classifieds`
+- `pet_post` → query `pet_posts`
+- `reel` → query `reels` (add "reel" to EntityType)
 
-| Page | Hardcoded strings to translate |
-|---|---|
-| **Auth.tsx** | "Welcome Back", "Create Account", "Set Password", "Your Info", "Email", "Password", "Choose Password", "Display Name", "Phone Number", "Log In", "Create Account", "Don't have an account?", "Already have an account?", step labels, validation messages |
-| **Events.tsx** | "Local Events", "Discover and join...", "Upcoming", "Past Events", "Create Event", "List View", "Map View", "RSVP", "attending", category badges |
-| **Venues.tsx** | "Venues", "Restaurants, pharmacies...", "Search venues...", "Add Venue", "All", "List", "Map", "View Details", weekday labels, venue form: "Name", "Type", "Address", "Phone", "Description", "Opening Hours", step labels |
-| **Wall.tsx** | "Community Wall", "What's happening...", badge labels ("Post", "Rental", "Parking", "Classified", "Pets", "Venue", "Help Offer", "Help Wanted"), "Share", "Post" button |
-| **Profile.tsx** | "Edit Profile", "Save", "Cancel", "About", "Activity", "Friends", tab labels, "Display Name", "Bio", "Neighborhood", "Phone", "No activity yet" |
-| **Messages.tsx** | "Messages", "New", "No conversations yet", "Search users...", "No users found", "Delete conversation?", "Type a message...", "Cancel", "Delete" |
-| **Reels.tsx** | "Create Reel", "Caption", "Neighborhood", "Post Reel", "No reels yet" |
-| **VenueCharts.tsx** | "Venue Charts", "Most loved places...", "All", "More Venues", "No venues ranked yet..." |
-| **Navigation.tsx** | "More", "My Profile", "Log Out", "Messages" (in mobile menu) |
-| **NeighborHelp.tsx** | Category array labels ("Plumbing & Bathroom", "Painting", etc.), form labels |
-| **Parking.tsx** | Type array labels ("Garage", "Open Air", etc.), form: "Title", "Parking Type", "Budget", "Description", "Photos", "Neighborhood", "Phone", step labels |
-| **Rentals.tsx** | Category labels ("1+0 Studio", etc.), form: "Title", "Listing Type", "For Rent", "For Sale", "Category", "Budget/Price", "Description", step labels |
-| **ClassifiedPostForm.tsx** | "Post a Classified Ad", "Title", "Type", "Offering", "Looking for", "Category", "Price", "Neighborhood", "Description", "Photos/Videos", "Phone", "Post Ad" |
-| **Pet sub-forms** | AdoptionForm, PetSittingForm, ReportLostPetForm — all labels and placeholders |
+Skip if liker === owner. Fetch current user's display_name from profiles. Insert notification row.
 
-### Part C: Default Language to Turkish
+## Notification Trigger: Comments
 
-Update `src/config.ts`: change `defaultLanguage` from `'en'` to `'tr'`.
+**File: `src/components/shared/CommentsSection.tsx`**
 
-## Files to create/modify
+In `addComment` mutation's `onSuccess`, look up the content owner based on `entityType`/`entityId` (same table mapping as likes). Skip if commenter === owner. Insert notification with type `'comment'`.
 
-**Database:**
-- Insert ~200 new Turkish translation rows (via insert tool)
-- Insert ~20 CMS content keys into `site_settings` (via insert tool)
+## Notification Trigger: Messages
 
-**Frontend files to modify:**
-- `src/config.ts` — change defaultLanguage to 'tr'
-- `src/pages/Index.tsx` — fetch from site_settings, use `t()` for all text
-- `src/pages/Auth.tsx` — add useLanguage, wrap all strings with `t()`
-- `src/pages/Events.tsx` — add useLanguage, wrap all strings
-- `src/pages/Venues.tsx` — add useLanguage, wrap all strings including form
-- `src/pages/Wall.tsx` — add useLanguage, translate badge labels
-- `src/pages/Profile.tsx` — add useLanguage, wrap all strings
-- `src/pages/Messages.tsx` — add useLanguage, wrap all strings
-- `src/pages/Reels.tsx` — add useLanguage, wrap all strings
-- `src/pages/VenueCharts.tsx` — add useLanguage, wrap all strings
-- `src/components/Navigation.tsx` — translate "More", "My Profile", "Log Out"
-- `src/pages/NeighborHelp.tsx` — translate category array
-- `src/pages/Parking.tsx` — translate type array + form labels
-- `src/pages/Rentals.tsx` — translate category array + form labels
-- `src/components/classifieds/ClassifiedPostForm.tsx` — add useLanguage, wrap all labels
-- `src/components/pets/AdoptionForm.tsx` — wrap labels
-- `src/components/pets/PetSittingForm.tsx` — wrap labels
-- `src/components/pets/ReportLostPetForm.tsx` — wrap labels
-- `src/pages/admin/AdminSettings.tsx` — add Homepage Content CMS editor section
+**File: `src/pages/Messages.tsx`**
+
+In `sendMessage` mutation's `onSuccess`, look up the other participant in the conversation. Insert notification with type `'message'`, link `'/messages'`. Only when conversation status is `'accepted'`.
+
+## Notification Trigger: Event RSVP
+
+**File: `src/pages/Events.tsx`**
+
+In `toggleRsvp` mutation, after a successful INSERT (not delete), look up the event's `user_id`. Skip if RSVP user === event creator. Insert notification with type `'event_rsvp'`, link `'/events/' + eventId`.
+
+## Helper Utility
+
+**File: `src/lib/notifications.ts`**
+
+A small helper function used by all triggers:
+```typescript
+async function createNotification(params: {
+  userId: string;       // recipient
+  type: string;
+  body: string;
+  link: string;
+}) {
+  await supabase.from("notifications").insert({
+    user_id: params.userId,
+    type: params.type,
+    body: params.body,
+    link: params.link,
+  });
+}
+```
+
+And a helper to get the current user's display name from profiles cache or a quick query.
+
+## Files Changed
+| File | Change |
+|------|--------|
+| Migration SQL | Add notifications to supabase_realtime |
+| `src/lib/notifications.ts` | New helper utility |
+| `src/components/NotificationBell.tsx` | New component |
+| `src/components/Navigation.tsx` | Add bell icon |
+| `src/hooks/useLikes.ts` | Add notification on like |
+| `src/components/shared/CommentsSection.tsx` | Add notification on comment |
+| `src/pages/Messages.tsx` | Add notification on message send |
+| `src/pages/Events.tsx` | Add notification on RSVP |
+
+No other pages, components, or tables are touched.
 
