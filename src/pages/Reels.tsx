@@ -40,6 +40,7 @@ const Reels = () => {
   const [postOpen, setPostOpen] = useState(false);
   const [likedReels, setLikedReels] = useState<Set<string>>(new Set());
   const containerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const touchStartY = useRef(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
