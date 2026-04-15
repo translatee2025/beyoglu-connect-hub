@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import PetPostChooser from "@/components/pets/PetPostChooser";
 import FriendFinder from "@/components/pets/FriendFinder";
 import PetMap from "@/components/pets/PetMap";
+import ShopsVetsSection from "@/components/pets/ShopsVetsSection";
 import PetFilters, { PetFilterState, defaultFilters } from "@/components/pets/PetFilters";
 import LostFoundSection from "@/components/pets/LostFoundSection";
 import PetSwipeCards from "@/components/pets/PetSwipeCards";
@@ -155,31 +156,7 @@ const Pets = () => {
             </TabsContent>
 
             <TabsContent value="shops">
-              <div className="space-y-6">
-                <p className="text-sm text-muted-foreground">🗺️ {t("pets.browse_shops", "Browse pet shops and vet clinics registered by the community.")}</p>
-                <PetMap pets={pets} showFilters />
-                <div className="grid sm:grid-cols-2 gap-6">
-                  {shopPosts.length > 0 && (
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">🛒 {t("pets.pet_shops", "Pet Shops")}</h3>
-                      <div className="space-y-3">
-                        {shopPosts.map((post: any) => <VenueCard key={post.id} post={post} onContact={handleContact} />)}
-                      </div>
-                    </div>
-                  )}
-                  {vetPosts.length > 0 && (
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">🏥 {t("pets.vet_clinics", "Vet Clinics")}</h3>
-                      <div className="space-y-3">
-                        {vetPosts.map((post: any) => <VenueCard key={post.id} post={post} onContact={handleContact} />)}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                {shopPosts.length === 0 && vetPosts.length === 0 && (
-                  <EmptyState emoji="🏥" title={t("pets.no_shops", "No shops or vets registered yet")} subtitle={t("pets.register_shop", "Register your pet shop or vet clinic!")} onAction={() => setPostChooserOpen(true)} />
-                )}
-              </div>
+              <ShopsVetsSection />
             </TabsContent>
           </Tabs>
         </div>
