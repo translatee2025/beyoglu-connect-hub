@@ -25,6 +25,7 @@ import Messages from "./pages/Messages";
 import VenueCharts from "./pages/VenueCharts";
 import VenueDetail from "./pages/VenueDetail";
 import Reels from "./pages/Reels";
+import LostFound from "./pages/LostFound";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminModules from "./pages/admin/AdminModules";
@@ -78,6 +79,7 @@ const App = () => (
                     <Route path="/pets" element={<Pets />} />
                     <Route path="/venues" element={<Venues />} />
                     <Route path="/help" element={<NeighborHelp />} />
+                    <Route path="/lost-found" element={<LostFound />} />
                     <Route path="/profile/:userId" element={<Profile />} />
                     <Route path="/messages" element={<Messages />} />
                     <Route path="/charts" element={<VenueCharts />} />
