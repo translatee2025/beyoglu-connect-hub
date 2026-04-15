@@ -21,6 +21,7 @@ import NeighborHelp from "./pages/NeighborHelp";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Messages from "./pages/Messages";
+import VenueCharts from "./pages/VenueCharts";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminModules from "./pages/admin/AdminModules";
@@ -59,6 +60,7 @@ const App = () => (
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/profile/:userId" element={<Profile />} />
                   <Route path="/messages" element={<Messages />} />
+                  <Route path="/charts" element={<VenueCharts />} />
 
                   {/* Public routes with navigation */}
                   <Route element={<PublicLayout />}>
