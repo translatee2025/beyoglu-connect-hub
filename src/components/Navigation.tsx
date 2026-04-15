@@ -92,7 +92,7 @@ const Navigation = () => {
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-sm">
                     <ChevronDown className="w-4 h-4" />
-                    <span>More</span>
+                    <span>{t('nav.more', 'More')}</span>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -128,8 +128,8 @@ const Navigation = () => {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => navigate(`/profile/${user.id}`)}>My Profile</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => signOut()}>Log Out</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate(`/profile/${user.id}`)}>{t('nav.my_profile', 'My Profile')}</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => signOut()}>{t('nav.logout', 'Log Out')}</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </>
@@ -173,12 +173,12 @@ const Navigation = () => {
                 {user ? (
                   <>
                     <NavLink to="/messages" className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
-                      <Mail className="w-5 h-5" /> Messages
+                      <Mail className="w-5 h-5" /> {t('nav.messages', 'Messages')}
                     </NavLink>
                     <NavLink to={`/profile/${user.id}`} className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
-                      <User className="w-5 h-5" /> My Profile
+                      <User className="w-5 h-5" /> {t('nav.my_profile', 'My Profile')}
                     </NavLink>
-                    <Button variant="ghost" className="w-full" onClick={() => { signOut(); setMobileMenuOpen(false); }}>Log Out</Button>
+                    <Button variant="ghost" className="w-full" onClick={() => { signOut(); setMobileMenuOpen(false); }}>{t('nav.logout', 'Log Out')}</Button>
                   </>
                 ) : (
                   <>
