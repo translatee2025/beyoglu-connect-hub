@@ -14,6 +14,8 @@ import ListingMap from "@/components/shared/ListingMap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { UserName } from "@/components/shared/UserName";
 
 const WEEKDAYS = [
   { key: "mon", label: "Mon" },
@@ -31,6 +33,7 @@ const Venues = () => {
   const [viewMode, setViewMode] = useState("list");
   const [postOpen, setPostOpen] = useState(false);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: venueTypes = [] } = useQuery({
     queryKey: ["venue-types"],
@@ -126,7 +129,8 @@ const Venues = () => {
                     <CardContent className="space-y-2">
                       {venue.address && <div className="flex items-center gap-2 text-sm text-muted-foreground"><MapPin className="w-4 h-4 flex-shrink-0" /> {venue.address}</div>}
                       {venue.phone && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Phone className="w-4 h-4 flex-shrink-0" /> {venue.phone}</div>}
-                      <Button variant="outline" className="w-full mt-2">View Details</Button>
+                      {venue.created_by_user_id && <div className="mt-1"><UserName userId={venue.created_by_user_id} showAvatar /></div>}
+                      <Button variant="outline" className="w-full mt-2" onClick={() => navigate(`/venue/${venue.id}`)}>View Details</Button>
                     </CardContent>
                   </Card>
                 ))}
