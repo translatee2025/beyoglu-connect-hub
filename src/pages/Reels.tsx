@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/providers/LanguageProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -30,6 +31,7 @@ interface Reel {
 const Reels = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -53,7 +55,6 @@ const Reels = () => {
     },
   });
 
-  // Check liked reels
   useEffect(() => {
     if (!user) return;
     (async () => {
@@ -105,7 +106,6 @@ const Reels = () => {
   const handleLike = async () => {
     const reel = reels[currentIndex];
     if (!reel || !user) { if (!user) navigate("/auth"); return; }
-
     const isLiked = likedReels.has(reel.id);
     if (isLiked) {
       await supabase.from("likes").delete().eq("entity_type", "reel").eq("entity_id", reel.id).eq("user_id", user.id);
@@ -132,10 +132,10 @@ const Reels = () => {
     if (!reel) return;
     const url = `${window.location.origin}/reels`;
     if (navigator.share) {
-      await navigator.share({ title: reel.caption || "Community Reel", url });
+      await navigator.share({ title: reel.caption || t("reels.title", "Reels"), url });
     } else {
       navigator.clipboard.writeText(url);
-      toast({ title: "Link copied!" });
+      toast({ title: t("reels.link_copied", "Link kopyalandı!") });
     }
   };
 
@@ -188,15 +188,10 @@ const Reels = () => {
     >
       {/* Top bar */}
       <div className="absolute top-4 left-4 right-4 z-50 flex items-center justify-between">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white bg-black/40 rounded-full"
-          onClick={() => navigate(-1)}
-        >
+        <Button variant="ghost" size="icon" className="text-white bg-black/40 rounded-full" onClick={() => navigate(-1)}>
           <X className="w-5 h-5" />
         </Button>
-        <h1 className="text-white font-bold text-lg">Reels</h1>
+        <h1 className="text-white font-bold text-lg">{t("reels.title", "Reels")}</h1>
         <Dialog open={postOpen} onOpenChange={setPostOpen}>
           <DialogTrigger asChild>
             <Button variant="ghost" size="icon" className="text-white bg-black/40 rounded-full">
@@ -211,37 +206,20 @@ const Reels = () => {
 
       {currentReel ? (
         <div className="relative h-full w-full" key={currentReel.id}>
-          {/* Media */}
           <div className="absolute inset-0">
             {currentReel.media_type === "video" ? (
-              <video
-                src={currentReel.media_url}
-                className="h-full w-full object-cover"
-                autoPlay loop playsInline muted
-              />
+              <video src={currentReel.media_url} className="h-full w-full object-cover" autoPlay loop playsInline muted />
             ) : (
-              <img
-                src={currentReel.media_url}
-                alt={currentReel.caption || "Reel"}
-                className="h-full w-full object-cover"
-              />
+              <img src={currentReel.media_url} alt={currentReel.caption || "Reel"} className="h-full w-full object-cover" />
             )}
           </div>
-
-          {/* Gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
 
-          {/* Info - bottom left */}
           <div className="absolute bottom-20 left-4 right-20 z-10">
             <UserName userId={currentReel.user_id} showAvatar className="text-white mb-2" />
-            {currentReel.caption && (
-              <p className="text-white text-sm mb-2 line-clamp-3">{currentReel.caption}</p>
-            )}
+            {currentReel.caption && <p className="text-white text-sm mb-2 line-clamp-3">{currentReel.caption}</p>}
             {currentReel.venue && (
-              <button
-                className="flex items-center gap-1 text-white/80 text-xs hover:text-white"
-                onClick={() => navigate(`/venues`)}
-              >
+              <button className="flex items-center gap-1 text-white/80 text-xs hover:text-white" onClick={() => navigate(`/venues`)}>
                 <MapPin className="w-3 h-3" /> {currentReel.venue.name}
               </button>
             )}
@@ -252,7 +230,6 @@ const Reels = () => {
             )}
           </div>
 
-          {/* Actions - right side */}
           <div className="absolute right-4 bottom-24 flex flex-col gap-5 z-10">
             <button className="flex flex-col items-center gap-1" onClick={handleLike}>
               <div className={`rounded-full h-12 w-12 flex items-center justify-center ${likedReels.has(currentReel.id) ? "bg-red-500" : "bg-white/20"} backdrop-blur-sm`}>
@@ -260,23 +237,20 @@ const Reels = () => {
               </div>
               <span className="text-xs text-white">{likeCounts[currentReel.id] || 0}</span>
             </button>
-
             <button className="flex flex-col items-center gap-1" onClick={() => setShowComments(!showComments)}>
               <div className="rounded-full h-12 w-12 bg-white/20 backdrop-blur-sm flex items-center justify-center">
                 <MessageCircle className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xs text-white">Chat</span>
+              <span className="text-xs text-white">{t("reels.comments", "Yorumlar")}</span>
             </button>
-
             <button className="flex flex-col items-center gap-1" onClick={handleShare}>
               <div className="rounded-full h-12 w-12 bg-white/20 backdrop-blur-sm flex items-center justify-center">
                 <Share2 className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xs text-white">Share</span>
+              <span className="text-xs text-white">{t("reels.share", "Paylaş")}</span>
             </button>
           </div>
 
-          {/* Nav arrows */}
           {currentIndex > 0 && (
             <button className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[200%] z-10" onClick={goPrev}>
               <ChevronUp className="w-8 h-8 text-white/50" />
@@ -285,15 +259,14 @@ const Reels = () => {
           {currentIndex < reels.length - 1 && (
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 text-white/50 text-xs flex flex-col items-center">
               <ChevronDown className="w-6 h-6 animate-bounce" />
-              <span>Swipe up</span>
+              <span>{t("reels.swipe_up", "Yukarı kaydır")}</span>
             </div>
           )}
 
-          {/* Comments overlay */}
           {showComments && (
             <div className="absolute bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t z-50 flex flex-col h-[55vh] rounded-t-2xl">
               <div className="flex items-center justify-between p-3 border-b">
-                <h3 className="font-bold text-foreground">Comments</h3>
+                <h3 className="font-bold text-foreground">{t("reels.comments", "Yorumlar")}</h3>
                 <button onClick={() => setShowComments(false)}>
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
@@ -303,7 +276,7 @@ const Reels = () => {
                   <Input
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Add a comment..."
+                    placeholder={t("reels.add_comment", "Yorum ekle...")}
                     onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
                   />
                   <Button size="icon" onClick={handleAddComment} disabled={!newComment.trim()}>
@@ -325,7 +298,7 @@ const Reels = () => {
                     </div>
                   ))}
                   {comments.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-8">No comments yet</p>
+                    <p className="text-sm text-muted-foreground text-center py-8">{t("reels.no_comments", "Henüz yorum yok")}</p>
                   )}
                 </div>
               </ScrollArea>
@@ -336,8 +309,8 @@ const Reels = () => {
         <div className="h-full flex items-center justify-center">
           <div className="text-center">
             <MessageCircle className="w-16 h-16 text-white/30 mx-auto mb-4" />
-            <p className="text-white/60 mb-4">No reels yet. Be the first to post!</p>
-            <Button onClick={() => setPostOpen(true)}>Create Reel</Button>
+            <p className="text-white/60 mb-4">{t("reels.no_reels", "Henüz reel yok. İlk paylaşan siz olun!")}</p>
+            <Button onClick={() => setPostOpen(true)}>{t("reels.create", "Reel Oluştur")}</Button>
           </div>
         </div>
       )}
@@ -350,12 +323,13 @@ const ReelPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const [caption, setCaption] = useState("");
   const [neighborhood, setNeighborhood] = useState("");
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const mutation = useMutation({
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Please log in");
-      if (!media.length) throw new Error("Please add a photo or video");
+      if (!user) throw new Error(t("common.please_login", "Lütfen giriş yapın"));
+      if (!media.length) throw new Error(t("reels.add_media", "Fotoğraf veya video ekleyin"));
       const { error } = await supabase.from("reels").insert({
         user_id: user.id,
         media_url: media[0],
@@ -365,18 +339,18 @@ const ReelPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
       });
       if (error) throw error;
     },
-    onSuccess: () => { toast({ title: "Reel posted! 🎬" }); onSuccess(); },
-    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onSuccess: () => { toast({ title: t("reels.posted", "Reel paylaşıldı! 🎬") }); onSuccess(); },
+    onError: (e: any) => toast({ title: t("common.error", "Hata"), description: e.message, variant: "destructive" }),
   });
 
   return (
     <div className="space-y-4">
-      <DialogHeader><DialogTitle>Create a Reel</DialogTitle></DialogHeader>
-      <div><Label>Photo or Video *</Label><MediaUpload value={media} onChange={setMedia} maxFiles={1} /></div>
-      <div><Label>Caption</Label><Textarea value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="What's happening?" rows={3} /></div>
-      <div><Label>Neighborhood</Label><Input value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} placeholder="e.g. Cihangir" /></div>
+      <DialogHeader><DialogTitle>{t("reels.create", "Reel Oluştur")}</DialogTitle></DialogHeader>
+      <div><Label>{t("reels.media", "Fotoğraf veya Video")} *</Label><MediaUpload value={media} onChange={setMedia} maxFiles={1} /></div>
+      <div><Label>{t("reels.caption", "Açıklama")}</Label><Textarea value={caption} onChange={(e) => setCaption(e.target.value)} placeholder={t("reels.caption_placeholder", "Neler oluyor?")} rows={3} /></div>
+      <div><Label>{t("common.neighborhood", "Mahalle")}</Label><Input value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} placeholder={t("common.neighborhood_placeholder", "ör. Cihangir")} /></div>
       <Button className="w-full" onClick={() => mutation.mutate()} disabled={!media.length || mutation.isPending}>
-        {mutation.isPending ? "Posting..." : "Post Reel"}
+        {mutation.isPending ? t("common.posting", "Paylaşılıyor...") : t("reels.post", "Reel Paylaş")}
       </Button>
     </div>
   );
