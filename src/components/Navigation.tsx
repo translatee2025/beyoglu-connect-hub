@@ -1,6 +1,6 @@
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
-import { Users, Calendar, ShoppingBag, MessageSquare, Dog, Menu, X, Home, Car, Globe, Store, Wrench, ChevronDown, Mail, User, TrendingUp } from "lucide-react";
+import { Users, Calendar, ShoppingBag, MessageSquare, Dog, Menu, X, Home, Car, Globe, Store, Wrench, ChevronDown, Mail, User, TrendingUp, Film } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useAuth } from "@/providers/AuthProvider";
@@ -28,6 +28,7 @@ const Navigation = () => {
     { to: "/pets", labelKey: "nav.pets", fallback: "Pets", icon: Dog },
     { to: "/venues", labelKey: "nav.venues", fallback: "Venues", icon: Store },
     { to: "/help", labelKey: "nav.help", fallback: "Help", icon: Wrench },
+    { to: "/reels", labelKey: "nav.reels", fallback: "Reels", icon: Film },
     { to: "/charts", labelKey: "nav.charts", fallback: "Charts", icon: TrendingUp },
   ];
 

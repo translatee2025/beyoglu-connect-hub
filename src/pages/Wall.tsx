@@ -15,6 +15,7 @@ import { type EntityType } from "@/hooks/useLikes";
 import { MediaUpload } from "@/components/shared/MediaUpload";
 import { MediaGrid } from "@/components/shared/MediaGrid";
 import { UserName } from "@/components/shared/UserName";
+import { CommentsSection } from "@/components/shared/CommentsSection";
 
 type FeedItem = {
   id: string; source: string; title: string; description?: string; photos?: string[];
@@ -179,7 +180,7 @@ const Wall = () => {
                     <CardContent>
                       <div className="flex items-center gap-4 pt-2 border-t border-border">
                         <LikeButton entityType={item.entityType} entityId={item.id} />
-                        <Button variant="ghost" size="sm" className="gap-1"><MessageSquare className="w-4 h-4" /> Comment</Button>
+                        <CommentsSection entityType={item.entityType} entityId={item.id} />
                         <Button variant="ghost" size="sm" className="gap-1"><Share2 className="w-4 h-4" /> Share</Button>
                       </div>
                     </CardContent>
