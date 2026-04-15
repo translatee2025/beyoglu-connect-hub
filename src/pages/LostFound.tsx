@@ -22,6 +22,7 @@ import {
   X, Loader2, CalendarIcon, Search as SearchIcon,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { UserName } from "@/components/shared/UserName";
 
 const CATEGORIES = ["Keys", "Wallet", "Phone", "Documents", "Bag", "Pet", "Jewelry", "Electronics", "Other"];
 
@@ -281,6 +282,7 @@ function PostCard({ post, isOwner }: { post: any; isOwner: boolean }) {
         {post.description && (
           <p className="text-sm text-muted-foreground line-clamp-2">{post.description}</p>
         )}
+        {post.user_id && <div className="mt-1"><UserName userId={post.user_id} showAvatar /></div>}
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           {post.neighborhood && (
             <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{post.neighborhood}</span>

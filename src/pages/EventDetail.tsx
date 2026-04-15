@@ -213,14 +213,8 @@ const EventDetail = () => {
               <h2 className="font-semibold text-lg mb-3">{t("events.attendees", "Katılımcılar")}</h2>
               <div className="flex flex-wrap gap-3">
                 {attendees.map((a) => (
-                  <div key={a.user_id} className="flex items-center gap-2 bg-muted rounded-full pl-1 pr-3 py-1">
-                    <Avatar className="w-7 h-7">
-                      {a.avatar_url && <AvatarImage src={a.avatar_url} />}
-                      <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                        {(a.display_name || "U").slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm">{a.display_name || "User"}</span>
+                  <div key={a.user_id} className="bg-muted rounded-full pl-1 pr-3 py-1">
+                    <UserName userId={a.user_id} showAvatar avatarSize="w-7 h-7" />
                   </div>
                 ))}
               </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { UserName } from "@/components/shared/UserName";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -199,6 +200,11 @@ const Events = () => {
                                 <span>{attendeeCounts[event.id] || 0} {t("events.attending", "katılımcı")}</span>
                               </div>
                             </CardDescription>
+                            {event.user_id && (
+                              <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+                                <UserName userId={event.user_id} showAvatar />
+                              </div>
+                            )}
                           </div>
                         </div>
                       </CardHeader>
