@@ -1,15 +1,12 @@
 import { useState } from "react";
-import { Store, Search, Plus, MapPin, List, Map, Phone, Clock, ArrowLeft, ArrowRight } from "lucide-react";
+import { Store, Search, Plus, MapPin, List, Map, Clock, ArrowLeft, ArrowRight } from "lucide-react";
 import { MediaUpload } from "@/components/shared/MediaUpload";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
 import ListingMap from "@/components/shared/ListingMap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,15 +15,39 @@ import { useNavigate } from "react-router-dom";
 import { UserName } from "@/components/shared/UserName";
 import { useLanguage } from "@/providers/LanguageProvider";
 
-const CATEGORY_ICONS: Record<string, string> = {
-  restaurant: "🍽️",
-  cafe: "☕",
-  bar: "🍸",
-  shop: "🛍️",
-  pharmacy: "💊",
-  gym: "🏋️",
-  salon: "💇",
-  market: "🛒",
+const CATEGORY_PLACEHOLDERS: Record<string, { bg: string; emoji: string }> = {
+  restaurant: { bg: "#FEF3C7", emoji: "🍽️" },
+  cafe: { bg: "#FEF3C7", emoji: "☕" },
+  bar: { bg: "#F5C4B3", emoji: "🍸" },
+  nightlife: { bg: "#F5C4B3", emoji: "🍸" },
+  health: { bg: "#E0F2FE", emoji: "🏥" },
+  pharmacy: { bg: "#E0F2FE", emoji: "🏥" },
+  culture: { bg: "#EDE9FE", emoji: "🎨" },
+  sports: { bg: "#DCFCE7", emoji: "💪" },
+  gym: { bg: "#DCFCE7", emoji: "💪" },
+  pets: { bg: "#DCFCE7", emoji: "🐾" },
+  vet: { bg: "#DCFCE7", emoji: "🐾" },
+};
+
+const getPlaceholder = (typeName?: string) => {
+  if (!typeName) return { bg: "#EFF4FF", emoji: "📍" };
+  const key = typeName.toLowerCase();
+  for (const [k, v] of Object.entries(CATEGORY_PLACEHOLDERS)) {
+    if (key.includes(k)) return v;
+  }
+  return { bg: "#EFF4FF", emoji: "📍" };
+};
+
+const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+
+const isVenueOpen = (hours: Record<string, { open: string; close: string }> | null): boolean | null => {
+  if (!hours || Object.keys(hours).length === 0) return null;
+  const now = new Date();
+  const dayKey = DAY_KEYS[now.getDay()];
+  const h = hours[dayKey];
+  if (!h) return false;
+  const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  return currentTime >= h.open && currentTime <= h.close;
 };
 
 const Venues = () => {
@@ -58,10 +79,26 @@ const Venues = () => {
     },
   });
 
+  const { data: reviewStats = {} } = useQuery({
+    queryKey: ["venue-review-stats"],
+    queryFn: async () => {
+      const { data } = await supabase.from("venue_reviews").select("venue_id, rating");
+      if (!data) return {};
+      const stats: Record<string, { avg: number; count: number }> = {};
+      for (const r of data) {
+        if (!stats[r.venue_id]) stats[r.venue_id] = { avg: 0, count: 0 };
+        stats[r.venue_id].count++;
+        stats[r.venue_id].avg += r.rating;
+      }
+      for (const k of Object.keys(stats)) {
+        stats[k].avg = stats[k].avg / stats[k].count;
+      }
+      return stats;
+    },
+  });
+
   const filtered = venues.filter((v: any) => v.name.toLowerCase().includes(search.toLowerCase()) || (v.description || "").toLowerCase().includes(search.toLowerCase()));
   const mapPins = filtered.filter((v: any) => v.lat && v.lng).map((v: any) => ({ lat: v.lat, lng: v.lng, title: v.name, badge: (v as any).venue_types?.name, extra: v.address }));
-
-  const displayTypes = venueTypes.slice(0, 7);
 
   return (
     <div className="min-h-screen bg-background">
@@ -86,102 +123,30 @@ const Venues = () => {
 
           {/* Category grid */}
           <div className="grid grid-cols-4 gap-2 mb-4">
-            <button
-              onClick={() => setSelectedType(selectedType === 'restaurants' ? 'all' : 'restaurants')}
-              className="rounded-xl text-center transition-all"
-              style={{
-                border: selectedType === 'restaurants' ? '2px solid #1E3A5F' : '1px solid #E2EBFC',
-                backgroundColor: selectedType === 'restaurants' ? '#EFF4FF' : 'white',
-                padding: '16px 10px',
-              }}
-            >
-              <div className="text-[28px] mb-1">🍽️</div>
-              <span className="text-xs block" style={{ color: selectedType === 'restaurants' ? '#1E3A5F' : '#64748B' }}>Restaurants & Bars</span>
-            </button>
-            <button
-              onClick={() => setSelectedType(selectedType === 'cafes' ? 'all' : 'cafes')}
-              className="rounded-xl text-center transition-all"
-              style={{
-                border: selectedType === 'cafes' ? '2px solid #1E3A5F' : '1px solid #E2EBFC',
-                backgroundColor: selectedType === 'cafes' ? '#EFF4FF' : 'white',
-                padding: '16px 10px',
-              }}
-            >
-              <div className="text-[28px] mb-1">☕</div>
-              <span className="text-xs block" style={{ color: selectedType === 'cafes' ? '#1E3A5F' : '#64748B' }}>Cafés</span>
-            </button>
-            <button
-              onClick={() => setSelectedType(selectedType === 'nightlife' ? 'all' : 'nightlife')}
-              className="rounded-xl text-center transition-all"
-              style={{
-                border: selectedType === 'nightlife' ? '2px solid #1E3A5F' : '1px solid #E2EBFC',
-                backgroundColor: selectedType === 'nightlife' ? '#EFF4FF' : 'white',
-                padding: '16px 10px',
-              }}
-            >
-              <div className="text-[28px] mb-1">🍸</div>
-              <span className="text-xs block" style={{ color: selectedType === 'nightlife' ? '#1E3A5F' : '#64748B' }}>Nightlife</span>
-            </button>
-            <button
-              onClick={() => setSelectedType(selectedType === 'health' ? 'all' : 'health')}
-              className="rounded-xl text-center transition-all"
-              style={{
-                border: selectedType === 'health' ? '2px solid #1E3A5F' : '1px solid #E2EBFC',
-                backgroundColor: selectedType === 'health' ? '#EFF4FF' : 'white',
-                padding: '16px 10px',
-              }}
-            >
-              <div className="text-[28px] mb-1">🏥</div>
-              <span className="text-xs block" style={{ color: selectedType === 'health' ? '#1E3A5F' : '#64748B' }}>Health</span>
-            </button>
-            <button
-              onClick={() => setSelectedType(selectedType === 'culture' ? 'all' : 'culture')}
-              className="rounded-xl text-center transition-all"
-              style={{
-                border: selectedType === 'culture' ? '2px solid #1E3A5F' : '1px solid #E2EBFC',
-                backgroundColor: selectedType === 'culture' ? '#EFF4FF' : 'white',
-                padding: '16px 10px',
-              }}
-            >
-              <div className="text-[28px] mb-1">🎨</div>
-              <span className="text-xs block" style={{ color: selectedType === 'culture' ? '#1E3A5F' : '#64748B' }}>Culture</span>
-            </button>
-            <button
-              onClick={() => setSelectedType(selectedType === 'sports' ? 'all' : 'sports')}
-              className="rounded-xl text-center transition-all"
-              style={{
-                border: selectedType === 'sports' ? '2px solid #1E3A5F' : '1px solid #E2EBFC',
-                backgroundColor: selectedType === 'sports' ? '#EFF4FF' : 'white',
-                padding: '16px 10px',
-              }}
-            >
-              <div className="text-[28px] mb-1">💪</div>
-              <span className="text-xs block" style={{ color: selectedType === 'sports' ? '#1E3A5F' : '#64748B' }}>Sports & Wellness</span>
-            </button>
-            <button
-              onClick={() => setSelectedType(selectedType === 'pets' ? 'all' : 'pets')}
-              className="rounded-xl text-center transition-all"
-              style={{
-                border: selectedType === 'pets' ? '2px solid #1E3A5F' : '1px solid #E2EBFC',
-                backgroundColor: selectedType === 'pets' ? '#EFF4FF' : 'white',
-                padding: '16px 10px',
-              }}
-            >
-              <div className="text-[28px] mb-1">🐾</div>
-              <span className="text-xs block" style={{ color: selectedType === 'pets' ? '#1E3A5F' : '#64748B' }}>Pets</span>
-            </button>
-            <button
-              onClick={() => setSelectedType(selectedType === 'other' ? 'all' : 'other')}
-              className="rounded-xl text-center transition-all"
-              style={{
-                border: selectedType === 'other' ? '2px solid #1E3A5F' : '1px solid #E2EBFC',
-                backgroundColor: selectedType === 'other' ? '#EFF4FF' : 'white',
-                padding: '16px 10px',
-              }}
-            >
-              <div className="text-[28px] mb-1">📍</div>
-              <span className="text-xs block" style={{ color: selectedType === 'other' ? '#1E3A5F' : '#64748B' }}>Other</span>
-            </button>
+            {[
+              { key: "restaurants", emoji: "🍽️", label: "Restaurants & Bars" },
+              { key: "cafes", emoji: "☕", label: "Cafés" },
+              { key: "nightlife", emoji: "🍸", label: "Nightlife" },
+              { key: "health", emoji: "🏥", label: "Health" },
+              { key: "culture", emoji: "🎨", label: "Culture" },
+              { key: "sports", emoji: "💪", label: "Sports & Wellness" },
+              { key: "pets", emoji: "🐾", label: "Pets" },
+              { key: "other", emoji: "📍", label: "Other" },
+            ].map((cat) => (
+              <button
+                key={cat.key}
+                onClick={() => setSelectedType(selectedType === cat.key ? "all" : cat.key)}
+                className="rounded-xl text-center transition-all"
+                style={{
+                  border: selectedType === cat.key ? "2px solid #1E3A5F" : "1px solid #E2EBFC",
+                  backgroundColor: selectedType === cat.key ? "#EFF4FF" : "white",
+                  padding: "16px 10px",
+                }}
+              >
+                <div className="text-[28px] mb-1">{cat.emoji}</div>
+                <span className="text-xs block" style={{ color: selectedType === cat.key ? "#1E3A5F" : "#64748B" }}>{cat.label}</span>
+              </button>
+            ))}
           </div>
 
           {/* View mode */}
@@ -200,44 +165,77 @@ const Venues = () => {
               </div>
             ) : (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {filtered.map((venue: any) => (
-                  <div key={venue.id} className="bg-card rounded-xl overflow-hidden hover:shadow-sm transition-shadow" style={{ border: '1px solid #E2EBFC' }}>
-                    {/* Photo placeholder */}
-                    <div className="h-[120px] sm:h-[100px] relative" style={{ backgroundColor: '#E8F0FE' }}>
-                      {venue.photos?.[0] ? (
-                        <img src={venue.photos[0]} alt={venue.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Store className="w-8 h-8 text-primary/30" />
-                        </div>
-                      )}
-                      {venue.venue_types?.name && (
-                        <span className="absolute top-2 left-2 text-[7px] font-medium px-1.5 py-0.5 rounded text-white" style={{ backgroundColor: '#1E3A5F' }}>
-                          {venue.venue_types.name}
-                        </span>
-                      )}
-                    </div>
-                    <div className="p-2.5">
-                      <h3 className="text-xs font-semibold text-foreground mb-0.5">{venue.name}</h3>
-                      {venue.address && (
-                        <div className="flex items-center gap-1 text-xxs text-[#64748B] mb-1">
-                          <MapPin className="w-3 h-3 flex-shrink-0" /> {venue.address}
-                        </div>
-                      )}
-                      {venue.created_by_user_id && (
-                        <div className="flex items-center gap-1 mb-2">
-                          <div className="w-3.5 h-3.5 rounded-full bg-primary-light flex items-center justify-center">
-                            <span className="text-[6px] text-primary font-medium">{venue.name?.slice(0, 1)}</span>
+                {filtered.map((venue: any) => {
+                  const typeName = venue.venue_types?.name;
+                  const ph = getPlaceholder(typeName);
+                  const openStatus = isVenueOpen(venue.hours as any);
+                  const stats = (reviewStats as any)[venue.id];
+                  return (
+                    <div
+                      key={venue.id}
+                      className="bg-card rounded-xl overflow-hidden hover:shadow-sm transition-shadow cursor-pointer"
+                      style={{ border: "1px solid #E2EBFC" }}
+                      onClick={() => navigate(`/venue/${venue.id}`)}
+                    >
+                      {/* Photo area */}
+                      <div className="h-[140px] relative overflow-hidden" style={{ borderRadius: "12px 12px 0 0" }}>
+                        {venue.photos?.[0] || venue.cover_photo ? (
+                          <img src={venue.photos?.[0] || venue.cover_photo} alt={venue.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: ph.bg }}>
+                            <span className="text-[32px]">{ph.emoji}</span>
                           </div>
-                          <span className="text-xxs text-[#64748B]"><UserName userId={venue.created_by_user_id} className="text-xxs" /></span>
-                        </div>
-                      )}
-                      <Button size="sm" variant="cta" className="w-full text-[9px] py-1 h-auto" onClick={() => navigate(`/venue/${venue.id}`)}>
-                        {t("venues.view_details", "View Details")}
-                      </Button>
+                        )}
+                        {/* Category badge */}
+                        {typeName && (
+                          <span
+                            className="absolute top-0 left-0 text-[10px] font-medium text-white"
+                            style={{ backgroundColor: "#1E3A5F", padding: "3px 8px", borderRadius: "0 0 6px 0" }}
+                          >
+                            {typeName}
+                          </span>
+                        )}
+                        {/* Open/Closed badge */}
+                        {openStatus !== null && (
+                          <span
+                            className="absolute top-0 right-0 text-[10px] font-medium"
+                            style={{
+                              padding: "3px 8px",
+                              borderRadius: "0 0 0 6px",
+                              backgroundColor: openStatus ? "#DCFCE7" : "#FEF2F2",
+                              color: openStatus ? "#166534" : "#DC2626",
+                            }}
+                          >
+                            {openStatus ? "Açık" : "Kapalı"}
+                          </span>
+                        )}
+                      </div>
+                      {/* Card body */}
+                      <div className="p-3">
+                        <h3 className="text-[13px] font-semibold mb-0.5" style={{ color: "#1E3A5F" }}>{venue.name}</h3>
+                        {venue.address && (
+                          <p className="text-[11px] truncate mb-1" style={{ color: "#94A3B8" }}>{venue.address}</p>
+                        )}
+                        {/* Rating row */}
+                        {stats && (
+                          <div className="flex items-center gap-1 mb-2">
+                            <span className="text-[12px]">⭐</span>
+                            <span className="text-[11px] font-semibold" style={{ color: "#1E3A5F" }}>{stats.avg.toFixed(1)}</span>
+                            <span className="text-[11px]" style={{ color: "#94A3B8" }}>({stats.count})</span>
+                          </div>
+                        )}
+                        {/* CTA */}
+                        <button
+                          className="w-full py-1.5 rounded-md text-white text-[10px] font-medium"
+                          style={{ backgroundColor: "#E74C3C" }}
+                          onClick={(e) => { e.stopPropagation(); }}
+                        >
+                          Mesaj Gönder
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )
           ) : <ListingMap items={mapPins} height="450px" />}
@@ -247,6 +245,7 @@ const Venues = () => {
   );
 };
 
+/* ── Venue Post Form ── */
 const VenuePostForm = ({ venueTypes, onSuccess }: { venueTypes: any[]; onSuccess: () => void }) => {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ name: "", description: "", address: "", phone: "", whatsapp: "", neighborhood: "", venueTypeId: "" });
@@ -284,10 +283,9 @@ const VenuePostForm = ({ venueTypes, onSuccess }: { venueTypes: any[]; onSuccess
   return (
     <div className="space-y-3">
       <DialogHeader><DialogTitle className="text-[15px] font-semibold">{t("venues.add_venue", "Add a Venue")}</DialogTitle></DialogHeader>
-      {/* Progress */}
       <div className="flex items-center gap-2 mb-2">
-        <div className="h-[3px] flex-1 rounded-full" style={{ backgroundColor: '#E2EBFC' }}>
-          <div className="h-full rounded-full transition-all" style={{ width: `${(step / 2) * 100}%`, backgroundColor: '#1E3A5F' }} />
+        <div className="h-[3px] flex-1 rounded-full" style={{ backgroundColor: "#E2EBFC" }}>
+          <div className="h-full rounded-full transition-all" style={{ width: `${(step / 2) * 100}%`, backgroundColor: "#1E3A5F" }} />
         </div>
         <span className="text-xxs text-[#94A3B8]">{step}/2</span>
       </div>
