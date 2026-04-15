@@ -15,6 +15,10 @@ import ListingMap from "@/components/shared/ListingMap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { UserName } from "@/components/shared/UserName";
+import { useLanguage } from "@/providers/LanguageProvider";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/providers/AuthProvider";
 
 const aptCategories = ["All", "1+0 Studio", "1+1", "2+1", "3+1", "4+1", "Villa", "Shared Room"];
 
@@ -26,6 +30,14 @@ const Rentals = () => {
   const [viewMode, setViewMode] = useState("list");
   const [postOpen, setPostOpen] = useState(false);
   const queryClient = useQueryClient();
+  const { t } = useLanguage();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleContact = (userId: string) => {
+    if (!user) { navigate("/auth"); return; }
+    navigate(`/messages?to=${userId}`);
+  };
 
   const { data: lookingListings = [], isLoading: lookingLoading } = useQuery({
     queryKey: ["rentals-looking"],
@@ -64,18 +76,19 @@ const Rentals = () => {
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <Badge variant={item.listing_mode === "sell" ? "destructive" : item.listing_mode === "rent" ? "default" : "secondary"}>
-                {item.listing_mode === "sell" ? "For Sale" : item.listing_mode === "rent" ? "For Rent" : "Looking"}
+                {item.listing_mode === "sell" ? t("rentals.for_sale", "For Sale") : item.listing_mode === "rent" ? t("rentals.for_rent", "For Rent") : t("rentals.looking", "Looking")}
               </Badge>
               {item.category && <Badge variant="outline">{item.category}</Badge>}
             </div>
             <CardTitle className="text-lg mb-1">{item.title}</CardTitle>
             {item.description && <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>}
             {item.price && <p className="text-primary font-semibold mt-2">{item.currency || "₺"}{item.price}{item.listing_mode !== "sell" ? "/month" : ""}</p>}
+            {item.user_id && <div className="mt-1"><UserName userId={item.user_id} showAvatar /></div>}
             {item.neighborhood && <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1"><MapPin className="w-3 h-3" /> {item.neighborhood}</div>}
           </div>
         </div>
       </CardHeader>
-      <CardContent><Button variant="outline" className="w-full">Contact</Button></CardContent>
+      <CardContent><Button variant="outline" className="w-full" onClick={() => item.user_id && handleContact(item.user_id)}>{t("common.contact", "Contact")}</Button></CardContent>
     </Card>
   );
 
@@ -83,7 +96,7 @@ const Rentals = () => {
     <div className="text-center py-12">
       <Home className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
       <h3 className="text-lg font-semibold text-foreground mb-2">{message}</h3>
-      <p className="text-muted-foreground">Be the first to post!</p>
+      <p className="text-muted-foreground">{t("common.be_first", "Be the first to post!")}</p>
     </div>
   );
 
@@ -95,24 +108,24 @@ const Rentals = () => {
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
               <Home className="w-8 h-8 text-primary" />
             </div>
-            <h1 className="font-display font-bold text-3xl md:text-4xl text-foreground mb-2">Rental Finder</h1>
-            <p className="text-muted-foreground">Find or list apartments in the neighborhood</p>
+            <h1 className="font-display font-bold text-3xl md:text-4xl text-foreground mb-2">{t("rentals.title", "Rental Finder")}</h1>
+            <p className="text-muted-foreground">{t("rentals.subtitle", "Find or list apartments in the neighborhood")}</p>
           </div>
 
           <Tabs value={mainTab} onValueChange={setMainTab}>
             <TabsList className="w-full mb-6">
-              <TabsTrigger value="looking" className="flex-1 gap-1"><Search className="w-4 h-4" /> I Need a Place</TabsTrigger>
-              <TabsTrigger value="offering" className="flex-1 gap-1"><Home className="w-4 h-4" /> For Rent / Sale</TabsTrigger>
+              <TabsTrigger value="looking" className="flex-1 gap-1"><Search className="w-4 h-4" /> {t("rentals.i_need", "I Need a Place")}</TabsTrigger>
+              <TabsTrigger value="offering" className="flex-1 gap-1"><Home className="w-4 h-4" /> {t("rentals.for_rent_sale", "For Rent / Sale")}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="looking">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div className="relative w-full sm:w-80">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+                  <Input placeholder={t("common.search", "Search...")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
                 </div>
                 <Dialog open={postOpen} onOpenChange={setPostOpen}>
-                  <DialogTrigger asChild><Button className="gap-2"><Plus className="w-4 h-4" /> Post "Looking For"</Button></DialogTrigger>
+                  <DialogTrigger asChild><Button className="gap-2"><Plus className="w-4 h-4" /> {t("rentals.post_looking", "Post \"Looking For\"")}</Button></DialogTrigger>
                   <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                     <RentalPostForm mode="looking" onSuccess={() => { setPostOpen(false); queryClient.invalidateQueries({ queryKey: ["rentals-looking"] }); }} />
                   </DialogContent>
@@ -121,8 +134,8 @@ const Rentals = () => {
               <div className="flex flex-wrap gap-2 mb-6">
                 {aptCategories.map((cat) => <Button key={cat} variant={category === cat ? "default" : "outline"} size="sm" onClick={() => setCategory(cat)}>{cat}</Button>)}
               </div>
-              {lookingLoading ? <div className="text-center py-12 text-muted-foreground">Loading...</div>
-                : filterItems(lookingListings).length === 0 ? <EmptyState message="No listings yet" />
+              {lookingLoading ? <div className="text-center py-12 text-muted-foreground">{t("common.loading", "Loading...")}</div>
+                : filterItems(lookingListings).length === 0 ? <EmptyState message={t("rentals.no_listings", "No listings yet")} />
                 : <div className="space-y-4">{filterItems(lookingListings).map((item: any) => <RentalCard key={item.id} item={item} />)}</div>}
             </TabsContent>
 
@@ -131,15 +144,15 @@ const Rentals = () => {
                 <div className="flex items-center gap-3">
                   <div className="relative w-full sm:w-64">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+                    <Input placeholder={t("common.search", "Search...")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
                   </div>
                   <div className="flex rounded-lg border border-border overflow-hidden">
-                    <button className={`px-4 py-2 text-sm font-medium transition-colors ${listingMode === "rent" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-muted"}`} onClick={() => setListingMode("rent")}>Rent</button>
-                    <button className={`px-4 py-2 text-sm font-medium transition-colors ${listingMode === "sell" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-muted"}`} onClick={() => setListingMode("sell")}>Sale</button>
+                    <button className={`px-4 py-2 text-sm font-medium transition-colors ${listingMode === "rent" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-muted"}`} onClick={() => setListingMode("rent")}>{t("rentals.rent", "Rent")}</button>
+                    <button className={`px-4 py-2 text-sm font-medium transition-colors ${listingMode === "sell" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-muted"}`} onClick={() => setListingMode("sell")}>{t("rentals.sale", "Sale")}</button>
                   </div>
                 </div>
                 <Dialog open={postOpen} onOpenChange={setPostOpen}>
-                  <DialogTrigger asChild><Button className="gap-2"><Plus className="w-4 h-4" /> List Apartment</Button></DialogTrigger>
+                  <DialogTrigger asChild><Button className="gap-2"><Plus className="w-4 h-4" /> {t("rentals.list_apt", "List Apartment")}</Button></DialogTrigger>
                   <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                     <RentalPostForm mode="offer" onSuccess={() => { setPostOpen(false); queryClient.invalidateQueries({ queryKey: ["rentals-offering"] }); }} />
                   </DialogContent>
@@ -149,12 +162,12 @@ const Rentals = () => {
                 {aptCategories.map((cat) => <Button key={cat} variant={category === cat ? "default" : "outline"} size="sm" onClick={() => setCategory(cat)}>{cat}</Button>)}
               </div>
               <div className="flex gap-2 mb-4">
-                <Button variant={viewMode === "list" ? "default" : "outline"} size="sm" onClick={() => setViewMode("list")} className="gap-1"><List className="w-4 h-4" /> List</Button>
-                <Button variant={viewMode === "map" ? "default" : "outline"} size="sm" onClick={() => setViewMode("map")} className="gap-1"><Map className="w-4 h-4" /> Map</Button>
+                <Button variant={viewMode === "list" ? "default" : "outline"} size="sm" onClick={() => setViewMode("list")} className="gap-1"><List className="w-4 h-4" /> {t("common.list", "List")}</Button>
+                <Button variant={viewMode === "map" ? "default" : "outline"} size="sm" onClick={() => setViewMode("map")} className="gap-1"><Map className="w-4 h-4" /> {t("common.map", "Map")}</Button>
               </div>
               {viewMode === "list" ? (
-                offeringLoading ? <div className="text-center py-12 text-muted-foreground">Loading...</div>
-                : filterItems(offeringListings).length === 0 ? <EmptyState message="No apartments listed" />
+                offeringLoading ? <div className="text-center py-12 text-muted-foreground">{t("common.loading", "Loading...")}</div>
+                : filterItems(offeringListings).length === 0 ? <EmptyState message={t("rentals.no_apts", "No apartments listed")} />
                 : <div className="grid md:grid-cols-2 gap-6">{filterItems(offeringListings).map((item: any) => <RentalCard key={item.id} item={item} />)}</div>
               ) : (
                 <ListingMap items={mapPins(filterItems(offeringListings))} height="400px" />

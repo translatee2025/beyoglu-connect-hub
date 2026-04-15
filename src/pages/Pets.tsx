@@ -13,6 +13,10 @@ import PetFilters, { PetFilterState, defaultFilters } from "@/components/pets/Pe
 import PetSwipeCards from "@/components/pets/PetSwipeCards";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { UserName } from "@/components/shared/UserName";
+import { useLanguage } from "@/providers/LanguageProvider";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/providers/AuthProvider";
 
 const speciesEmoji: Record<string, string> = {
   dog: "🐕", cat: "🐈", bird: "🐦", rabbit: "🐇", fish: "🐟", other: "🐾",
@@ -31,8 +35,15 @@ const Pets = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [postChooserOpen, setPostChooserOpen] = useState(false);
   const [sittingFilter, setSittingFilter] = useState<"all" | "offer" | "want">("all");
+  const { t } = useLanguage();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
-  // Existing pet profiles
+  const handleContact = (userId: string) => {
+    if (!user) { navigate("/auth"); return; }
+    navigate(`/messages?to=${userId}`);
+  };
+
   const { data: pets = [], isLoading: petsLoading, refetch: refetchPets } = useQuery({
     queryKey: ["pet-profiles"],
     queryFn: async () => {
@@ -42,7 +53,6 @@ const Pets = () => {
     },
   });
 
-  // Pet posts from new table
   const { data: petPosts = [], isLoading: postsLoading, refetch: refetchPosts } = useQuery({
     queryKey: ["pet-posts"],
     queryFn: async () => {
@@ -74,19 +84,19 @@ const Pets = () => {
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
               <Dog className="w-8 h-8 text-primary" />
             </div>
-            <h1 className="font-display font-bold text-4xl md:text-5xl text-foreground mb-4">Pet Community</h1>
+            <h1 className="font-display font-bold text-4xl md:text-5xl text-foreground mb-4">{t("pets.title", "Pet Community")}</h1>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Connect with furry (and feathery) neighbors. Adopt, find sitters, playmates, and more.
+              {t("pets.subtitle", "Connect with furry (and feathery) neighbors. Adopt, find sitters, playmates, and more.")}
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div className="relative w-full sm:w-80">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Search pets..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
+              <Input placeholder={t("common.search", "Search...")} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
             </div>
             <Button variant="hero" className="gap-2" onClick={() => setPostChooserOpen(true)}>
-              <Plus className="w-4 h-4" /> Create Post
+              <Plus className="w-4 h-4" /> {t("pets.create_post", "Create Post")}
             </Button>
           </div>
 
@@ -94,61 +104,57 @@ const Pets = () => {
 
           <Tabs defaultValue="adoption" className="w-full">
             <TabsList className="mb-6 flex-wrap h-auto gap-1">
-              <TabsTrigger value="adoption" className="flex items-center gap-2"><Dog className="w-4 h-4" /> Adoption</TabsTrigger>
-              <TabsTrigger value="sitting" className="flex items-center gap-2"><Home className="w-4 h-4" /> Pet Sitting</TabsTrigger>
-              <TabsTrigger value="friends" className="flex items-center gap-2"><Heart className="w-4 h-4" /> Friends</TabsTrigger>
+              <TabsTrigger value="adoption" className="flex items-center gap-2"><Dog className="w-4 h-4" /> {t("pets.adoption", "Adoption")}</TabsTrigger>
+              <TabsTrigger value="sitting" className="flex items-center gap-2"><Home className="w-4 h-4" /> {t("pets.sitting", "Pet Sitting")}</TabsTrigger>
+              <TabsTrigger value="friends" className="flex items-center gap-2"><Heart className="w-4 h-4" /> {t("pets.friends", "Friends")}</TabsTrigger>
               <TabsTrigger value="lost" className="flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4" /> Lost & Found
+                <AlertTriangle className="w-4 h-4" /> {t("pets.lost_found", "Lost & Found")}
                 {(lostPets.length + lostFoundPosts.length) > 0 && (
                   <Badge variant="destructive" className="ml-1 text-xs px-1.5 py-0">{lostPets.length + lostFoundPosts.length}</Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="shops" className="flex items-center gap-2"><Stethoscope className="w-4 h-4" /> Shops & Vets</TabsTrigger>
+              <TabsTrigger value="shops" className="flex items-center gap-2"><Stethoscope className="w-4 h-4" /> {t("pets.shops_vets", "Shops & Vets")}</TabsTrigger>
             </TabsList>
 
-            {/* Adoption */}
             <TabsContent value="adoption">
               {postsLoading ? (
-                <div className="text-center py-12 text-muted-foreground">Loading...</div>
+                <div className="text-center py-12 text-muted-foreground">{t("common.loading", "Loading...")}</div>
               ) : adoptionPosts.length === 0 ? (
-                <EmptyState emoji="🐾" title="No adoption posts yet" subtitle="Post a pet available for adoption!" onAction={() => setPostChooserOpen(true)} />
+                <EmptyState emoji="🐾" title={t("pets.no_adoption", "No adoption posts yet")} subtitle={t("pets.post_adoption", "Post a pet available for adoption!")} onAction={() => setPostChooserOpen(true)} />
               ) : (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {adoptionPosts.map((post: any) => (
-                    <PostCard key={post.id} post={post} badgeLabel="Adoption" />
+                    <PostCard key={post.id} post={post} badgeLabel={t("pets.adoption", "Adoption")} onContact={handleContact} />
                   ))}
                 </div>
               )}
             </TabsContent>
 
-            {/* Pet Sitting */}
             <TabsContent value="sitting">
               <div className="flex gap-2 mb-4">
                 {(["all", "offer", "want"] as const).map((f) => (
                   <Button key={f} variant={sittingFilter === f ? "default" : "outline"} size="sm" onClick={() => setSittingFilter(f)}>
-                    {f === "all" ? "All" : f === "offer" ? "I Offer" : "I Want"}
+                    {f === "all" ? t("common.all", "All") : f === "offer" ? t("pets.i_offer", "I Offer") : t("pets.i_want", "I Want")}
                   </Button>
                 ))}
               </div>
               {postsLoading ? (
-                <div className="text-center py-12 text-muted-foreground">Loading...</div>
+                <div className="text-center py-12 text-muted-foreground">{t("common.loading", "Loading...")}</div>
               ) : sittingPosts.length === 0 ? (
-                <EmptyState emoji="🏠" title="No pet sitting posts" subtitle="Post a sitting service or request!" onAction={() => setPostChooserOpen(true)} />
+                <EmptyState emoji="🏠" title={t("pets.no_sitting", "No pet sitting posts")} subtitle={t("pets.post_sitting", "Post a sitting service or request!")} onAction={() => setPostChooserOpen(true)} />
               ) : (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {sittingPosts.map((post: any) => (
-                    <PostCard key={post.id} post={post} badgeLabel={post.is_offering ? "Offering" : "Looking for"} />
+                    <PostCard key={post.id} post={post} badgeLabel={post.is_offering ? t("classifieds.offering", "Offering") : t("classifieds.looking_for", "Looking for")} onContact={handleContact} />
                   ))}
                 </div>
               )}
             </TabsContent>
 
-            {/* Friends */}
             <TabsContent value="friends">
               <FriendFinder />
             </TabsContent>
 
-            {/* Lost & Found */}
             <TabsContent value="lost">
               <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-lg border border-destructive/30 bg-destructive/5">
@@ -157,23 +163,23 @@ const Pets = () => {
                       <AlertTriangle className="w-5 h-5 text-destructive" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-foreground">Lost & Found Alerts</h3>
+                      <h3 className="font-semibold text-foreground">{t("pets.lost_alerts", "Lost & Found Alerts")}</h3>
                       <p className="text-sm text-muted-foreground">
                         {(lostPets.length + lostFoundPosts.length) > 0
                           ? `${lostPets.length + lostFoundPosts.length} active report(s)`
-                          : "No missing pets — help keep it that way!"}
+                          : t("pets.no_missing", "No missing pets — help keep it that way!")}
                       </p>
                     </div>
                   </div>
                   <Button variant="destructive" className="gap-2 whitespace-nowrap" onClick={() => setPostChooserOpen(true)}>
-                    <AlertTriangle className="w-4 h-4" /> Report Lost / Found
+                    <AlertTriangle className="w-4 h-4" /> {t("pets.report_lost", "Report Lost / Found")}
                   </Button>
                 </div>
 
                 {lostPets.length > 0 && (
                   <div>
                     <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-destructive" /> Last Seen Locations
+                      <MapPin className="w-4 h-4 text-destructive" /> {t("pets.last_seen", "Last Seen Locations")}
                     </h4>
                     <PetMap pets={lostPets} showFilters={false} />
                   </div>
@@ -184,8 +190,8 @@ const Pets = () => {
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-50 flex items-center justify-center">
                       <span className="text-3xl">✅</span>
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">All pets safe!</h3>
-                    <p className="text-muted-foreground">No lost pets reported right now.</p>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">{t("pets.all_safe", "All pets safe!")}</h3>
+                    <p className="text-muted-foreground">{t("pets.no_lost", "No lost pets reported right now.")}</p>
                   </div>
                 ) : (
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -214,43 +220,43 @@ const Pets = () => {
                               <MapPin className="w-3 h-3 text-destructive" /> Last seen: <span className="font-medium text-foreground">{pet.lost_location}</span>
                             </div>
                           )}
-                          <Button variant="destructive" size="sm" className="w-full gap-1"><Phone className="w-3 h-3" /> I've Seen This Pet</Button>
+                          {pet.owner_id && <div className="mt-1"><UserName userId={pet.owner_id} showAvatar /></div>}
+                          <Button variant="destructive" size="sm" className="w-full gap-1" onClick={() => pet.owner_id && handleContact(pet.owner_id)}><Phone className="w-3 h-3" /> {t("pets.ive_seen", "I've Seen This Pet")}</Button>
                         </CardContent>
                       </Card>
                     ))}
                     {lostFoundPosts.map((post: any) => (
-                      <PostCard key={post.id} post={post} badgeLabel={post.post_type === "lost" ? "Lost" : "Found"} isUrgent />
+                      <PostCard key={post.id} post={post} badgeLabel={post.post_type === "lost" ? t("pets.lost", "Lost") : t("pets.found", "Found")} isUrgent onContact={handleContact} />
                     ))}
                   </div>
                 )}
               </div>
             </TabsContent>
 
-            {/* Shops & Vets */}
             <TabsContent value="shops">
               <div className="space-y-6">
-                <p className="text-sm text-muted-foreground">🗺️ Browse pet shops and vet clinics registered by the community.</p>
+                <p className="text-sm text-muted-foreground">🗺️ {t("pets.browse_shops", "Browse pet shops and vet clinics registered by the community.")}</p>
                 <PetMap pets={pets} showFilters />
                 <div className="grid sm:grid-cols-2 gap-6">
                   {shopPosts.length > 0 && (
                     <div>
-                      <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">🛒 Pet Shops</h3>
+                      <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">🛒 {t("pets.pet_shops", "Pet Shops")}</h3>
                       <div className="space-y-3">
-                        {shopPosts.map((post: any) => <VenueCard key={post.id} post={post} />)}
+                        {shopPosts.map((post: any) => <VenueCard key={post.id} post={post} onContact={handleContact} />)}
                       </div>
                     </div>
                   )}
                   {vetPosts.length > 0 && (
                     <div>
-                      <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">🏥 Vet Clinics</h3>
+                      <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">🏥 {t("pets.vet_clinics", "Vet Clinics")}</h3>
                       <div className="space-y-3">
-                        {vetPosts.map((post: any) => <VenueCard key={post.id} post={post} />)}
+                        {vetPosts.map((post: any) => <VenueCard key={post.id} post={post} onContact={handleContact} />)}
                       </div>
                     </div>
                   )}
                 </div>
                 {shopPosts.length === 0 && vetPosts.length === 0 && (
-                  <EmptyState emoji="🏥" title="No shops or vets registered yet" subtitle="Register your pet shop or vet clinic!" onAction={() => setPostChooserOpen(true)} />
+                  <EmptyState emoji="🏥" title={t("pets.no_shops", "No shops or vets registered yet")} subtitle={t("pets.register_shop", "Register your pet shop or vet clinic!")} onAction={() => setPostChooserOpen(true)} />
                 )}
               </div>
             </TabsContent>
@@ -261,7 +267,7 @@ const Pets = () => {
   );
 };
 
-const PostCard = ({ post, badgeLabel, isUrgent }: { post: any; badgeLabel: string; isUrgent?: boolean }) => (
+const PostCard = ({ post, badgeLabel, isUrgent, onContact }: { post: any; badgeLabel: string; isUrgent?: boolean; onContact: (userId: string) => void }) => (
   <Card className={`hover:shadow-md transition-shadow ${isUrgent ? "border-destructive/50 bg-destructive/5" : ""}`}>
     <CardHeader>
       <div className="flex items-center gap-2 mb-2">
@@ -271,6 +277,7 @@ const PostCard = ({ post, badgeLabel, isUrgent }: { post: any; badgeLabel: strin
       <CardTitle className="text-lg">{post.title}</CardTitle>
       {post.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{post.description}</p>}
       {post.price && <p className="text-primary font-semibold mt-2">{post.price}</p>}
+      {post.user_id && <div className="mt-1"><UserName userId={post.user_id} showAvatar /></div>}
       {post.address && (
         <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
           <MapPin className="w-3 h-3" /> {post.address}
@@ -278,12 +285,12 @@ const PostCard = ({ post, badgeLabel, isUrgent }: { post: any; badgeLabel: strin
       )}
     </CardHeader>
     <CardContent>
-      <Button variant="outline" className="w-full">Contact</Button>
+      <Button variant="outline" className="w-full" onClick={() => post.user_id && onContact(post.user_id)}>Contact</Button>
     </CardContent>
   </Card>
 );
 
-const VenueCard = ({ post }: { post: any }) => (
+const VenueCard = ({ post, onContact }: { post: any; onContact: (userId: string) => void }) => (
   <Card className="hover:shadow-md transition-shadow">
     <CardHeader className="pb-2">
       <CardTitle className="text-base">{post.title}</CardTitle>
@@ -293,11 +300,12 @@ const VenueCard = ({ post }: { post: any }) => (
         </div>
       )}
       {post.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{post.description}</p>}
+      {post.user_id && <div className="mt-1"><UserName userId={post.user_id} showAvatar /></div>}
     </CardHeader>
     <CardContent className="pt-0">
       <div className="flex gap-2">
         {post.phone && <Button variant="outline" size="sm" className="flex-1 gap-1"><Phone className="w-3 h-3" /> Call</Button>}
-        <Button variant="outline" size="sm" className="flex-1">Details</Button>
+        <Button variant="outline" size="sm" className="flex-1" onClick={() => post.user_id && onContact(post.user_id)}>Contact</Button>
       </div>
     </CardContent>
   </Card>

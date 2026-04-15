@@ -336,12 +336,47 @@ const Messages = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeConvId = searchParams.get("conv");
+  const targetUserId = searchParams.get("to");
   const [showNewChat, setShowNewChat] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!user) navigate("/auth");
   }, [user, navigate]);
+
+  // Auto-start conversation when ?to= is provided
+  useEffect(() => {
+    if (!targetUserId || !user || targetUserId === user.id) return;
+    const autoStart = async () => {
+      // Check for existing conversation
+      const { data: myConvs } = await supabase
+        .from("conversation_participants")
+        .select("conversation_id")
+        .eq("user_id", user.id);
+      if (myConvs?.length) {
+        const { data: shared } = await supabase
+          .from("conversation_participants")
+          .select("conversation_id")
+          .eq("user_id", targetUserId)
+          .in("conversation_id", myConvs.map((c) => c.conversation_id));
+        if (shared?.length) {
+          setSearchParams({ conv: shared[0].conversation_id });
+          return;
+        }
+      }
+      // Create new conversation
+      const { data: conv } = await supabase.from("conversations").insert({}).select().single();
+      if (conv) {
+        await supabase.from("conversation_participants").insert([
+          { conversation_id: conv.id, user_id: user.id },
+          { conversation_id: conv.id, user_id: targetUserId },
+        ]);
+        setSearchParams({ conv: conv.id });
+        queryClient.invalidateQueries({ queryKey: ["conversations", user.id] });
+      }
+    };
+    autoStart();
+  }, [targetUserId, user]);
 
   const { data: conversations = [] } = useConversations(user?.id);
   const { data: messages = [] } = useMessages(activeConvId);

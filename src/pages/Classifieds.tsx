@@ -9,12 +9,23 @@ import ClassifiedPostForm from "@/components/classifieds/ClassifiedPostForm";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UserName } from "@/components/shared/UserName";
+import { useLanguage } from "@/providers/LanguageProvider";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/providers/AuthProvider";
 
 const Classifieds = () => {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [postOpen, setPostOpen] = useState(false);
   const queryClient = useQueryClient();
+  const { t } = useLanguage();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleContact = (userId: string) => {
+    if (!user) { navigate("/auth"); return; }
+    navigate(`/messages?to=${userId}`);
+  };
 
   const { data: categories = [] } = useQuery({
     queryKey: ["classified-categories"],
@@ -37,7 +48,7 @@ const Classifieds = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("classifieds")
-      .select("*, user_id")
+        .select("*, user_id")
         .eq("section", "classifieds")
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -57,18 +68,18 @@ const Classifieds = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="font-display font-bold text-3xl md:text-4xl text-foreground mb-2">Classifieds</h1>
-            <p className="text-muted-foreground">Buy, sell, and exchange services within the community</p>
+            <h1 className="font-display font-bold text-3xl md:text-4xl text-foreground mb-2">{t("classifieds.title", "Classifieds")}</h1>
+            <p className="text-muted-foreground">{t("classifieds.subtitle", "Buy, sell, and exchange services within the community")}</p>
           </div>
 
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div className="relative w-full sm:w-80">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Search classifieds..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+              <Input placeholder={t("common.search", "Search...")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
             </div>
             <Dialog open={postOpen} onOpenChange={setPostOpen}>
               <DialogTrigger asChild>
-                <Button className="gap-2"><Plus className="w-4 h-4" /> Post Ad</Button>
+                <Button className="gap-2"><Plus className="w-4 h-4" /> {t("classifieds.post_ad", "Post Ad")}</Button>
               </DialogTrigger>
               <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                 <ClassifiedPostForm
@@ -88,13 +99,13 @@ const Classifieds = () => {
           </div>
 
           {isLoading ? (
-            <div className="text-center py-12 text-muted-foreground">Loading classifieds...</div>
+            <div className="text-center py-12 text-muted-foreground">{t("common.loading", "Loading...")}</div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-12">
               <ShoppingBag className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">No classifieds found</h3>
-              <p className="text-muted-foreground mb-4">Be the first to post an ad!</p>
-              <Button onClick={() => setPostOpen(true)}><Plus className="w-4 h-4 mr-2" /> Post Ad</Button>
+              <h3 className="text-lg font-semibold text-foreground mb-2">{t("classifieds.empty", "No classifieds found")}</h3>
+              <p className="text-muted-foreground mb-4">{t("classifieds.be_first", "Be the first to post an ad!")}</p>
+              <Button onClick={() => setPostOpen(true)}><Plus className="w-4 h-4 mr-2" /> {t("classifieds.post_ad", "Post Ad")}</Button>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-6">
@@ -108,7 +119,7 @@ const Classifieds = () => {
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <Badge variant={item.type === "offer" ? "default" : "secondary"}>
-                            {item.type === "offer" ? "Offering" : "Looking for"}
+                            {item.type === "offer" ? t("classifieds.offering", "Offering") : t("classifieds.looking_for", "Looking for")}
                           </Badge>
                           {item.category && <Badge variant="outline">{item.category}</Badge>}
                         </div>
@@ -125,7 +136,7 @@ const Classifieds = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <Button variant="outline" className="w-full">Contact</Button>
+                    <Button variant="outline" className="w-full" onClick={() => item.user_id && handleContact(item.user_id)}>{t("common.contact", "Contact")}</Button>
                   </CardContent>
                 </Card>
               ))}
