@@ -1,170 +1,330 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
-import { useLanguage } from "@/providers/LanguageProvider";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageSquare, Edit2, Save, X, MapPin, Camera, Users, Bell, Activity, Flag } from "lucide-react";
-import { FriendButton } from "@/components/social/FriendButton";
-import { FriendsList } from "@/components/social/FriendsList";
-import { FriendRequestsList } from "@/components/social/FriendRequestsList";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { MessageSquare, Edit2, MapPin, Users, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { ReportDialog } from "@/components/shared/ReportDialog";
 
 const Profile = () => {
   const { userId } = useParams<{ userId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { t } = useLanguage();
-  const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ display_name: "", bio: "", neighborhood: "", phone: "" });
-  const [uploading, setUploading] = useState(false);
-  const [reportOpen, setReportOpen] = useState(false);
   const isOwn = user?.id === userId;
+  const [followersModal, setFollowersModal] = useState(false);
+  const [followingModal, setFollowingModal] = useState(false);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["profile", userId],
     queryFn: async () => {
       const { data } = await supabase.from("profiles").select("*").eq("user_id", userId!).maybeSingle();
-      if (data) setForm({ display_name: data.display_name || "", bio: data.bio || "", neighborhood: data.neighborhood || "", phone: data.phone || "" });
       return data;
     },
     enabled: !!userId,
   });
 
-  const { data: recentPosts = [] } = useQuery({
-    queryKey: ["profile-activity", userId],
+  // Posts count
+  const { data: postsCount = 0 } = useQuery({
+    queryKey: ["profile-posts-count", userId],
     queryFn: async () => {
-      const items: any[] = [];
-      const { data: wall } = await supabase.from("wall_posts").select("id, content, created_at").eq("user_id", userId!).order("created_at", { ascending: false }).limit(5);
-      (wall || []).forEach((p) => items.push({ ...p, type: "Wall Post", title: p.content?.slice(0, 60) }));
-      const { data: classifieds } = await supabase.from("classifieds").select("id, title, created_at").eq("user_id", userId!).order("created_at", { ascending: false }).limit(5);
-      (classifieds || []).forEach((p) => items.push({ ...p, type: "Classified" }));
-      const { data: help } = await supabase.from("neighbor_help_posts").select("id, title, created_at").eq("user_id", userId!).order("created_at", { ascending: false }).limit(5);
-      (help || []).forEach((p) => items.push({ ...p, type: "Help" }));
-      return items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 10);
+      const { count } = await supabase.from("wall_posts").select("id", { count: "exact", head: true }).eq("user_id", userId!);
+      return count || 0;
     },
     enabled: !!userId,
   });
 
-  const updateProfile = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.from("profiles").update({ display_name: form.display_name, bio: form.bio, neighborhood: form.neighborhood, phone: form.phone }).eq("user_id", user!.id);
-      if (error) throw error;
+  // Followers
+  const { data: followers = [] } = useQuery({
+    queryKey: ["followers", userId],
+    queryFn: async () => {
+      const { data } = await supabase.from("user_follows").select("follower_id").eq("following_id", userId!);
+      if (!data?.length) return [];
+      const ids = data.map(f => f.follower_id);
+      const { data: profiles } = await supabase.from("profiles").select("user_id, display_name, avatar_url").in("user_id", ids);
+      return profiles || [];
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["profile", userId] }); setEditing(false); toast({ title: t("profile.save", "Profile updated!") }); },
+    enabled: !!userId,
   });
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-    setUploading(true);
-    const ext = file.name.split(".").pop();
-    const path = `avatars/${user.id}.${ext}`;
-    const { error: uploadError } = await supabase.storage.from("user-media").upload(path, file, { upsert: true });
-    if (uploadError) { toast({ title: t("common.error", "Upload failed"), variant: "destructive" }); setUploading(false); return; }
-    const { data: urlData } = supabase.storage.from("user-media").getPublicUrl(path);
-    await supabase.from("profiles").update({ avatar_url: urlData.publicUrl }).eq("user_id", user.id);
-    queryClient.invalidateQueries({ queryKey: ["profile", userId] });
-    toast({ title: t("profile.save", "Avatar updated!") });
-    setUploading(false);
+  // Following
+  const { data: following = [] } = useQuery({
+    queryKey: ["following", userId],
+    queryFn: async () => {
+      const { data } = await supabase.from("user_follows").select("following_id").eq("follower_id", userId!);
+      if (!data?.length) return [];
+      const ids = data.map(f => f.following_id);
+      const { data: profiles } = await supabase.from("profiles").select("user_id, display_name, avatar_url").in("user_id", ids);
+      return profiles || [];
+    },
+    enabled: !!userId,
+  });
+
+  // Am I following this user?
+  const { data: isFollowing, refetch: refetchFollow } = useQuery({
+    queryKey: ["is-following", user?.id, userId],
+    queryFn: async () => {
+      const { data } = await supabase.from("user_follows").select("id").eq("follower_id", user!.id).eq("following_id", userId!).maybeSingle();
+      return !!data;
+    },
+    enabled: !!user && !!userId && !isOwn,
+  });
+
+  // User posts
+  const { data: posts = [] } = useQuery({
+    queryKey: ["profile-posts", userId],
+    queryFn: async () => {
+      const { data } = await supabase.from("wall_posts").select("*").eq("user_id", userId!).order("created_at", { ascending: false }).limit(20);
+      return data || [];
+    },
+    enabled: !!userId,
+  });
+
+  // User listings
+  const { data: listings = [] } = useQuery({
+    queryKey: ["profile-listings", userId],
+    queryFn: async () => {
+      const { data } = await supabase.from("classifieds").select("*").eq("user_id", userId!).order("created_at", { ascending: false }).limit(20);
+      return data || [];
+    },
+    enabled: !!userId,
+  });
+
+  // Reviews received
+  const { data: reviews = [] } = useQuery({
+    queryKey: ["profile-reviews", userId],
+    queryFn: async () => {
+      const { data } = await supabase.from("user_reviews").select("*").eq("target_user_id", userId!).order("created_at", { ascending: false });
+      if (!data?.length) return [];
+      const reviewerIds = [...new Set(data.map(r => r.reviewer_id))];
+      const { data: profiles } = await supabase.from("profiles").select("user_id, display_name, avatar_url").in("user_id", reviewerIds);
+      const pMap = Object.fromEntries((profiles || []).map(p => [p.user_id, p]));
+      return data.map(r => ({ ...r, reviewer: pMap[r.reviewer_id] }));
+    },
+    enabled: !!userId,
+  });
+
+  // Groups
+  const { data: groups = [] } = useQuery({
+    queryKey: ["profile-groups", userId],
+    queryFn: async () => {
+      const { data: memberships } = await supabase.from("group_members").select("group_id").eq("user_id", userId!);
+      if (!memberships?.length) return [];
+      const gIds = memberships.map(m => m.group_id);
+      const { data } = await supabase.from("groups").select("*").in("id", gIds);
+      return data || [];
+    },
+    enabled: !!userId,
+  });
+
+  // District name
+  const { data: districtName } = useQuery({
+    queryKey: ["district-name", profile?.district_id],
+    queryFn: async () => {
+      const { data } = await supabase.from("districts").select("name").eq("id", profile!.district_id!).single();
+      return data?.name || null;
+    },
+    enabled: !!profile?.district_id,
+  });
+
+  const handleFollow = async () => {
+    if (!user) { navigate("/auth"); return; }
+    if (isFollowing) {
+      await supabase.from("user_follows").delete().eq("follower_id", user.id).eq("following_id", userId!);
+    } else {
+      await supabase.from("user_follows").insert({ follower_id: user.id, following_id: userId! });
+    }
+    refetchFollow();
   };
 
   const startConversation = async () => {
     if (!user) { navigate("/auth"); return; }
     const { data: myConvs } = await supabase.from("conversation_participants").select("conversation_id").eq("user_id", user.id);
-    if (myConvs && myConvs.length > 0) {
-      const convIds = myConvs.map((c) => c.conversation_id);
+    if (myConvs?.length) {
+      const convIds = myConvs.map(c => c.conversation_id);
       const { data: shared } = await supabase.from("conversation_participants").select("conversation_id").eq("user_id", userId!).in("conversation_id", convIds);
-      if (shared && shared.length > 0) { navigate(`/messages?conv=${shared[0].conversation_id}`); return; }
+      if (shared?.length) { navigate(`/messages?conv=${shared[0].conversation_id}`); return; }
     }
     const { data: conv } = await supabase.from("conversations").insert({}).select().single();
     if (conv) {
-      await supabase.from("conversation_participants").insert([{ conversation_id: conv.id, user_id: user.id }, { conversation_id: conv.id, user_id: userId! }]);
+      await supabase.from("conversation_participants").insert([
+        { conversation_id: conv.id, user_id: user.id },
+        { conversation_id: conv.id, user_id: userId! },
+      ]);
       navigate(`/messages?conv=${conv.id}`);
     }
   };
 
   const initials = (profile?.display_name || "U").slice(0, 2).toUpperCase();
-  if (isLoading) return <div className="flex justify-center py-20 text-muted-foreground">{t("common.loading", "Loading...")}</div>;
-  if (!profile) return <div className="flex justify-center py-20 text-muted-foreground">{t("profile.user_not_found", "User not found")}</div>;
+  const memberSince = profile?.created_at ? new Date(profile.created_at).toLocaleDateString("tr-TR", { month: "long", year: "numeric" }) : "";
+
+  if (isLoading) return <div className="flex justify-center py-20" style={{ color: "#94A3B8" }}>Yükleniyor...</div>;
+  if (!profile) return <div className="flex justify-center py-20" style={{ color: "#94A3B8" }}>Kullanıcı bulunamadı</div>;
+
+  const UserListModal = ({ open, onClose, title, users }: { open: boolean; onClose: () => void; title: string; users: any[] }) => (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader><DialogTitle>{title}</DialogTitle></DialogHeader>
+        <div className="space-y-3 max-h-80 overflow-y-auto">
+          {users.map(u => (
+            <Link key={u.user_id} to={`/profile/${u.user_id}`} className="flex items-center gap-3 hover:bg-muted/50 rounded-lg p-2" onClick={() => onClose()}>
+              <Avatar className="w-8 h-8">
+                <AvatarImage src={u.avatar_url || undefined} />
+                <AvatarFallback style={{ background: "#1E3A5F", color: "#fff", fontSize: 11 }}>{(u.display_name || "U").slice(0, 2).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <span style={{ fontSize: 13, fontWeight: 500, color: "#1E3A5F" }}>{u.display_name || "Kullanıcı"}</span>
+            </Link>
+          ))}
+          {users.length === 0 && <p style={{ fontSize: 13, color: "#94A3B8", textAlign: "center", padding: 16 }}>Henüz kimse yok</p>}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <Card className="mb-6">
-          <CardHeader className="text-center">
-            <div className="relative inline-block mx-auto mb-3">
-              <Avatar className="w-24 h-24"><AvatarImage src={profile.avatar_url || undefined} /><AvatarFallback className="bg-primary text-primary-foreground text-3xl">{initials}</AvatarFallback></Avatar>
-              {isOwn && (
-                <label className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center cursor-pointer hover:bg-primary/90 transition-colors">
-                  <Camera className="w-4 h-4" /><input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploading} />
-                </label>
-              )}
+      <div className="mx-auto px-4 py-6" style={{ maxWidth: 600 }}>
+        {/* Header */}
+        <div className="flex flex-col items-center text-center mb-6">
+          <Avatar className="w-20 h-20 mb-3">
+            <AvatarImage src={profile.avatar_url || undefined} />
+            <AvatarFallback style={{ background: "#1E3A5F", color: "#fff", fontSize: 24, fontWeight: 700 }}>{initials}</AvatarFallback>
+          </Avatar>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#1E3A5F" }}>{profile.display_name || "Anonim"}</h1>
+          {(districtName || profile.neighborhood) && (
+            <div className="flex items-center gap-1 mt-1" style={{ color: "#94A3B8", fontSize: 13 }}>
+              <MapPin className="w-3 h-3" /> {districtName || profile.neighborhood}
             </div>
-            {editing ? (
-              <div className="space-y-3">
-                <Input value={form.display_name} onChange={(e) => setForm({ ...form, display_name: e.target.value })} placeholder={t("profile.display_name", "Display name")} />
-                <Input value={form.neighborhood} onChange={(e) => setForm({ ...form, neighborhood: e.target.value })} placeholder={t("profile.neighborhood", "Neighborhood")} />
-                <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder={t("profile.phone", "Phone number")} />
-                <Textarea value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} placeholder={t("profile.bio", "Tell us about yourself...")} rows={3} />
-                <div className="flex gap-2 justify-center">
-                  <Button size="sm" onClick={() => updateProfile.mutate()}><Save className="w-4 h-4 mr-1" /> {t("profile.save", "Save")}</Button>
-                  <Button size="sm" variant="ghost" onClick={() => setEditing(false)}><X className="w-4 h-4 mr-1" /> {t("profile.cancel", "Cancel")}</Button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <h1 className="font-display text-2xl font-bold text-foreground">{profile.display_name || t("profile.anonymous", "Anonymous")}</h1>
-                {profile.username && <p className="text-sm text-muted-foreground">@{profile.username}</p>}
-                {profile.neighborhood && <div className="flex items-center justify-center gap-1 text-muted-foreground text-sm mt-1"><MapPin className="w-3 h-3" /> {profile.neighborhood}</div>}
-                {profile.bio && <p className="text-muted-foreground mt-2">{profile.bio}</p>}
-                <div className="flex justify-center gap-2 mt-4 flex-wrap">
-                  {isOwn && <Button variant="outline" size="sm" onClick={() => setEditing(true)}><Edit2 className="w-4 h-4 mr-1" /> {t("profile.edit", "Edit Profile")}</Button>}
-                  {!isOwn && user && (
-                    <>
-                      <FriendButton targetUserId={userId!} />
-                      <Button size="sm" variant="outline" onClick={startConversation}><MessageSquare className="w-4 h-4 mr-1" /> {t("profile.message", "Message")}</Button>
-                      <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={() => setReportOpen(true)}><Flag className="w-4 h-4 mr-1" /> Report</Button>
-                    </>
-                  )}
-                </div>
-              </>
-            )}
-          </CardHeader>
-        </Card>
-        <Tabs defaultValue="activity" className="w-full">
-          <TabsList className={`w-full ${isOwn ? 'grid-cols-3' : 'grid-cols-1'} grid`}>
-            <TabsTrigger value="activity" className="gap-1"><Activity className="w-4 h-4" /> {t("profile.activity", "Activity")}</TabsTrigger>
-            {isOwn && (
-              <>
-                <TabsTrigger value="friends" className="gap-1"><Users className="w-4 h-4" /> {t("profile.friends", "Friends")}</TabsTrigger>
-                <TabsTrigger value="requests" className="gap-1"><Bell className="w-4 h-4" /> {t("profile.requests", "Requests")}</TabsTrigger>
-              </>
-            )}
+          )}
+          {profile.bio && <p className="mt-2" style={{ fontSize: 13, color: "#64748B", maxWidth: 400 }}>{profile.bio}</p>}
+          {memberSince && <p className="mt-1" style={{ fontSize: 11, color: "#94A3B8" }}>Üye: {memberSince}</p>}
+        </div>
+
+        {/* Stats */}
+        <div className="flex justify-center gap-0 mb-5">
+          {[
+            { n: postsCount, label: "Gönderi", onClick: undefined },
+            { n: followers.length, label: "Takipçi", onClick: () => setFollowersModal(true) },
+            { n: following.length, label: "Takip", onClick: () => setFollowingModal(true) },
+          ].map((s, i) => (
+            <button
+              key={i}
+              onClick={s.onClick}
+              className="flex flex-col items-center px-5"
+              style={{ borderRight: i < 2 ? "1px solid #E2E8F0" : "none", cursor: s.onClick ? "pointer" : "default" }}
+            >
+              <span style={{ fontSize: 18, fontWeight: 700, color: "#1E3A5F" }}>{s.n}</span>
+              <span style={{ fontSize: 11, color: "#94A3B8" }}>{s.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Actions */}
+        <div className="flex justify-center gap-2 mb-6">
+          {isOwn ? (
+            <Button variant="outline" size="sm" onClick={() => navigate("/profile/edit")} style={{ borderColor: "#1E3A5F", color: "#1E3A5F" }}>
+              <Edit2 className="w-4 h-4 mr-1" /> Profili Düzenle
+            </Button>
+          ) : (
+            <>
+              <Button size="sm" onClick={startConversation} style={{ background: "#E74C3C", color: "#fff", border: "none" }}>
+                <MessageSquare className="w-4 h-4 mr-1" /> Mesaj
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleFollow} style={{ borderColor: "#1E3A5F", color: isFollowing ? "#E74C3C" : "#1E3A5F" }}>
+                <Users className="w-4 h-4 mr-1" /> {isFollowing ? "Takipten Çık" : "Takip Et"}
+              </Button>
+            </>
+          )}
+        </div>
+
+        {/* Tabs */}
+        <Tabs defaultValue="posts" className="w-full">
+          <TabsList className="w-full grid grid-cols-4">
+            <TabsTrigger value="posts" style={{ fontSize: 12 }}>Gönderiler</TabsTrigger>
+            <TabsTrigger value="listings" style={{ fontSize: 12 }}>İlanlar</TabsTrigger>
+            <TabsTrigger value="reviews" style={{ fontSize: 12 }}>Yorumlar</TabsTrigger>
+            <TabsTrigger value="groups" style={{ fontSize: 12 }}>Gruplar</TabsTrigger>
           </TabsList>
-          <TabsContent value="activity">
-            {recentPosts.length === 0 ? <p className="text-muted-foreground text-center py-8">{t("profile.no_activity", "No activity yet")}</p> : (
-              <div className="space-y-3">{recentPosts.map((post) => (
-                <Card key={post.id}><CardContent className="py-3 px-4 flex items-center gap-3"><Badge variant="secondary" className="text-xs">{post.type}</Badge><span className="text-sm text-foreground truncate flex-1">{post.title}</span><span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(post.created_at).toLocaleDateString()}</span></CardContent></Card>
-              ))}</div>
+
+          <TabsContent value="posts">
+            {posts.length === 0 ? <p className="text-center py-8" style={{ color: "#94A3B8", fontSize: 13 }}>Henüz gönderi yok</p> : (
+              <div className="space-y-3 mt-3">
+                {posts.map(p => (
+                  <Card key={p.id}><CardContent className="py-3 px-4">
+                    <p style={{ fontSize: 13, color: "#1E3A5F" }}>{p.content}</p>
+                    <span style={{ fontSize: 11, color: "#94A3B8" }}>{new Date(p.created_at).toLocaleDateString("tr-TR")}</span>
+                  </CardContent></Card>
+                ))}
+              </div>
             )}
           </TabsContent>
-          {isOwn && (<><TabsContent value="friends"><FriendsList /></TabsContent><TabsContent value="requests"><FriendRequestsList /></TabsContent></>)}
+
+          <TabsContent value="listings">
+            {listings.length === 0 ? <p className="text-center py-8" style={{ color: "#94A3B8", fontSize: 13 }}>Henüz ilan yok</p> : (
+              <div className="space-y-3 mt-3">
+                {listings.map(l => (
+                  <Card key={l.id}><CardContent className="py-3 px-4 flex items-center gap-3">
+                    <Badge variant="secondary" style={{ fontSize: 10 }}>{l.section}</Badge>
+                    <span className="flex-1 truncate" style={{ fontSize: 13, color: "#1E3A5F" }}>{l.title}</span>
+                    {l.price && <span style={{ fontSize: 12, fontWeight: 600, color: "#E74C3C" }}>{l.price} {l.currency}</span>}
+                  </CardContent></Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="reviews">
+            {reviews.length === 0 ? <p className="text-center py-8" style={{ color: "#94A3B8", fontSize: 13 }}>Henüz yorum yok</p> : (
+              <div className="space-y-3 mt-3">
+                {reviews.map((r: any) => (
+                  <Card key={r.id}><CardContent className="py-3 px-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Link to={`/profile/${r.reviewer_id}`} className="flex items-center gap-2">
+                        <Avatar className="w-6 h-6">
+                          <AvatarImage src={r.reviewer?.avatar_url} />
+                          <AvatarFallback style={{ fontSize: 9, background: "#1E3A5F", color: "#fff" }}>{(r.reviewer?.display_name || "U").slice(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <span style={{ fontSize: 12, fontWeight: 500, color: "#1E3A5F" }}>{r.reviewer?.display_name || "Kullanıcı"}</span>
+                      </Link>
+                      <span style={{ fontSize: 12 }}>{"⭐".repeat(r.rating)}</span>
+                    </div>
+                    {r.comment && <p style={{ fontSize: 13, color: "#64748B" }}>{r.comment}</p>}
+                    <span style={{ fontSize: 11, color: "#94A3B8" }}>{new Date(r.created_at).toLocaleDateString("tr-TR")}</span>
+                  </CardContent></Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="groups">
+            {groups.length === 0 ? <p className="text-center py-8" style={{ color: "#94A3B8", fontSize: 13 }}>Henüz grup yok</p> : (
+              <div className="space-y-3 mt-3">
+                {groups.map(g => (
+                  <Link key={g.id} to={`/groups/${g.id}`}>
+                    <Card className="hover:shadow-sm transition-shadow"><CardContent className="py-3 px-4 flex items-center gap-3">
+                      <Users className="w-5 h-5" style={{ color: "#1E3A5F" }} />
+                      <div className="flex-1">
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "#1E3A5F" }}>{g.name}</span>
+                        <p style={{ fontSize: 11, color: "#94A3B8" }}>{g.member_count} üye</p>
+                      </div>
+                      <Badge variant="secondary" style={{ fontSize: 10 }}>{g.category}</Badge>
+                    </CardContent></Card>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </TabsContent>
         </Tabs>
       </div>
-      {userId && !isOwn && (
-        <ReportDialog open={reportOpen} onOpenChange={setReportOpen} contentType="user" contentId={userId} />
-      )}
+
+      <UserListModal open={followersModal} onClose={() => setFollowersModal(false)} title="Takipçiler" users={followers} />
+      <UserListModal open={followingModal} onClose={() => setFollowingModal(false)} title="Takip Edilenler" users={following} />
     </div>
   );
 };
