@@ -7,6 +7,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { LanguageProvider } from "@/providers/LanguageProvider";
 import { AuthProvider } from "@/providers/AuthProvider";
+import { LocationProvider } from "@/providers/LocationProvider";
 import PublicLayout from "./components/PublicLayout";
 import Index from "./pages/Index";
 import Groups from "./pages/Groups";
@@ -51,6 +52,7 @@ const App = () => (
         <QueryClientProvider client={queryClient}>
           <LanguageProvider>
             <AuthProvider>
+              <LocationProvider>
               <TooltipProvider>
                 <Toaster />
                 <Sonner />
@@ -95,6 +97,7 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </TooltipProvider>
+              </LocationProvider>
             </AuthProvider>
           </LanguageProvider>
         </QueryClientProvider>
