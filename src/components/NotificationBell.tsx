@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
+import { useLanguage } from "@/providers/LanguageProvider";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Bell, Heart, MessageCircle, Mail, Calendar, Settings } from "lucide-react";
@@ -27,6 +28,7 @@ const timeAgo = (date: string) => {
 
 export function NotificationBell() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -112,16 +114,16 @@ export function NotificationBell() {
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <span className="font-medium text-sm text-foreground">Notifications</span>
+          <span className="font-medium text-sm text-foreground">{t("notifications.title", "Notifications")}</span>
           {unreadCount > 0 && (
             <Button variant="ghost" size="sm" className="text-xs h-7" onClick={markAllRead}>
-              Mark all read
+              {t("notifications.mark_all_read", "Mark all read")}
             </Button>
           )}
         </div>
         <div className="max-h-80 overflow-y-auto">
           {notifications.length === 0 ? (
-            <p className="text-center text-sm text-muted-foreground py-8">No notifications yet</p>
+            <p className="text-center text-sm text-muted-foreground py-8">{t("notifications.empty", "No notifications yet")}</p>
           ) : (
             notifications.map((notif) => {
               const Icon = typeIcons[notif.type] || Settings;
