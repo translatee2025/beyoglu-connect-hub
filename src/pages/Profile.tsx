@@ -3,13 +3,14 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
+import { useLanguage } from "@/providers/LanguageProvider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { MessageSquare, Edit2, MapPin, Users, Star } from "lucide-react";
+import { MessageSquare, Edit2, MapPin, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Profile = () => {
@@ -17,6 +18,7 @@ const Profile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const isOwn = user?.id === userId;
   const [followersModal, setFollowersModal] = useState(false);
   const [followingModal, setFollowingModal] = useState(false);
@@ -30,7 +32,6 @@ const Profile = () => {
     enabled: !!userId,
   });
 
-  // Posts count
   const { data: postsCount = 0 } = useQuery({
     queryKey: ["profile-posts-count", userId],
     queryFn: async () => {
@@ -40,7 +41,6 @@ const Profile = () => {
     enabled: !!userId,
   });
 
-  // Followers
   const { data: followers = [] } = useQuery({
     queryKey: ["followers", userId],
     queryFn: async () => {
@@ -53,7 +53,6 @@ const Profile = () => {
     enabled: !!userId,
   });
 
-  // Following
   const { data: following = [] } = useQuery({
     queryKey: ["following", userId],
     queryFn: async () => {
@@ -66,7 +65,6 @@ const Profile = () => {
     enabled: !!userId,
   });
 
-  // Am I following this user?
   const { data: isFollowing, refetch: refetchFollow } = useQuery({
     queryKey: ["is-following", user?.id, userId],
     queryFn: async () => {
@@ -76,7 +74,6 @@ const Profile = () => {
     enabled: !!user && !!userId && !isOwn,
   });
 
-  // User posts
   const { data: posts = [] } = useQuery({
     queryKey: ["profile-posts", userId],
     queryFn: async () => {
@@ -86,7 +83,6 @@ const Profile = () => {
     enabled: !!userId,
   });
 
-  // User listings
   const { data: listings = [] } = useQuery({
     queryKey: ["profile-listings", userId],
     queryFn: async () => {
@@ -96,7 +92,6 @@ const Profile = () => {
     enabled: !!userId,
   });
 
-  // Reviews received
   const { data: reviews = [] } = useQuery({
     queryKey: ["profile-reviews", userId],
     queryFn: async () => {
@@ -110,7 +105,6 @@ const Profile = () => {
     enabled: !!userId,
   });
 
-  // Groups
   const { data: groups = [] } = useQuery({
     queryKey: ["profile-groups", userId],
     queryFn: async () => {
@@ -123,7 +117,6 @@ const Profile = () => {
     enabled: !!userId,
   });
 
-  // District name
   const { data: districtName } = useQuery({
     queryKey: ["district-name", profile?.district_id],
     queryFn: async () => {
@@ -162,10 +155,10 @@ const Profile = () => {
   };
 
   const initials = (profile?.display_name || "U").slice(0, 2).toUpperCase();
-  const memberSince = profile?.created_at ? new Date(profile.created_at).toLocaleDateString("tr-TR", { month: "long", year: "numeric" }) : "";
+  const memberSince = profile?.created_at ? new Date(profile.created_at).toLocaleDateString(t === undefined ? "tr-TR" : "tr-TR", { month: "long", year: "numeric" }) : "";
 
-  if (isLoading) return <div className="flex justify-center py-20" style={{ color: "#94A3B8" }}>Yükleniyor...</div>;
-  if (!profile) return <div className="flex justify-center py-20" style={{ color: "#94A3B8" }}>Kullanıcı bulunamadı</div>;
+  if (isLoading) return <div className="flex justify-center py-20" style={{ color: "#94A3B8" }}>{t("common.loading", "Yükleniyor...")}</div>;
+  if (!profile) return <div className="flex justify-center py-20" style={{ color: "#94A3B8" }}>{t("profile.user_not_found", "Kullanıcı bulunamadı")}</div>;
 
   const UserListModal = ({ open, onClose, title, users }: { open: boolean; onClose: () => void; title: string; users: any[] }) => (
     <Dialog open={open} onOpenChange={onClose}>
@@ -178,10 +171,10 @@ const Profile = () => {
                 <AvatarImage src={u.avatar_url || undefined} />
                 <AvatarFallback style={{ background: "#1E3A5F", color: "#fff", fontSize: 11 }}>{(u.display_name || "U").slice(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
-              <span style={{ fontSize: 13, fontWeight: 500, color: "#1E3A5F" }}>{u.display_name || "Kullanıcı"}</span>
+              <span style={{ fontSize: 13, fontWeight: 500, color: "#1E3A5F" }}>{u.display_name || t("common.user", "Kullanıcı")}</span>
             </Link>
           ))}
-          {users.length === 0 && <p style={{ fontSize: 13, color: "#94A3B8", textAlign: "center", padding: 16 }}>Henüz kimse yok</p>}
+          {users.length === 0 && <p style={{ fontSize: 13, color: "#94A3B8", textAlign: "center", padding: 16 }}>{t("profile.nobody_yet", "Henüz kimse yok")}</p>}
         </div>
       </DialogContent>
     </Dialog>
@@ -190,70 +183,61 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto px-4 py-6" style={{ maxWidth: 600 }}>
-        {/* Header */}
         <div className="flex flex-col items-center text-center mb-6">
           <Avatar className="w-20 h-20 mb-3">
             <AvatarImage src={profile.avatar_url || undefined} />
             <AvatarFallback style={{ background: "#1E3A5F", color: "#fff", fontSize: 24, fontWeight: 700 }}>{initials}</AvatarFallback>
           </Avatar>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#1E3A5F" }}>{profile.display_name || "Anonim"}</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#1E3A5F" }}>{profile.display_name || t("profile.anonymous", "Anonim")}</h1>
           {(districtName || profile.neighborhood) && (
             <div className="flex items-center gap-1 mt-1" style={{ color: "#94A3B8", fontSize: 13 }}>
               <MapPin className="w-3 h-3" /> {districtName || profile.neighborhood}
             </div>
           )}
           {profile.bio && <p className="mt-2" style={{ fontSize: 13, color: "#64748B", maxWidth: 400 }}>{profile.bio}</p>}
-          {memberSince && <p className="mt-1" style={{ fontSize: 11, color: "#94A3B8" }}>Üye: {memberSince}</p>}
+          {memberSince && <p className="mt-1" style={{ fontSize: 11, color: "#94A3B8" }}>{t("profile.member_since", "Üye")}: {memberSince}</p>}
         </div>
 
-        {/* Stats */}
         <div className="flex justify-center gap-0 mb-5">
           {[
-            { n: postsCount, label: "Gönderi", onClick: undefined },
-            { n: followers.length, label: "Takipçi", onClick: () => setFollowersModal(true) },
-            { n: following.length, label: "Takip", onClick: () => setFollowingModal(true) },
+            { n: postsCount, label: t("profile.posts", "Gönderi"), onClick: undefined },
+            { n: followers.length, label: t("profile.followers", "Takipçi"), onClick: () => setFollowersModal(true) },
+            { n: following.length, label: t("profile.following", "Takip"), onClick: () => setFollowingModal(true) },
           ].map((s, i) => (
-            <button
-              key={i}
-              onClick={s.onClick}
-              className="flex flex-col items-center px-5"
-              style={{ borderRight: i < 2 ? "1px solid #E2E8F0" : "none", cursor: s.onClick ? "pointer" : "default" }}
-            >
+            <button key={i} onClick={s.onClick} className="flex flex-col items-center px-5" style={{ borderRight: i < 2 ? "1px solid #E2E8F0" : "none", cursor: s.onClick ? "pointer" : "default" }}>
               <span style={{ fontSize: 18, fontWeight: 700, color: "#1E3A5F" }}>{s.n}</span>
               <span style={{ fontSize: 11, color: "#94A3B8" }}>{s.label}</span>
             </button>
           ))}
         </div>
 
-        {/* Actions */}
         <div className="flex justify-center gap-2 mb-6">
           {isOwn ? (
             <Button variant="outline" size="sm" onClick={() => navigate("/profile/edit")} style={{ borderColor: "#1E3A5F", color: "#1E3A5F" }}>
-              <Edit2 className="w-4 h-4 mr-1" /> Profili Düzenle
+              <Edit2 className="w-4 h-4 mr-1" /> {t("profile.edit_profile", "Profili Düzenle")}
             </Button>
           ) : (
             <>
               <Button size="sm" onClick={startConversation} style={{ background: "#E74C3C", color: "#fff", border: "none" }}>
-                <MessageSquare className="w-4 h-4 mr-1" /> Mesaj
+                <MessageSquare className="w-4 h-4 mr-1" /> {t("common.message", "Mesaj")}
               </Button>
               <Button variant="outline" size="sm" onClick={handleFollow} style={{ borderColor: "#1E3A5F", color: isFollowing ? "#E74C3C" : "#1E3A5F" }}>
-                <Users className="w-4 h-4 mr-1" /> {isFollowing ? "Takipten Çık" : "Takip Et"}
+                <Users className="w-4 h-4 mr-1" /> {isFollowing ? t("profile.unfollow", "Takipten Çık") : t("profile.follow", "Takip Et")}
               </Button>
             </>
           )}
         </div>
 
-        {/* Tabs */}
         <Tabs defaultValue="posts" className="w-full">
           <TabsList className="w-full grid grid-cols-4">
-            <TabsTrigger value="posts" style={{ fontSize: 12 }}>Gönderiler</TabsTrigger>
-            <TabsTrigger value="listings" style={{ fontSize: 12 }}>İlanlar</TabsTrigger>
-            <TabsTrigger value="reviews" style={{ fontSize: 12 }}>Yorumlar</TabsTrigger>
-            <TabsTrigger value="groups" style={{ fontSize: 12 }}>Gruplar</TabsTrigger>
+            <TabsTrigger value="posts" style={{ fontSize: 12 }}>{t("profile.tab.posts", "Gönderiler")}</TabsTrigger>
+            <TabsTrigger value="listings" style={{ fontSize: 12 }}>{t("profile.tab.listings", "İlanlar")}</TabsTrigger>
+            <TabsTrigger value="reviews" style={{ fontSize: 12 }}>{t("profile.tab.reviews", "Yorumlar")}</TabsTrigger>
+            <TabsTrigger value="groups" style={{ fontSize: 12 }}>{t("profile.tab.groups", "Gruplar")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="posts">
-            {posts.length === 0 ? <p className="text-center py-8" style={{ color: "#94A3B8", fontSize: 13 }}>Henüz gönderi yok</p> : (
+            {posts.length === 0 ? <p className="text-center py-8" style={{ color: "#94A3B8", fontSize: 13 }}>{t("profile.no_posts", "Henüz gönderi yok")}</p> : (
               <div className="space-y-3 mt-3">
                 {posts.map(p => (
                   <Card key={p.id}><CardContent className="py-3 px-4">
@@ -266,7 +250,7 @@ const Profile = () => {
           </TabsContent>
 
           <TabsContent value="listings">
-            {listings.length === 0 ? <p className="text-center py-8" style={{ color: "#94A3B8", fontSize: 13 }}>Henüz ilan yok</p> : (
+            {listings.length === 0 ? <p className="text-center py-8" style={{ color: "#94A3B8", fontSize: 13 }}>{t("profile.no_listings", "Henüz ilan yok")}</p> : (
               <div className="space-y-3 mt-3">
                 {listings.map(l => (
                   <Card key={l.id}><CardContent className="py-3 px-4 flex items-center gap-3">
@@ -280,7 +264,7 @@ const Profile = () => {
           </TabsContent>
 
           <TabsContent value="reviews">
-            {reviews.length === 0 ? <p className="text-center py-8" style={{ color: "#94A3B8", fontSize: 13 }}>Henüz yorum yok</p> : (
+            {reviews.length === 0 ? <p className="text-center py-8" style={{ color: "#94A3B8", fontSize: 13 }}>{t("profile.no_reviews", "Henüz yorum yok")}</p> : (
               <div className="space-y-3 mt-3">
                 {reviews.map((r: any) => (
                   <Card key={r.id}><CardContent className="py-3 px-4">
@@ -290,7 +274,7 @@ const Profile = () => {
                           <AvatarImage src={r.reviewer?.avatar_url} />
                           <AvatarFallback style={{ fontSize: 9, background: "#1E3A5F", color: "#fff" }}>{(r.reviewer?.display_name || "U").slice(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
-                        <span style={{ fontSize: 12, fontWeight: 500, color: "#1E3A5F" }}>{r.reviewer?.display_name || "Kullanıcı"}</span>
+                        <span style={{ fontSize: 12, fontWeight: 500, color: "#1E3A5F" }}>{r.reviewer?.display_name || t("common.user", "Kullanıcı")}</span>
                       </Link>
                       <span style={{ fontSize: 12 }}>{"⭐".repeat(r.rating)}</span>
                     </div>
@@ -303,7 +287,7 @@ const Profile = () => {
           </TabsContent>
 
           <TabsContent value="groups">
-            {groups.length === 0 ? <p className="text-center py-8" style={{ color: "#94A3B8", fontSize: 13 }}>Henüz grup yok</p> : (
+            {groups.length === 0 ? <p className="text-center py-8" style={{ color: "#94A3B8", fontSize: 13 }}>{t("profile.no_groups", "Henüz grup yok")}</p> : (
               <div className="space-y-3 mt-3">
                 {groups.map(g => (
                   <Link key={g.id} to={`/groups/${g.id}`}>
@@ -311,7 +295,7 @@ const Profile = () => {
                       <Users className="w-5 h-5" style={{ color: "#1E3A5F" }} />
                       <div className="flex-1">
                         <span style={{ fontSize: 13, fontWeight: 600, color: "#1E3A5F" }}>{g.name}</span>
-                        <p style={{ fontSize: 11, color: "#94A3B8" }}>{g.member_count} üye</p>
+                        <p style={{ fontSize: 11, color: "#94A3B8" }}>{g.member_count} {t("common.members", "üye")}</p>
                       </div>
                       <Badge variant="secondary" style={{ fontSize: 10 }}>{g.category}</Badge>
                     </CardContent></Card>
@@ -323,8 +307,8 @@ const Profile = () => {
         </Tabs>
       </div>
 
-      <UserListModal open={followersModal} onClose={() => setFollowersModal(false)} title="Takipçiler" users={followers} />
-      <UserListModal open={followingModal} onClose={() => setFollowingModal(false)} title="Takip Edilenler" users={following} />
+      <UserListModal open={followersModal} onClose={() => setFollowersModal(false)} title={t("profile.followers_title", "Takipçiler")} users={followers} />
+      <UserListModal open={followingModal} onClose={() => setFollowingModal(false)} title={t("profile.following_title", "Takip Edilenler")} users={following} />
     </div>
   );
 };
