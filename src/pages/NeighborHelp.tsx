@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Wrench, Search, Plus, User } from "lucide-react";
+import { Wrench, Search, Plus, User, ArrowLeft, ArrowRight, HandHelping } from "lucide-react";
 import { MediaUpload } from "@/components/shared/MediaUpload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -25,9 +26,7 @@ const NeighborHelp = () => {
     queryKey: ["neighbor-help", category],
     queryFn: async () => {
       let query = supabase.from("neighbor_help_posts").select("*").eq("status", "active").order("created_at", { ascending: false });
-      if (category !== "All") {
-        query = query.eq("category", category);
-      }
+      if (category !== "All") query = query.eq("category", category);
       const { data, error } = await query;
       if (error) throw error;
       return data;
@@ -52,7 +51,10 @@ const NeighborHelp = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="font-display font-bold text-3xl md:text-4xl text-foreground mb-2">🤝 Neighbor Help</h1>
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <HandHelping className="w-8 h-8 text-primary" />
+            </div>
+            <h1 className="font-display font-bold text-3xl md:text-4xl text-foreground mb-2">Neighbor Help</h1>
             <p className="text-muted-foreground">Offer or ask for help from your neighbors</p>
           </div>
 
@@ -104,7 +106,7 @@ const NeighborHelp = () => {
                         </div>
                         <CardTitle className="text-lg">{post.title}</CardTitle>
                         {post.description && <p className="text-sm text-muted-foreground mt-1">{post.description}</p>}
-                        {post.neighborhood && <p className="text-xs text-muted-foreground mt-1">📍 {post.neighborhood}</p>}
+                        {post.neighborhood && <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><span>📍</span> {post.neighborhood}</p>}
                       </div>
                     </div>
                   </CardHeader>
@@ -122,6 +124,7 @@ const NeighborHelp = () => {
 };
 
 const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
+  const [step, setStep] = useState(1);
   const [form, setForm] = useState({ title: "", description: "", category: "Mixed / Other", helpType: "offer", neighborhood: "", phone: "", whatsapp: "" });
   const [photos, setPhotos] = useState<string[]>([]);
   const { toast } = useToast();
@@ -131,14 +134,9 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Please log in to post");
       const { error } = await supabase.from("neighbor_help_posts").insert({
-        user_id: user.id,
-        help_type: form.helpType,
-        category: form.category,
-        title: form.title,
-        description: form.description,
-        neighborhood: form.neighborhood,
-        phone: form.phone,
-        whatsapp: form.whatsapp,
+        user_id: user.id, help_type: form.helpType, category: form.category,
+        title: form.title, description: form.description,
+        neighborhood: form.neighborhood, phone: form.phone, whatsapp: form.whatsapp,
       });
       if (error) throw error;
     },
@@ -149,33 +147,50 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
   return (
     <div className="space-y-4">
       <DialogHeader><DialogTitle>Post Help Offer or Request</DialogTitle></DialogHeader>
-      <div className="space-y-3">
-        <div className="flex gap-2">
-          <Button variant={form.helpType === "offer" ? "default" : "outline"} className="flex-1" onClick={() => setForm({ ...form, helpType: "offer" })}>
-            🛠️ I Can Help
+      <Progress value={(step / 2) * 100} className="h-1.5" />
+      <p className="text-xs text-muted-foreground text-center">Step {step} of 2</p>
+
+      {step === 1 && (
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            <Button variant={form.helpType === "offer" ? "default" : "outline"} className="flex-1 gap-2" onClick={() => setForm({ ...form, helpType: "offer" })}>
+              <Wrench className="w-4 h-4" /> I Can Help
+            </Button>
+            <Button variant={form.helpType === "want" ? "default" : "outline"} className="flex-1 gap-2" onClick={() => setForm({ ...form, helpType: "want" })}>
+              <User className="w-4 h-4" /> I Need Help
+            </Button>
+          </div>
+          <div><Label>Category</Label>
+            <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>{helpCategories.filter(c => c !== "All").map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+          <div><Label>Title *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Can fix bathroom leaks" /></div>
+          <div><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} /></div>
+        </div>
+      )}
+
+      {step === 2 && (
+        <div className="space-y-3">
+          <div><Label>Photos / Videos</Label><MediaUpload value={photos} onChange={setPhotos} maxFiles={5} /></div>
+          <div><Label>Neighborhood</Label><Input value={form.neighborhood} onChange={(e) => setForm({ ...form, neighborhood: e.target.value })} /></div>
+          <div className="grid grid-cols-2 gap-3">
+            <div><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+90 5xx" /></div>
+            <div><Label>WhatsApp</Label><Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} /></div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex gap-2">
+        {step > 1 && <Button variant="outline" onClick={() => setStep(1)} className="gap-1"><ArrowLeft className="w-4 h-4" /> Back</Button>}
+        {step < 2 ? (
+          <Button className="flex-1 gap-1" onClick={() => setStep(2)} disabled={!form.title.trim()}>Next <ArrowRight className="w-4 h-4" /></Button>
+        ) : (
+          <Button className="flex-1" onClick={() => mutation.mutate()} disabled={!form.title || mutation.isPending}>
+            {mutation.isPending ? "Posting..." : "Post"}
           </Button>
-          <Button variant={form.helpType === "want" ? "default" : "outline"} className="flex-1" onClick={() => setForm({ ...form, helpType: "want" })}>
-            🙋 I Need Help
-          </Button>
-        </div>
-        <div><Label>Category</Label>
-          <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>{helpCategories.filter(c => c !== "All").map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-          </Select>
-        </div>
-        <div><Label>Title</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Can fix bathroom leaks" /></div>
-        <div><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
-        <div>
-          <Label>Photos / Videos</Label>
-          <MediaUpload value={photos} onChange={setPhotos} maxFiles={5} />
-        </div>
-        <div><Label>Neighborhood</Label><Input value={form.neighborhood} onChange={(e) => setForm({ ...form, neighborhood: e.target.value })} /></div>
-        <div><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+90 5xx xxx xx xx" /></div>
-        <div><Label>WhatsApp</Label><Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} /></div>
-        <Button className="w-full" onClick={() => mutation.mutate()} disabled={!form.title || mutation.isPending}>
-          {mutation.isPending ? "Posting..." : "Post"}
-        </Button>
+        )}
       </div>
     </div>
   );
