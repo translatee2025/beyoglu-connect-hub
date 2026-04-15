@@ -11,12 +11,14 @@ const markerIcon = L.icon({
 });
 
 interface Event {
+  id?: string;
   title: string;
   date: string;
   time: string;
   location: string;
   coordinates: [number, number];
   category: string;
+  cover_photo?: string | null;
 }
 
 interface EventsMapProps {
@@ -31,7 +33,7 @@ const EventsMap = ({ events }: EventsMapProps) => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
     const map = L.map(mapRef.current, {
-      center: [41.0346, 28.9784],
+      center: [41.0330, 28.9815],
       zoom: 14,
       scrollWheelZoom: false,
     });
@@ -54,22 +56,32 @@ const EventsMap = ({ events }: EventsMapProps) => {
     });
 
     events.forEach((event) => {
+      const photoHtml = event.cover_photo
+        ? `<img src="${event.cover_photo}" alt="" style="width:60px;height:60px;object-fit:cover;border-radius:6px;margin-right:8px;float:left;" />`
+        : "";
+      const detailLink = event.id ? `<a href="/events/${event.id}" style="color:#1E3A5F;font-size:11px;font-weight:500;text-decoration:none;">Detay →</a>` : "";
+
       L.marker(event.coordinates, { icon: markerIcon })
         .addTo(map)
         .bindPopup(`
-          <div style="padding: 4px;">
-            <h3 style="font-weight: 600; font-size: 14px; margin: 0 0 4px;">${event.title}</h3>
-            <p style="font-size: 12px; color: #6b7280; margin: 0 0 2px;">${event.location}</p>
-            <p style="font-size: 12px; margin: 0;">${event.date} at ${event.time}</p>
+          <div style="padding:4px;min-width:180px;overflow:hidden;">
+            ${photoHtml}
+            <div>
+              <h3 style="font-weight:600;font-size:13px;margin:0 0 4px;color:#1E3A5F;">${event.title}</h3>
+              <p style="font-size:11px;color:#64748B;margin:0 0 2px;">📅 ${event.date}</p>
+              ${event.location ? `<p style="font-size:11px;color:#94A3B8;margin:0 0 4px;">📍 ${event.location}</p>` : ""}
+              ${detailLink}
+            </div>
           </div>
-        `);
+        `, { maxWidth: 280 });
     });
   }, [events]);
 
   return (
     <div
       ref={mapRef}
-      className="w-full h-[500px] rounded-lg overflow-hidden shadow-lg border border-border"
+      className="w-full h-[500px] rounded-lg overflow-hidden"
+      style={{ border: "1px solid #E2EBFC" }}
     />
   );
 };
