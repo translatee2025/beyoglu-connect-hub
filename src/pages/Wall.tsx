@@ -29,18 +29,29 @@ const Wall = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogPost, setDialogPost] = useState("");
   const [dialogPhotos, setDialogPhotos] = useState<string[]>([]);
+  const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const { t } = useLanguage();
 
+  const { data: districts = [] } = useQuery({
+    queryKey: ["districts"],
+    queryFn: async () => {
+      const { data } = await supabase.from("districts").select("id, name").order("name", { ascending: true });
+      return (data || []) as { id: string; name: string }[];
+    },
+  });
+
   const badgeLabel = (key: string, fallback: string) => t(`wall.badge.${key}`, fallback);
 
   const { data: wallPosts = [] } = useQuery({
-    queryKey: ["wall-posts"],
+    queryKey: ["wall-posts", selectedDistrict],
     queryFn: async () => {
-      const { data } = await supabase.from("wall_posts").select("id, content, photos, user_id, created_at").is("group_id", null).order("created_at", { ascending: false }).limit(20);
+      let q = supabase.from("wall_posts").select("id, content, photos, user_id, created_at").is("group_id", null);
+      if (selectedDistrict) q = q.eq("district_id", selectedDistrict);
+      const { data } = await q.order("created_at", { ascending: false }).limit(20);
       return (data || []).map((item: any) => ({ id: item.id, source: "wall", title: item.content?.slice(0, 80), description: item.content?.length > 80 ? item.content : undefined, photos: item.photos || [], created_at: item.created_at, badge: "post", icon: MessageSquare, entityType: "wall_post" as EntityType, user_id: item.user_id }));
     },
   });
@@ -87,11 +98,14 @@ const Wall = () => {
 
   // Realtime subscription for new wall posts
   useEffect(() => {
+    const filter = selectedDistrict
+      ? `group_id=is.null,district_id=eq.${selectedDistrict}`
+      : `group_id=is.null`;
     const channel = supabase
-      .channel('wall-realtime')
+      .channel(`wall-realtime-${selectedDistrict ?? 'all'}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'wall_posts' },
+        { event: 'INSERT', schema: 'public', table: 'wall_posts', filter },
         (payload) => {
           const row = payload.new as any;
           if (row.group_id) return; // skip group posts
@@ -115,7 +129,7 @@ const Wall = () => {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [queryClient]);
+  }, [queryClient, selectedDistrict]);
 
   const allItems: FeedItem[] = [...wallPosts, ...classifieds, ...petPosts, ...venues, ...helpPosts].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 50);
 
