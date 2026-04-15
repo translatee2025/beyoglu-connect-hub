@@ -1,15 +1,16 @@
 import { NavLink } from "@/components/NavLink";
-import { MessageSquare, Calendar, Dog, Store } from "lucide-react";
+import { MessageSquare, Calendar, Dog, Store, Mail } from "lucide-react";
 import { useLanguage } from "@/providers/LanguageProvider";
 
 const BottomNav = () => {
   const { t } = useLanguage();
 
   const items = [
-    { to: "/wall", icon: MessageSquare, label: t("nav.wall", "Wall") },
-    { to: "/venues", icon: Store, label: t("nav.venues", "Venues") },
-    { to: "/pets", icon: Dog, label: t("nav.pets", "Pets") },
-    { to: "/events", icon: Calendar, label: t("nav.events", "Events") },
+    { to: "/wall", icon: MessageSquare, label: t("nav.wall", "Duvar") },
+    { to: "/venues", icon: Store, label: t("nav.venues", "Mekanlar") },
+    { to: "/pets", icon: Dog, label: t("nav.pets", "Evcil") },
+    { to: "/events", icon: Calendar, label: t("nav.events", "Etkinlik") },
+    { to: "/messages", icon: Mail, label: t("nav.messages", "Mesajlar") },
   ];
 
   return (
