@@ -78,13 +78,8 @@ const NeighborHelp = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <HandHelping className="w-8 h-8 text-primary" />
-            </div>
-            <h1 className="font-display font-bold text-3xl md:text-4xl text-foreground mb-2">{t("help.title", "Neighbor Help")}</h1>
-            <p className="text-muted-foreground">{t("help.subtitle", "Offer or ask for help from your neighbors")}</p>
-          </div>
+
+
 
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div className="relative w-full sm:w-80">
