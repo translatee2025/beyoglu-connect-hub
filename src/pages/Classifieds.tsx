@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ShoppingBag, Search, Plus, MapPin } from "lucide-react";
+import { ShoppingBag, Search, Plus, MapPin, MoreHorizontal, Flag } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,8 +12,11 @@ import { UserName } from "@/components/shared/UserName";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
+import { ReportDialog } from "@/components/shared/ReportDialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const Classifieds = () => {
+  const [reportTarget, setReportTarget] = useState<{ id: string } | null>(null);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [postOpen, setPostOpen] = useState(false);
@@ -117,11 +120,25 @@ const Classifieds = () => {
                         <ShoppingBag className="w-6 h-6 text-primary" />
                       </div>
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge variant={item.type === "offer" ? "default" : "secondary"}>
-                            {item.type === "offer" ? t("classifieds.offering", "Offering") : t("classifieds.looking_for", "Looking for")}
-                          </Badge>
-                          {item.category && <Badge variant="outline">{item.category}</Badge>}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
+                            <Badge variant={item.type === "offer" ? "default" : "secondary"}>
+                              {item.type === "offer" ? t("classifieds.offering", "Offering") : t("classifieds.looking_for", "Looking for")}
+                            </Badge>
+                            {item.category && <Badge variant="outline">{item.category}</Badge>}
+                          </div>
+                          {user && item.user_id && item.user_id !== user.id && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button className="p-1 text-muted-foreground hover:text-foreground"><MoreHorizontal className="w-4 h-4" /></button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => setReportTarget({ id: item.id })}>
+                                  <Flag className="w-4 h-4 mr-2" /> Report listing
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
                         </div>
                         <CardTitle className="text-xl mb-1">{item.title}</CardTitle>
                         {item.description && <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>}
@@ -144,6 +161,14 @@ const Classifieds = () => {
           )}
         </div>
       </div>
+      {reportTarget && (
+        <ReportDialog
+          open={!!reportTarget}
+          onOpenChange={(o) => { if (!o) setReportTarget(null); }}
+          contentType="classified"
+          contentId={reportTarget.id}
+        />
+      )}
     </div>
   );
 };

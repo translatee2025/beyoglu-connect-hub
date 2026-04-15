@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { MessageSquare, Share2, Home, Car, Dog, Store, Wrench, Plus } from "lucide-react";
+import { MessageSquare, Share2, Home, Car, Dog, Store, Wrench, Plus, MoreHorizontal, Flag } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -17,10 +17,13 @@ import { MediaUpload } from "@/components/shared/MediaUpload";
 import { MediaGrid } from "@/components/shared/MediaGrid";
 import { UserName } from "@/components/shared/UserName";
 import { CommentsSection } from "@/components/shared/CommentsSection";
+import { ReportDialog } from "@/components/shared/ReportDialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 type FeedItem = { id: string; source: string; title: string; description?: string; photos?: string[]; created_at: string; badge: string; icon: any; entityType: EntityType; user_id?: string; };
 
 const Wall = () => {
+  const [reportTarget, setReportTarget] = useState<{ type: string; id: string } | null>(null);
   const [newPost, setNewPost] = useState("");
   const [newPhotos, setNewPhotos] = useState<string[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -152,6 +155,18 @@ const Wall = () => {
                           <h3 className="font-semibold text-foreground">{item.title}</h3>
                           {item.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{item.description}</p>}
                         </div>
+                        {user && item.user_id && item.user_id !== user.id && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button className="p-1 text-muted-foreground hover:text-foreground"><MoreHorizontal className="w-4 h-4" /></button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => setReportTarget({ type: item.source === "wall" ? "wall_post" : item.source === "classifieds" ? "classified" : item.source === "venues" ? "venue" : item.source === "help" ? "help_post" : item.entityType, id: item.id })}>
+                                <Flag className="w-4 h-4 mr-2" /> Report
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
                       </div>
                     </CardHeader>
                     {item.photos && item.photos.length > 0 && <div className="px-6 pb-2"><MediaGrid urls={item.photos} /></div>}
@@ -169,6 +184,14 @@ const Wall = () => {
           )}
         </div>
       </div>
+      {reportTarget && (
+        <ReportDialog
+          open={!!reportTarget}
+          onOpenChange={(o) => { if (!o) setReportTarget(null); }}
+          contentType={reportTarget.type}
+          contentId={reportTarget.id}
+        />
+      )}
     </div>
   );
 };

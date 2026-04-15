@@ -31,6 +31,7 @@ import AdminModules from "./pages/admin/AdminModules";
 import AdminTheme from "./pages/admin/AdminTheme";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminAI from "./pages/admin/AdminAI";
+import AdminReports from "./pages/admin/AdminReports";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -55,6 +56,7 @@ const App = () => (
                     <Route index element={<AdminDashboard />} />
                     <Route path="modules" element={<AdminModules />} />
                     <Route path="theme" element={<AdminTheme />} />
+                    <Route path="reports" element={<AdminReports />} />
                     <Route path="settings" element={<AdminSettings />} />
                     <Route path="ai" element={<AdminAI />} />
                   </Route>

@@ -8,16 +8,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Store, MapPin, Phone, Clock, Star, ArrowLeft, Globe, MessageSquare } from "lucide-react";
+import { Store, MapPin, Phone, Clock, Star, ArrowLeft, Globe, MessageSquare, Flag } from "lucide-react";
 import { LikeButton } from "@/components/social/LikeButton";
 import { CommentsSection } from "@/components/shared/CommentsSection";
 import { UserName } from "@/components/shared/UserName";
 import { MediaGrid } from "@/components/shared/MediaGrid";
+import { ReportDialog } from "@/components/shared/ReportDialog";
 
 const VenueDetail = () => {
   const { venueId } = useParams<{ venueId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [reportOpen, setReportOpen] = useState(false);
 
   const { data: venue, isLoading } = useQuery({
     queryKey: ["venue-detail", venueId],
@@ -80,9 +82,16 @@ const VenueDetail = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6 max-w-3xl">
-        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-1 mb-4">
-          <ArrowLeft className="w-4 h-4" /> Back
-        </Button>
+        <div className="flex items-center justify-between mb-4">
+          <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-1">
+            <ArrowLeft className="w-4 h-4" /> Back
+          </Button>
+          {user && (
+            <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground" onClick={() => setReportOpen(true)}>
+              <Flag className="w-4 h-4" /> Report
+            </Button>
+          )}
+        </div>
 
         {/* Header */}
         <Card className="mb-4">
@@ -228,6 +237,9 @@ const VenueDetail = () => {
           </TabsContent>
         </Tabs>
       </div>
+      {venueId && (
+        <ReportDialog open={reportOpen} onOpenChange={setReportOpen} contentType="venue" contentId={venueId} />
+      )}
     </div>
   );
 };
