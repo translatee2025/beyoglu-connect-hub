@@ -208,17 +208,9 @@ const Events = () => {
 
           {activeTab === "list" ? (
             isLoading ? (
-              <div className="text-center py-12 text-[#94A3B8] text-xs">Yükleniyor...</div>
+              <SkeletonGrid count={3} hasPhoto photoHeight={160} />
             ) : filteredEvents.length === 0 ? (
-              <div className="text-center py-12">
-                <Calendar className="w-12 h-12 mx-auto text-[#94A3B8] mb-3 opacity-40" />
-                <p className="text-sm" style={{ color: "#94A3B8" }}>{t("events.no_events", "Yaklaşan etkinlik bulunamadı")}</p>
-                {user && (
-                  <Button variant="outline" size="sm" className="mt-3 text-xs" onClick={() => setShowCreate(true)}>
-                    İlk etkinliği oluşturun
-                  </Button>
-                )}
-              </div>
+              <EmptyState emoji="📅" message={t("empty.events", "Yakında etkinlik yok. Bir etkinlik oluştur!")} actionLabel={t("events.create_event", "Etkinlik Oluştur")} onAction={() => setShowCreate(true)} />
             ) : (
               <div className="grid sm:grid-cols-2 gap-3">
                 {filteredEvents.map((event) => {

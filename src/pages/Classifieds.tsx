@@ -100,14 +100,9 @@ const Classifieds = () => {
           </div>
 
           {isLoading ? (
-            <div className="text-center py-12 text-muted-foreground">{t("common.loading", "Loading...")}</div>
+            <SkeletonGrid count={2} />
           ) : filtered.length === 0 ? (
-            <div className="text-center py-12">
-              <ShoppingBag className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">{t("classifieds.empty", "No classifieds found")}</h3>
-              <p className="text-muted-foreground mb-4">{t("classifieds.be_first", "Be the first to post an ad!")}</p>
-              <Button onClick={() => setPostOpen(true)}><Plus className="w-4 h-4 mr-2" /> {t("classifieds.post_ad", "Post Ad")}</Button>
-            </div>
+            <EmptyState emoji="🛍️" message={t("empty.classifieds", "Henüz ilan yok. İlk ilanı sen ver!")} actionLabel={t("classifieds.post_ad", "Post Ad")} onAction={() => setPostOpen(true)} />
           ) : (
             <div className="grid md:grid-cols-2 gap-6">
               {filtered.map((item: any) => (

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { MessageSquare, Home, Car, Dog, Store, Wrench, Plus, MoreHorizontal, Flag, Users, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -82,7 +82,7 @@ const Wall = () => {
 
   const badgeLabel = (key: string, fallback: string) => t(`wall.badge.${key}`, fallback);
 
-  const { data: wallPosts = [] } = useQuery({
+  const { data: wallPosts = [], isLoading: wallLoading } = useQuery({
     queryKey: ["wall-posts", selectedDistrict],
     queryFn: async () => {
       let q = supabase.from("wall_posts").select("id, content, photos, user_id, created_at").is("group_id", null);
@@ -337,11 +337,10 @@ const Wall = () => {
         </div>
 
         {/* Feed */}
-        {filteredItems.length === 0 ? (
-          <div className="text-center py-12 text-[#94A3B8]">
-            <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-40" />
-            <p className="text-sm">{t("wall.no_activity", "No activity yet. Be the first to post!")}</p>
-          </div>
+        {wallLoading ? (
+          <SkeletonFeedList count={3} />
+        ) : filteredItems.length === 0 ? (
+          <EmptyState emoji="🌟" message={t("empty.feed", "Henüz gönderi yok. İlk gönderiyi sen yap! 🌟")} actionLabel={t("common.post", "Paylaş")} onAction={() => {}} />
         ) : (
           <div className="space-y-3">
             {filteredItems.map((item) => {

@@ -98,7 +98,7 @@ const ConversationList = ({ conversations, activeConvId, onSelect, onDelete, onN
       {conversations.length === 0 ? (
         <div className="text-center py-12 text-[#94A3B8]">
           <MessageSquare className="w-10 h-10 mx-auto mb-2 opacity-30" />
-          <p className="text-xs">{t("messages.no_conversations", "Henüz konuşma yok")}</p>
+          <p className="text-xs">{t("empty.messages", "Henüz mesaj yok. Bir gönderiden birini mesajla!")}</p>
         </div>
       ) : (
         conversations.map((conv) => {

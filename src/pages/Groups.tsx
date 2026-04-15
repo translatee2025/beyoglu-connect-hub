@@ -283,13 +283,9 @@ const Groups = () => {
           </div>
 
           {isLoading ? (
-            <div className="text-center py-12 text-muted-foreground">{t("groups.loading", "Loading groups...")}</div>
+            <SkeletonGrid count={2} hasPhoto />
           ) : filtered.length === 0 ? (
-            <div className="text-center py-12">
-              <Users className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">{t("groups.empty_title", "No groups found")}</h3>
-              <p className="text-muted-foreground">{t("groups.empty_description", "Create the first group!")}</p>
-            </div>
+            <EmptyState emoji="👥" message={t("empty.groups", "Henüz grup yok. İlk grubu sen oluştur!")} actionLabel={t("groups.create", "Grup Oluştur")} onAction={() => setCreateOpen(true)} />
           ) : (
             <div className="grid md:grid-cols-2 gap-6">
               {filtered.map((group) => {
