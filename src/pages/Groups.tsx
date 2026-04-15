@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Users, Lock, Globe as GlobeIcon, UserPlus, Plus, Search } from "lucide-react";
+import { Users, Lock, Globe as GlobeIcon, UserPlus, Plus, Search, ArrowLeft, ArrowRight } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { MediaUpload } from "@/components/shared/MediaUpload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -422,86 +423,94 @@ const GroupForm = ({
     },
   });
 
+  const [step, setStep] = useState(1);
+
   return (
     <div className="space-y-4">
       <DialogHeader>
         <DialogTitle>{t("groups.form.title", "Create a Group")}</DialogTitle>
       </DialogHeader>
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label>{t("groups.form.name_label", "Group Name")}</Label>
-          <Input
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder={t("groups.form.name_placeholder", "e.g. Beyoğlu Book Club")}
-          />
-        </div>
+      <Progress value={(step / 2) * 100} className="h-1.5" />
+      <p className="text-xs text-muted-foreground text-center">{t("common.step", "Step")} {step} / 2</p>
 
-        <div className="space-y-2">
-          <Label>{t("groups.form.category_label", "Category")}</Label>
-          <Select value={form.category} onValueChange={(value) => setForm({ ...form, category: value })}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("groups.form.category_placeholder", "Select category")}></SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {groupOptions.categories.map((item) => (
-                <SelectItem key={item.key} value={item.key}>
-                  {t(item.translationKey, item.fallback)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {step === 1 && (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>{t("groups.form.name_label", "Group Name")}</Label>
+            <Input
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder={t("groups.form.name_placeholder", "e.g. Beyoğlu Book Club")}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>{t("groups.form.category_label", "Category")}</Label>
+            <Select value={form.category} onValueChange={(value) => setForm({ ...form, category: value })}>
+              <SelectTrigger><SelectValue placeholder={t("groups.form.category_placeholder", "Select category")} /></SelectTrigger>
+              <SelectContent>
+                {groupOptions.categories.map((item) => (
+                  <SelectItem key={item.key} value={item.key}>{t(item.translationKey, item.fallback)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>{t("groups.form.type_label", "Type")}</Label>
+            <Select value={form.groupType} onValueChange={(value) => setForm({ ...form, groupType: value })}>
+              <SelectTrigger><SelectValue placeholder={t("groups.form.type_placeholder", "Select type")} /></SelectTrigger>
+              <SelectContent>
+                {groupOptions.groupTypes.map((item) => (
+                  <SelectItem key={item.key} value={item.key}>{t(item.translationKey, item.fallback)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+      )}
 
-        <div className="space-y-2">
-          <Label>{t("groups.form.type_label", "Type")}</Label>
-          <Select value={form.groupType} onValueChange={(value) => setForm({ ...form, groupType: value })}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("groups.form.type_placeholder", "Select type")}></SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {groupOptions.groupTypes.map((item) => (
-                <SelectItem key={item.key} value={item.key}>
-                  {t(item.translationKey, item.fallback)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {step === 2 && (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>{t("groups.form.neighborhood_label", "Neighborhood")}</Label>
+            <Select value={form.neighborhood} onValueChange={(value) => setForm({ ...form, neighborhood: value })}>
+              <SelectTrigger><SelectValue placeholder={t("groups.form.neighborhood_placeholder", "Select neighborhood")} /></SelectTrigger>
+              <SelectContent>
+                {groupOptions.neighborhoods.map((item) => (
+                  <SelectItem key={item.key} value={item.key}>{t(item.translationKey, item.fallback)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>{t("groups.form.description_label", "Description")}</Label>
+            <Textarea
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder={t("groups.form.description_placeholder", "What is this group about?")}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>{t("groups.form.cover_photo", "Cover Photo")}</Label>
+            <MediaUpload value={form.coverPhoto ? [form.coverPhoto] : []} onChange={(urls) => setForm({ ...form, coverPhoto: urls[0] || "" })} maxFiles={1} label={t("groups.form.add_cover", "Add Cover Photo")} />
+          </div>
         </div>
+      )}
 
-        <div className="space-y-2">
-          <Label>{t("groups.form.neighborhood_label", "Neighborhood")}</Label>
-          <Select value={form.neighborhood} onValueChange={(value) => setForm({ ...form, neighborhood: value })}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("groups.form.neighborhood_placeholder", "Select neighborhood")}></SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {groupOptions.neighborhoods.map((item) => (
-                <SelectItem key={item.key} value={item.key}>
-                  {t(item.translationKey, item.fallback)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label>{t("groups.form.description_label", "Description")}</Label>
-          <Textarea
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            placeholder={t("groups.form.description_placeholder", "What is this group about?")}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>{t("groups.form.cover_photo", "Cover Photo")}</Label>
-          <MediaUpload value={form.coverPhoto ? [form.coverPhoto] : []} onChange={(urls) => setForm({ ...form, coverPhoto: urls[0] || "" })} maxFiles={1} label={t("groups.form.add_cover", "Add Cover Photo")} />
-        </div>
-
-        <Button className="w-full" onClick={() => mutation.mutate()} disabled={!form.name.trim() || mutation.isPending}>
-          {mutation.isPending ? t("groups.form.submitting", "Creating...") : t("groups.form.submit", "Create Group")}
-        </Button>
+      <div className="flex gap-2">
+        {step > 1 && (
+          <Button variant="outline" onClick={() => setStep(1)} className="gap-1">
+            <ArrowLeft className="w-4 h-4" /> {t("common.back", "Back")}
+          </Button>
+        )}
+        {step < 2 ? (
+          <Button className="flex-1 gap-1" onClick={() => setStep(2)} disabled={!form.name.trim()}>
+            {t("common.next", "Next")} <ArrowRight className="w-4 h-4" />
+          </Button>
+        ) : (
+          <Button className="flex-1" onClick={() => mutation.mutate()} disabled={!form.name.trim() || mutation.isPending}>
+            {mutation.isPending ? t("groups.form.submitting", "Creating...") : t("groups.form.submit", "Create Group")}
+          </Button>
+        )}
       </div>
     </div>
   );

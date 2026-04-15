@@ -71,7 +71,10 @@ const Pets = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="font-display font-bold text-4xl md:text-5xl text-foreground mb-4">🐾 Pet Community</h1>
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <Dog className="w-8 h-8 text-primary" />
+            </div>
+            <h1 className="font-display font-bold text-4xl md:text-5xl text-foreground mb-4">Pet Community</h1>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               Connect with furry (and feathery) neighbors. Adopt, find sitters, playmates, and more.
             </p>
@@ -91,8 +94,8 @@ const Pets = () => {
 
           <Tabs defaultValue="adoption" className="w-full">
             <TabsList className="mb-6 flex-wrap h-auto gap-1">
-              <TabsTrigger value="adoption" className="flex items-center gap-2">🐾 Adoption</TabsTrigger>
-              <TabsTrigger value="sitting" className="flex items-center gap-2">🏠 Pet Sitting</TabsTrigger>
+              <TabsTrigger value="adoption" className="flex items-center gap-2"><Dog className="w-4 h-4" /> Adoption</TabsTrigger>
+              <TabsTrigger value="sitting" className="flex items-center gap-2"><Home className="w-4 h-4" /> Pet Sitting</TabsTrigger>
               <TabsTrigger value="friends" className="flex items-center gap-2"><Heart className="w-4 h-4" /> Friends</TabsTrigger>
               <TabsTrigger value="lost" className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" /> Lost & Found
@@ -100,7 +103,7 @@ const Pets = () => {
                   <Badge variant="destructive" className="ml-1 text-xs px-1.5 py-0">{lostPets.length + lostFoundPosts.length}</Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="shops" className="flex items-center gap-2">🏥 Shops & Vets</TabsTrigger>
+              <TabsTrigger value="shops" className="flex items-center gap-2"><Stethoscope className="w-4 h-4" /> Shops & Vets</TabsTrigger>
             </TabsList>
 
             {/* Adoption */}
