@@ -11,10 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import PetSwipeCards from "./PetSwipeCards";
-
-const speciesEmoji: Record<string, string> = {
-  dog: "🐕", cat: "🐈", bird: "🐦", rabbit: "🐇", fish: "🐟", other: "🐾",
-};
+import { useSpecies } from "@/hooks/useSpeciesBreeds";
 
 const sizeOptions = [
   { value: "tiny", label: "Tiny (< 5kg)", emoji: "🐾" },
@@ -60,6 +57,7 @@ const FriendFinder = () => {
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"swipe" | "list">("swipe");
+  const { speciesOptions, speciesEmojiMap } = useSpecies();
 
   const { data: allPets = [], isLoading } = useQuery({
     queryKey: ["friend-finder-pets"],
@@ -123,29 +121,16 @@ const FriendFinder = () => {
       return;
     }
 
-    // Send message to pet owner
     try {
-      // Find or create conversation
-      const { data: existingConvos } = await supabase
-        .from("conversation_participants")
-        .select("conversation_id")
-        .eq("user_id", user.id);
-
+      const { data: existingConvos } = await supabase.from("conversation_participants").select("conversation_id").eq("user_id", user.id);
       let conversationId: string | null = null;
-
       if (existingConvos && existingConvos.length > 0) {
         const convoIds = existingConvos.map(c => c.conversation_id);
-        const { data: ownerParticipation } = await supabase
-          .from("conversation_participants")
-          .select("conversation_id")
-          .eq("user_id", pet.owner_id)
-          .in("conversation_id", convoIds);
-
+        const { data: ownerParticipation } = await supabase.from("conversation_participants").select("conversation_id").eq("user_id", pet.owner_id).in("conversation_id", convoIds);
         if (ownerParticipation && ownerParticipation.length > 0) {
           conversationId = ownerParticipation[0].conversation_id;
         }
       }
-
       if (!conversationId) {
         const { data: newConvo } = await supabase.from("conversations").insert({}).select("id").single();
         if (newConvo) {
@@ -156,7 +141,6 @@ const FriendFinder = () => {
           ]);
         }
       }
-
       if (conversationId) {
         await supabase.from("messages").insert({
           conversation_id: conversationId,
@@ -164,9 +148,7 @@ const FriendFinder = () => {
           content: `❤️ ${myPets[0].name} liked your pet ${pet.name}! Let's arrange a meetup! 🐾`,
         });
       }
-    } catch (e) {
-      // Non-critical — like was still recorded
-    }
+    } catch (e) {}
 
     toast({ title: `❤️ Woof sent to ${pet.name}!`, description: "The owner has been notified via message." });
   };
@@ -180,7 +162,6 @@ const FriendFinder = () => {
 
   return (
     <div className="space-y-4">
-      {/* Controls bar */}
       <div className="flex flex-wrap items-center gap-2">
         <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "swipe" | "list")} className="mr-auto">
           <TabsList className="h-9">
@@ -205,11 +186,7 @@ const FriendFinder = () => {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="dog">🐕 Dogs</SelectItem>
-                    <SelectItem value="cat">🐈 Cats</SelectItem>
-                    <SelectItem value="bird">🐦 Birds</SelectItem>
-                    <SelectItem value="rabbit">🐇 Rabbits</SelectItem>
-                    <SelectItem value="other">🐾 Other</SelectItem>
+                    {speciesOptions.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -265,7 +242,7 @@ const FriendFinder = () => {
 
         {activeFilterCount > 0 && (
           <div className="flex flex-wrap gap-1">
-            {filters.species !== "all" && <Badge variant="secondary" className="gap-1 cursor-pointer text-xs" onClick={() => setFilters(f => ({ ...f, species: "all" }))}>{speciesEmoji[filters.species]} {filters.species} <X className="w-3 h-3" /></Badge>}
+            {filters.species !== "all" && <Badge variant="secondary" className="gap-1 cursor-pointer text-xs" onClick={() => setFilters(f => ({ ...f, species: "all" }))}>{speciesEmojiMap[filters.species] || "🐾"} {filters.species} <X className="w-3 h-3" /></Badge>}
             {filters.size !== "all" && <Badge variant="secondary" className="gap-1 cursor-pointer text-xs" onClick={() => setFilters(f => ({ ...f, size: "all" }))}>Size: {filters.size} <X className="w-3 h-3" /></Badge>}
           </div>
         )}
@@ -273,7 +250,6 @@ const FriendFinder = () => {
         <span className="text-xs text-muted-foreground">{filteredPets.length} pets</span>
       </div>
 
-      {/* Content */}
       {isLoading ? (
         <div className="text-center py-12 text-muted-foreground">Finding pets near you...</div>
       ) : filteredPets.length === 0 ? (
@@ -288,7 +264,7 @@ const FriendFinder = () => {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredPets.map((pet: any) => (
-            <FriendCard key={pet.id} pet={pet} onWoof={handleWoof} />
+            <FriendCard key={pet.id} pet={pet} onWoof={handleWoof} speciesEmojiMap={speciesEmojiMap} />
           ))}
         </div>
       )}
@@ -296,13 +272,13 @@ const FriendFinder = () => {
   );
 };
 
-const FriendCard = ({ pet, onWoof }: { pet: any; onWoof: (pet: any) => void }) => (
+const FriendCard = ({ pet, onWoof, speciesEmojiMap }: { pet: any; onWoof: (pet: any) => void; speciesEmojiMap: Record<string, string> }) => (
   <Card className="hover:shadow-lg transition-all hover:-translate-y-0.5 border-border/50 overflow-hidden">
     <div className="relative aspect-[4/3] bg-muted">
       {pet.photo_url ? (
         <img src={pet.photo_url} alt={pet.name} className="w-full h-full object-cover" />
       ) : (
-        <div className="w-full h-full flex items-center justify-center text-5xl">{speciesEmoji[pet.species] || "🐾"}</div>
+        <div className="w-full h-full flex items-center justify-center text-5xl">{speciesEmojiMap[pet.species] || "🐾"}</div>
       )}
       <div className="absolute top-2 left-2 flex gap-1">
         {pet.gender && <span className="text-xs bg-card/90 backdrop-blur-sm px-2 py-0.5 rounded-full font-medium">{pet.gender === "male" ? "♂" : "♀"}</span>}

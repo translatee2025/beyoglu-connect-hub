@@ -8,15 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import PetPhotoUpload from "./PetPhotoUpload";
-
-const species = [
-  { value: "dog", label: "🐕 Dog" },
-  { value: "cat", label: "🐈 Cat" },
-  { value: "bird", label: "🐦 Bird" },
-  { value: "rabbit", label: "🐇 Rabbit" },
-  { value: "fish", label: "🐟 Fish" },
-  { value: "other", label: "🐾 Other" },
-];
+import { useSpecies, useBreeds } from "@/hooks/useSpeciesBreeds";
 
 const sizeOptions = [
   { value: "tiny", label: "Tiny (< 5kg)" },
@@ -74,6 +66,9 @@ const AddPetForm = ({ onSuccess }: AddPetFormProps) => {
     size_preference: [] as string[],
     lifestyle_tags: [] as string[],
   });
+
+  const { speciesOptions } = useSpecies();
+  const { breedOptions } = useBreeds(form.species);
 
   const toggleArray = (field: "personality_tags" | "looking_for" | "size_preference" | "lifestyle_tags", value: string) => {
     setForm(prev => ({
@@ -157,7 +152,6 @@ const AddPetForm = ({ onSuccess }: AddPetFormProps) => {
     <form onSubmit={handleSubmit} className="space-y-4">
       <h2 className="text-xl font-bold text-foreground">Add Your Pet</h2>
 
-      {/* Photo Upload */}
       <div>
         <Label className="mb-2 block">Photos</Label>
         <PetPhotoUpload photos={photos} onPhotosChange={setPhotos} />
@@ -171,17 +165,22 @@ const AddPetForm = ({ onSuccess }: AddPetFormProps) => {
 
         <div>
           <Label>Species</Label>
-          <Select value={form.species} onValueChange={v => setForm({ ...form, species: v })}>
+          <Select value={form.species} onValueChange={v => setForm({ ...form, species: v, breed: "" })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              {species.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+              {speciesOptions.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
 
         <div>
-          <Label htmlFor="breed">Breed</Label>
-          <Input id="breed" value={form.breed} onChange={e => setForm({ ...form, breed: e.target.value })} placeholder="e.g. Golden Retriever" />
+          <Label>Breed</Label>
+          <Select value={form.breed} onValueChange={v => setForm({ ...form, breed: v })}>
+            <SelectTrigger><SelectValue placeholder="Select breed..." /></SelectTrigger>
+            <SelectContent>
+              {breedOptions.map(b => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
@@ -246,10 +245,8 @@ const AddPetForm = ({ onSuccess }: AddPetFormProps) => {
       <TagSelector label="Looking For" field="looking_for" options={lookingForOptions} />
       <TagSelector label="Lifestyle" field="lifestyle_tags" options={lifestyleOptions} />
 
-      {/* Preferences section */}
       <div className="border-t border-border pt-4">
         <h3 className="font-semibold text-foreground mb-3">Friend Preferences</h3>
-        
         <div className="space-y-4">
           <div>
             <Label>Gender Preference</Label>
@@ -262,7 +259,6 @@ const AddPetForm = ({ onSuccess }: AddPetFormProps) => {
               </SelectContent>
             </Select>
           </div>
-
           <TagSelector label="Preferred Friend Size" field="size_preference" options={sizeOptions.map(s => s.value)} />
         </div>
       </div>

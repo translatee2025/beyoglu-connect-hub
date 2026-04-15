@@ -8,6 +8,7 @@ import { AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { useSpecies, useBreeds } from "@/hooks/useSpeciesBreeds";
 
 interface ReportLostPetFormProps { onSuccess: () => void; }
 
@@ -19,6 +20,9 @@ const ReportLostPetForm = ({ onSuccess }: ReportLostPetFormProps) => {
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<"my_pet" | "found">("my_pet");
   const [form, setForm] = useState({ name: "", species: "dog", breed: "", gender: "", photo_url: "", lost_location: "", lost_details: "", contact_info: "" });
+
+  const { speciesOptions } = useSpecies();
+  const { breedOptions } = useBreeds(form.species);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,16 +69,21 @@ const ReportLostPetForm = ({ onSuccess }: ReportLostPetFormProps) => {
       <div className="grid grid-cols-2 gap-3">
         <div className="col-span-2"><Label>{t("pets.pet_name_label", "Pet Name *")}</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required /></div>
         <div><Label>{t("pets.species", "Species")}</Label>
-          <Select value={form.species} onValueChange={(v) => setForm({ ...form, species: v })}>
+          <Select value={form.species} onValueChange={(v) => setForm({ ...form, species: v, breed: "" })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="dog">🐕 {t("pets.dog", "Dog")}</SelectItem><SelectItem value="cat">🐈 {t("pets.cat", "Cat")}</SelectItem>
-              <SelectItem value="bird">🐦 {t("pets.bird", "Bird")}</SelectItem><SelectItem value="rabbit">🐇 {t("pets.rabbit", "Rabbit")}</SelectItem>
-              <SelectItem value="other">🐾 {t("pets.other", "Other")}</SelectItem>
+              {speciesOptions.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
-        <div><Label>{t("pets.breed", "Breed")}</Label><Input value={form.breed} onChange={(e) => setForm({ ...form, breed: e.target.value })} /></div>
+        <div><Label>{t("pets.breed", "Breed")}</Label>
+          <Select value={form.breed} onValueChange={(v) => setForm({ ...form, breed: v })}>
+            <SelectTrigger><SelectValue placeholder={t("common.select", "Select...")} /></SelectTrigger>
+            <SelectContent>
+              {breedOptions.map(b => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
         <div><Label>{t("pets.gender", "Gender")}</Label>
           <Select value={form.gender} onValueChange={(v) => setForm({ ...form, gender: v })}>
             <SelectTrigger><SelectValue placeholder={t("common.select", "Select...")} /></SelectTrigger>
