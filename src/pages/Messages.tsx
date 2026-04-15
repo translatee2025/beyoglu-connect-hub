@@ -240,6 +240,22 @@ const Messages = () => {
   const { data: conversations = [] } = useConversations(user?.id);
   const { data: messages = [] } = useMessages(activeConvId);
 
+  // Realtime: conversation list updates (new conversations, updated timestamps)
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel("conversations-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "conversations" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["conversations", user.id] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "conversation_participants" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["conversations", user.id] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, queryClient]);
+
+  // Realtime: messages in active conversation
   useEffect(() => {
     if (!activeConvId) return;
     const channel = supabase
