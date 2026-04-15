@@ -39,7 +39,7 @@ const Navigation = () => {
   const userInitials = user?.email?.slice(0, 2).toUpperCase() || "U";
 
   return (
-    <nav className="sticky top-0 z-50" style={{ backgroundColor: '#1E3A5F', height: '48px' }}>
+    <nav className="sticky top-0 z-50 lg:hidden" style={{ backgroundColor: '#1E3A5F', height: '52px' }}>
       <div className="container mx-auto px-4 h-full">
         <div className="flex items-center justify-between h-full">
           {/* Logo */}
