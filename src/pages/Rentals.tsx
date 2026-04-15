@@ -33,7 +33,7 @@ const aptCategoryKeys = [
 ];
 
 const Rentals = () => {
-  const [mainTab, setMainTab] = useState("looking");
+  const [mainTab, setMainTab] = useState("offering");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [listingMode, setListingMode] = useState<"rent" | "sell">("rent");
