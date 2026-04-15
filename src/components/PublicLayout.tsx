@@ -1,10 +1,14 @@
 import { Outlet } from "react-router-dom";
 import Navigation from "./Navigation";
+import BottomNav from "./BottomNav";
 
 const PublicLayout = () => (
   <>
     <Navigation />
-    <Outlet />
+    <div className="pb-14 lg:pb-0">
+      <Outlet />
+    </div>
+    <BottomNav />
   </>
 );
 
