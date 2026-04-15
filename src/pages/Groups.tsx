@@ -16,6 +16,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useAuth } from "@/providers/AuthProvider";
 import { useNavigate } from "react-router-dom";
+import { SkeletonGrid } from "@/components/shared/SkeletonCard";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 type OptionItem = {
   key: string;
@@ -285,7 +287,7 @@ const Groups = () => {
           {isLoading ? (
             <SkeletonGrid count={2} hasPhoto />
           ) : filtered.length === 0 ? (
-            <EmptyState emoji="👥" message={t("empty.groups", "Henüz grup yok. İlk grubu sen oluştur!")} actionLabel={t("groups.create", "Grup Oluştur")} onAction={() => setCreateOpen(true)} />
+            <EmptyState emoji="👥" message={t("empty.groups", "Henüz grup yok. İlk grubu sen oluştur!")} actionLabel={t("groups.create", "Grup Oluştur")} onAction={() => setPostOpen(true)} />
           ) : (
             <div className="grid md:grid-cols-2 gap-6">
               {filtered.map((group) => {

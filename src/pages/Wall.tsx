@@ -17,6 +17,8 @@ import { UserName } from "@/components/shared/UserName";
 import { CommentsSection } from "@/components/shared/CommentsSection";
 import { ReportDialog } from "@/components/shared/ReportDialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { SkeletonFeedList } from "@/components/shared/SkeletonCard";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 type FeedItem = {
   id: string;

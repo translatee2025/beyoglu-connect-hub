@@ -11,6 +11,8 @@ import { Calendar, MapPin as MapPinIcon, Plus, Check, List, Map as MapIcon } fro
 import EventsMap from "@/components/EventsMap";
 import CreateEventForm from "@/components/events/CreateEventForm";
 import { createNotification, getDisplayName } from "@/lib/notifications";
+import { SkeletonGrid } from "@/components/shared/SkeletonCard";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 const CATEGORY_PLACEHOLDERS: Record<string, { bg: string; emoji: string }> = {
   sports: { bg: "#DCFCE7", emoji: "⚽" },

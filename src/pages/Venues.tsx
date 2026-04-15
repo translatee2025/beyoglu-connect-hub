@@ -14,6 +14,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { UserName } from "@/components/shared/UserName";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { SkeletonGrid } from "@/components/shared/SkeletonCard";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 const CATEGORY_PLACEHOLDERS: Record<string, { bg: string; emoji: string }> = {
   restaurant: { bg: "#FEF3C7", emoji: "🍽️" },

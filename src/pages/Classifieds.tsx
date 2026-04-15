@@ -14,6 +14,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
 import { ReportDialog } from "@/components/shared/ReportDialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { SkeletonGrid } from "@/components/shared/SkeletonCard";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 const Classifieds = () => {
   const [reportTarget, setReportTarget] = useState<{ id: string } | null>(null);
