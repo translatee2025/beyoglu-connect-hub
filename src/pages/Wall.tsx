@@ -162,7 +162,7 @@ const Wall = () => {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => setReportTarget({ type: item.source === "wall" ? "wall_post" : item.source === "classifieds" ? "classified" : item.source === "venues" ? "venue" : item.source === "help" ? "help_post" : item.entityType, id: item.id })}>
-                                <Flag className="w-4 h-4 mr-2" /> Report
+                                <Flag className="w-4 h-4 mr-2" /> {t("common.report", "Report")}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

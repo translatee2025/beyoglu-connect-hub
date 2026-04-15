@@ -25,15 +25,18 @@ import { useToast } from "@/hooks/use-toast";
 
 const CATEGORIES = ["Keys", "Wallet", "Phone", "Documents", "Bag", "Pet", "Jewelry", "Electronics", "Other"];
 
-const timeAgo = (date: string) => {
-  const diff = Date.now() - new Date(date).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
+const useTimeAgo = () => {
+  const { t } = useLanguage();
+  return (date: string) => {
+    const diff = Date.now() - new Date(date).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return t("time.just_now", "just now");
+    if (mins < 60) return `${mins} ${t("time.minutes_ago", "m ago")}`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs} ${t("time.hours_ago", "h ago")}`;
+    const days = Math.floor(hrs / 24);
+    return `${days} ${t("time.days_ago", "d ago")}`;
+  };
 };
 
 // ─── Photo Upload (to lost-found bucket) ───
@@ -82,7 +85,7 @@ function LostFoundPhotoUpload({ value, onChange }: { value: string[]; onChange: 
         <>
           <input ref={inputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => handleFiles(e.target.files)} />
           <Button type="button" variant="outline" size="sm" className="gap-2 w-full border-dashed" disabled={uploading || !user} onClick={() => inputRef.current?.click()}>
-            {uploading ? <><Loader2 className="w-4 h-4 animate-spin" /> Uploading...</> : <><ImagePlus className="w-4 h-4" /> Add Photos</>}
+            {uploading ? <><Loader2 className="w-4 h-4 animate-spin" /> {t("common.uploading", "Uploading...")}</> : <><ImagePlus className="w-4 h-4" /> {t("common.add_photos", "Add Photos")}</>}
           </Button>
         </>
       )}
@@ -195,7 +198,7 @@ function ReportForm({ type, onSuccess }: { type: "lost" | "found"; onSuccess: ()
         <LostFoundPhotoUpload value={form.photo_urls} onChange={(urls) => setForm({ ...form, photo_urls: urls })} />
       </div>
       <Button type="submit" disabled={loading} className="w-full">
-        {loading ? "Submitting..." : type === "lost" ? "Report Lost Item" : "Report Found Item"}
+        {loading ? t("common.submitting", "Submitting...") : type === "lost" ? t("lostfound.report_lost", "Report Lost Item") : t("lostfound.report_found", "Report Found Item")}
       </Button>
     </form>
   );
@@ -204,9 +207,11 @@ function ReportForm({ type, onSuccess }: { type: "lost" | "found"; onSuccess: ()
 // ─── Post Card ───
 
 function PostCard({ post, isOwner }: { post: any; isOwner: boolean }) {
+  const timeAgo = useTimeAgo();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
 
   const resolvePost = useMutation({
@@ -282,11 +287,11 @@ function PostCard({ post, isOwner }: { post: any; isOwner: boolean }) {
         </div>
         <div className="flex gap-2 pt-1">
           <Button size="sm" variant="outline" className="flex-1 gap-1" onClick={handleContact}>
-            <MessageCircle className="w-4 h-4" /> Contact
+            <MessageCircle className="w-4 h-4" /> {t("common.contact", "Contact")}
           </Button>
           {isOwner && (
             <Button size="sm" variant="secondary" className="gap-1" onClick={() => resolvePost.mutate()} disabled={resolvePost.isPending}>
-              <CheckCircle className="w-4 h-4" /> Resolved
+              <CheckCircle className="w-4 h-4" /> {t("common.mark_resolved", "Resolved")}
             </Button>
           )}
         </div>
@@ -322,29 +327,29 @@ const LostFound = () => {
     <div className="container mx-auto px-4 py-6 max-w-4xl">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Lost & Found</h1>
-          <p className="text-sm text-muted-foreground">Help your neighbors find what they've lost</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("lostfound.title", "Lost & Found")}</h1>
+          <p className="text-sm text-muted-foreground">{t("lostfound.subtitle", "Help your neighbors find what they've lost")}</p>
         </div>
         <div className="flex gap-2">
           <Dialog open={showLostForm} onOpenChange={setShowLostForm}>
             <DialogTrigger asChild>
               <Button size="sm" variant="destructive" className="gap-1">
-                <Plus className="w-4 h-4" /> Report Lost
+                <Plus className="w-4 h-4" /> {t("lostfound.report_lost_btn", "Report Lost")}
               </Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Report Lost Item</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{t("lostfound.report_lost", "Report Lost Item")}</DialogTitle></DialogHeader>
               <ReportForm type="lost" onSuccess={() => setShowLostForm(false)} />
             </DialogContent>
           </Dialog>
           <Dialog open={showFoundForm} onOpenChange={setShowFoundForm}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-1">
-                <Plus className="w-4 h-4" /> Report Found
+                <Plus className="w-4 h-4" /> {t("lostfound.report_found_btn", "Report Found")}
               </Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Report Found Item</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{t("lostfound.report_found", "Report Found Item")}</DialogTitle></DialogHeader>
               <ReportForm type="found" onSuccess={() => setShowFoundForm(false)} />
             </DialogContent>
           </Dialog>
@@ -353,8 +358,8 @@ const LostFound = () => {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="w-full grid grid-cols-2 mb-6">
-          <TabsTrigger value="lost">Lost</TabsTrigger>
-          <TabsTrigger value="found">Found</TabsTrigger>
+          <TabsTrigger value="lost">{t("lostfound.tab_lost", "Lost")}</TabsTrigger>
+          <TabsTrigger value="found">{t("lostfound.tab_found", "Found")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab}>
@@ -375,12 +380,12 @@ const LostFound = () => {
             <div className="text-center py-16">
               <SearchIcon className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-1">
-                {activeTab === "lost" ? "No lost items reported" : "No found items reported"}
+                {activeTab === "lost" ? t("lostfound.no_lost", "No lost items reported") : t("lostfound.no_found", "No found items reported")}
               </h3>
               <p className="text-sm text-muted-foreground">
                 {activeTab === "lost"
-                  ? "Lost something? Click 'Report Lost' to alert your neighbors."
-                  : "Found something? Click 'Report Found' to help someone out."}
+                  ? t("lostfound.no_lost_hint", "Lost something? Click 'Report Lost' to alert your neighbors.")
+                  : t("lostfound.no_found_hint", "Found something? Click 'Report Found' to help someone out.")}
               </p>
             </div>
           ) : (
