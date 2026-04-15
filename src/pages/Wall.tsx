@@ -23,10 +23,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 type FeedItem = { id: string; source: string; title: string; description?: string; photos?: string[]; created_at: string; badge: string; icon: any; entityType: EntityType; user_id?: string; };
 
 const AVATAR_COLORS = [
-  { bg: '#BBF7D0', text: '#166534' },
-  { bg: '#FEF3C7', text: '#92400E' },
+  { bg: '#DBEAFE', text: '#1E40AF' },
   { bg: '#EDE9FE', text: '#5B21B6' },
-  { bg: '#E0F2FE', text: '#0369A1' },
+  { bg: '#FEF3C7', text: '#92400E' },
+  { bg: '#DCFCE7', text: '#166534' },
   { bg: '#FECACA', text: '#991B1B' },
 ];
 
@@ -169,7 +169,7 @@ const Wall = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Scope selector bar */}
-      <div className="sticky top-[48px] z-40 bg-card border-b border-border" style={{ padding: '8px 16px' }}>
+      <div className="sticky top-[48px] z-40 bg-card" style={{ padding: '8px 16px', borderBottom: '1px solid #E2EBFC' }}>
         <div
           ref={pillsRef}
           className="flex gap-2 overflow-x-auto scrollbar-hide max-w-app mx-auto"
@@ -181,8 +181,8 @@ const Wall = () => {
             style={{
               padding: '4px 14px', borderRadius: '20px',
               ...(selectedDistrict === null
-                ? { backgroundColor: '#DCFCE7', color: '#166534', border: '1px solid #166534', fontWeight: 500 }
-                : { backgroundColor: 'white', border: '0.5px solid #BBF7D0', color: '#6B7280' }),
+                ? { backgroundColor: '#1E3A5F', color: 'white', border: 'none', fontWeight: 500 }
+                : { backgroundColor: 'white', border: '0.5px solid #C7D7F7', color: '#64748B' }),
             }}
           >
             İstanbul
@@ -196,8 +196,8 @@ const Wall = () => {
               style={{
                 padding: '4px 14px', borderRadius: '20px',
                 ...(selectedDistrict === d.id
-                  ? { backgroundColor: '#DCFCE7', color: '#166534', border: '1px solid #166534', fontWeight: 500 }
-                  : { backgroundColor: 'white', border: '0.5px solid #BBF7D0', color: '#6B7280' }),
+                  ? { backgroundColor: '#1E3A5F', color: 'white', border: 'none', fontWeight: 500 }
+                  : { backgroundColor: 'white', border: '0.5px solid #C7D7F7', color: '#64748B' }),
               }}
             >
               {d.name}
@@ -209,18 +209,18 @@ const Wall = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="max-w-2xl mx-auto">
           {/* Post Composer - desktop */}
-          <div className="mb-4 hidden sm:block rounded-xl p-3" style={{ backgroundColor: '#DCFCE7' }}>
+          <div className="mb-4 hidden sm:block rounded-xl p-3" style={{ backgroundColor: '#EFF4FF', border: '1px solid #C7D7F7' }}>
             <div className="flex gap-3">
-              <div className="w-[34px] h-[34px] rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-medium" style={{ backgroundColor: '#166534' }}>
+              <div className="w-[34px] h-[34px] rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-medium" style={{ backgroundColor: '#1E3A5F' }}>
                 {user?.email?.slice(0, 2).toUpperCase() || 'U'}
               </div>
               <div className="flex-1 space-y-2">
-                <div className="bg-card rounded-full border border-border" style={{ borderColor: '#BBF7D0' }}>
+                <div className="bg-card rounded-full" style={{ border: '0.5px solid #C7D7F7' }}>
                   <Textarea
                     ref={composerRef}
                     placeholder={t("wall.placeholder", "Share something with your community...")}
                     className="resize-none border-0 bg-transparent rounded-full min-h-[40px] py-2.5 px-4 text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
-                    style={{ color: '#111827' }}
+                    style={{ color: '#1E3A5F' }}
                     rows={1}
                     value={newPost}
                     onChange={(e) => setNewPost(e.target.value)}
@@ -234,13 +234,14 @@ const Wall = () => {
                       { label: '📍 Location', key: 'location' },
                       { label: '🏠 Rental', key: 'rental' },
                     ].map((btn) => (
-                      <span key={btn.key} className="text-xxs px-2 py-0.5 rounded-md border cursor-pointer hover:border-primary hover:text-primary transition-colors" style={{ borderColor: '#BBF7D0', color: '#6B7280' }}>
+                      <span key={btn.key} className="text-xxs px-2 py-0.5 rounded-md cursor-pointer transition-colors" style={{ border: '0.5px solid #C7D7F7', color: '#64748B' }}>
                         {btn.label}
                       </span>
                     ))}
                   </div>
                   <Button
                     size="sm"
+                    variant="cta"
                     disabled={(!newPost.trim() && newPhotos.length === 0) || !user}
                     onClick={() => { if (!user) navigate("/auth"); else postToWall.mutate({ content: newPost, photos: newPhotos }); }}
                     className="text-xs"
@@ -256,7 +257,7 @@ const Wall = () => {
           <div className="sm:hidden mb-4">
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="w-full gap-2 text-xs"><Plus className="w-4 h-4" /> {t("wall.add_post", "Add Post")}</Button>
+                <Button variant="cta" className="w-full gap-2 text-xs"><Plus className="w-4 h-4" /> {t("wall.add_post", "Add Post")}</Button>
               </DialogTrigger>
               <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-t-[20px] sm:rounded-xl">
                 <div className="w-9 h-1 bg-[#D1D5DB] rounded-full mx-auto mb-2 sm:hidden" />
@@ -264,7 +265,7 @@ const Wall = () => {
                 <div className="space-y-3">
                   <Textarea placeholder={t("wall.whats_on_mind", "What's on your mind?")} className="resize-none text-sm" rows={4} value={dialogPost} onChange={(e) => setDialogPost(e.target.value)} />
                   <MediaUpload value={dialogPhotos} onChange={setDialogPhotos} maxFiles={6} />
-                  <Button className="w-full text-xs" disabled={(!dialogPost.trim() && dialogPhotos.length === 0) || !user} onClick={() => { if (!user) navigate("/auth"); else postToWall.mutate({ content: dialogPost, photos: dialogPhotos }); }}>{t("wall.post_btn", "Post")}</Button>
+                  <Button variant="cta" className="w-full text-xs" disabled={(!dialogPost.trim() && dialogPhotos.length === 0) || !user} onClick={() => { if (!user) navigate("/auth"); else postToWall.mutate({ content: dialogPost, photos: dialogPhotos }); }}>{t("wall.post_btn", "Post")}</Button>
                 </div>
               </DialogContent>
             </Dialog>
@@ -272,7 +273,7 @@ const Wall = () => {
 
           {/* Feed */}
           {allItems.length === 0 ? (
-            <div className="text-center py-12 text-[#9CA3AF]">
+            <div className="text-center py-12 text-[#94A3B8]">
               <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-40" />
               <p className="text-sm">{t("wall.no_activity", "No activity yet. Be the first to post!")}</p>
             </div>
@@ -284,7 +285,8 @@ const Wall = () => {
                 return (
                   <div
                     key={`${item.source}-${item.id}`}
-                    className="bg-card rounded-xl border border-border p-3.5 hover:bg-[#FAFFFE] transition-colors"
+                    className="bg-card rounded-xl p-3.5 transition-colors hover:bg-[#FAFCFF]"
+                    style={{ border: '1px solid #E2EBFC' }}
                   >
                     {/* Header row */}
                     <div className="flex items-start gap-2.5">
@@ -301,14 +303,14 @@ const Wall = () => {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             {item.user_id && <UserName userId={item.user_id} showAvatar={false} />}
-                            <span className="text-xs text-[#9CA3AF]">· {timeAgo(item.created_at)}</span>
+                            <span className="text-xs text-[#94A3B8]">· {timeAgo(item.created_at)}</span>
                           </div>
                           <div className="flex items-center gap-1.5">
                             <Badge variant={badge.variant as any}>{badge.label}</Badge>
                             {user && item.user_id && item.user_id !== user.id && (
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <button className="p-1 text-[#9CA3AF] hover:text-foreground"><MoreHorizontal className="w-3.5 h-3.5" /></button>
+                                  <button className="p-1 text-[#94A3B8] hover:text-foreground"><MoreHorizontal className="w-3.5 h-3.5" /></button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem onClick={() => setReportTarget({ type: item.source === "wall" ? "wall_post" : item.source === "classifieds" ? "classified" : item.source === "venues" ? "venue" : item.source === "help" ? "help_post" : item.entityType, id: item.id })} className="text-xs">
@@ -333,10 +335,10 @@ const Wall = () => {
                     )}
 
                     {/* Action row */}
-                    <div className="flex items-center gap-3.5 mt-2.5 pt-2 border-t border-border">
+                    <div className="flex items-center gap-3.5 mt-2.5 pt-2" style={{ borderTop: '1px solid #E2EBFC' }}>
                       <LikeButton entityType={item.entityType} entityId={item.id} />
                       <CommentsSection entityType={item.entityType} entityId={item.id} />
-                      <button className="text-xs font-medium text-primary hover:underline ml-auto">{t("wall.message", "Message")}</button>
+                      <button className="text-xs font-medium ml-auto" style={{ color: '#E74C3C' }}>{t("wall.message", "Message")}</button>
                     </div>
                   </div>
                 );

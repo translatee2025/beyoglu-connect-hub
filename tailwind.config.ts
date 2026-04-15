@@ -26,6 +26,11 @@ export default {
           mid: "hsl(var(--primary-mid))",
           dark: "hsl(var(--primary-dark))",
         },
+        cta: {
+          DEFAULT: "hsl(var(--cta))",
+          foreground: "hsl(var(--cta-foreground))",
+          dark: "hsl(var(--cta-dark))",
+        },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
@@ -58,10 +63,10 @@ export default {
         sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'system-ui', 'sans-serif'],
       },
       fontSize: {
-        'xxs': ['0.625rem', { lineHeight: '1rem' }],  // 10px
-        'xs': ['0.6875rem', { lineHeight: '1rem' }],   // 11px
-        'sm': ['0.8125rem', { lineHeight: '1.3rem' }],  // 13px
-        'base': ['0.8125rem', { lineHeight: '1.3rem' }],// 13px
+        'xxs': ['0.625rem', { lineHeight: '1rem' }],
+        'xs': ['0.6875rem', { lineHeight: '1rem' }],
+        'sm': ['0.8125rem', { lineHeight: '1.3rem' }],
+        'base': ['0.8125rem', { lineHeight: '1.3rem' }],
       },
       backgroundImage: {
         'gradient-hero': 'var(--gradient-hero)',
