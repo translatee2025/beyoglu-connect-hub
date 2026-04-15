@@ -149,7 +149,7 @@ const EventDetail = () => {
               <h1 className="font-display font-bold text-3xl text-foreground">{event.title}</h1>
             </div>
             {event.is_free ? (
-              <Badge className="bg-green-100 text-green-800">{t("events.free", "Ücretsiz")}</Badge>
+              <Badge variant="secondary">{t("events.free", "Ücretsiz")}</Badge>
             ) : (
               <Badge variant="outline">{event.price} {event.currency || "TRY"}</Badge>
             )}

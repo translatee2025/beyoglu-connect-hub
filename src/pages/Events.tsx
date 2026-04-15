@@ -159,7 +159,7 @@ const Events = () => {
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                               {event.category && <Badge variant="secondary">{event.category}</Badge>}
                               {event.is_free ? (
-                                <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">{t("events.free", "Ücretsiz")}</Badge>
+                                <Badge variant="secondary">{t("events.free", "Ücretsiz")}</Badge>
                               ) : (
                                 <Badge variant="outline">{event.price} TRY</Badge>
                               )}
