@@ -1,49 +1,38 @@
 
 
-# Desktop Sidebar Layout — Implementation Plan
+# Remove Hero Sections from All Pages
 
-## Problem
-All pages render as a centered mobile column with only a top header bar. No desktop sidebar exists.
+## Pages to modify (7 total)
 
-## Approach
-Create a new `AppSidebar` component and refactor `PublicLayout` to show sidebar on desktop (≥1024px) and header+bottom-nav on mobile (<1024px). No page content, routing logic, or data queries change.
+Each page has a centered icon/heading/subtitle block that needs to be removed. The page should start directly with its functional content (search bar, tabs, filters).
 
-## Files to Create
+### 1. `src/pages/NeighborHelp.tsx` (lines 81-87)
+Remove the `<div className="text-center mb-8">` block containing the HandHelping icon, "Neighbor Help" h1, and subtitle paragraph. Page starts with the search bar + post button row.
 
-### 1. `src/components/AppSidebar.tsx` (new)
-A fixed 220px left sidebar visible only on `lg:` breakpoint (1024px+). Contains:
-- App name "beyoğlu" (16px, weight 800, color #1E3A5F)
-- District scope pills (İstanbul active default, Beyoğlu, Şişli, Kadıköy, Beşiktaş) — static display only, no query filtering
-- Three nav sections with labeled dividers:
-  - **DISCOVER**: Feed `/wall`, Venues `/venues`, Events `/events`, Reels `/reels`
-  - **COMMUNITY**: Groups `/groups`, Pets `/pets`, Families (placeholder), Lost & Found `/lost-found`
-  - **SERVICES**: Rentals `/rentals`, Parking `/parking`, Help `/help`, Classifieds `/classifieds`, Jobs (placeholder)
-- Nav items use `NavLink` with active style: bg `#EFF4FF`, color `#1E3A5F`, weight 500, left border 3px solid `#E74C3C`
-- Bottom section: user avatar + name + district + language toggle (TR | EN)
-- Uses `useAuth`, `useLanguage`, `useLocation` for active state and user info
+### 2. `src/pages/Events.tsx` (lines 124-131)
+Remove the `<div className="text-center mb-12">` block containing "Etkinlikler" h1 and subtitle. Keep the create button row and tabs below.
 
-## Files to Modify
+### 3. `src/pages/LostFound.tsx` (lines 333-336)
+Remove the h1 "Lost & Found" and subtitle paragraph. Keep the action buttons row.
 
-### 2. `src/components/PublicLayout.tsx`
-- Import `AppSidebar`
-- Desktop: render `AppSidebar` fixed left + main content with `lg:ml-[220px] lg:p-6 lg:max-w-[860px]`
-- Mobile: keep existing `Navigation` (header) + `BottomNav` (bottom tabs)
-- Hide `Navigation` on desktop (`lg:hidden`), hide `AppSidebar` on mobile (`hidden lg:block`)
+### 4. `src/pages/Parking.tsx` (lines 111-117)
+Remove the `<div className="text-center mb-8">` block with Car icon, "Parking Finder" h1, and subtitle. Page starts with tabs.
 
-### 3. `src/components/Navigation.tsx`
-- Add `lg:hidden` to the root `<nav>` so the header bar only shows on mobile
+### 5. `src/pages/Rentals.tsx` (lines 117-123)
+Remove the `<div className="text-center mb-8">` block with Home icon, "Rental Finder" h1, and subtitle. Page starts with tabs.
 
-### 4. `src/components/BottomNav.tsx`
-- Already has `lg:hidden` — no change needed
+### 6. `src/pages/Classifieds.tsx` (lines 73-76)
+Remove the `<div className="text-center mb-8">` block with "Classifieds" h1 and subtitle. Page starts with search bar.
 
-## What Does NOT Change
-- No routing changes
-- No page content changes
-- No Supabase queries
-- No data logic
-- Admin routes, Auth, Reels keep their own layouts
+### 7. `src/pages/Groups.tsx` (lines 240-247)
+Remove the `<div className="text-center mb-8">` block with "Community Groups" h1 and subtitle. Page starts with search bar.
 
-## Visual Result
-- **Desktop**: White sidebar left with sections, main content scrolls in the remaining space
-- **Mobile**: Unchanged — header bar + bottom tabs
+### 8. `src/pages/Pets.tsx` (lines 83-91)
+Remove the `<div className="text-center mb-12">` block with Dog icon, "Pet Community" h1, and subtitle. Page starts with search bar.
+
+## What does NOT change
+- Wall/feed page — untouched
+- Venues page — already has no large hero (just a small inline h1, which stays)
+- No data queries, routing, or functionality changes
+- All buttons, forms, tabs remain intact
 
