@@ -40,6 +40,7 @@ const Reels = () => {
   const [postOpen, setPostOpen] = useState(false);
   const [likedReels, setLikedReels] = useState<Set<string>>(new Set());
   const containerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const touchStartY = useRef(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -69,6 +70,23 @@ const Reels = () => {
       if (data) setLikedReels(new Set(data.map((d) => d.entity_id)));
     })();
   }, [user, reels]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowDown") { e.preventDefault(); goNext(); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); goPrev(); }
+      else if (e.key === " ") {
+        e.preventDefault();
+        if (videoRef.current) {
+          if (videoRef.current.paused) videoRef.current.play();
+          else videoRef.current.pause();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentIndex, isTransitioning, reels.length]);
 
   const { data: comments = [], refetch: refetchComments } = useQuery({
     queryKey: ["reel-comments", reels[currentIndex]?.id],
@@ -208,15 +226,17 @@ const Reels = () => {
         <div className="relative h-full w-full" key={currentReel.id}>
           <div className="absolute inset-0">
             {currentReel.media_type === "video" ? (
-              <video src={currentReel.media_url} className="h-full w-full object-cover" autoPlay loop playsInline muted />
+              <video ref={videoRef} src={currentReel.media_url} className="h-full w-full object-cover" autoPlay loop playsInline muted />
             ) : (
               <img src={currentReel.media_url} alt={currentReel.caption || "Reel"} className="h-full w-full object-cover" />
             )}
           </div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
 
-          <div className="absolute bottom-20 left-4 right-20 z-10">
-            <UserName userId={currentReel.user_id} showAvatar className="text-white mb-2" />
+          <div className="absolute bottom-20 left-4 right-20 z-20 pointer-events-auto">
+            <div className="relative z-10">
+              <UserName userId={currentReel.user_id} showAvatar className="text-white mb-2 [&_a]:text-white [&_span]:text-white" />
+            </div>
             {currentReel.caption && <p className="text-white text-sm mb-2 line-clamp-3">{currentReel.caption}</p>}
             {currentReel.venue && (
               <button className="flex items-center gap-1 text-white/80 text-xs hover:text-white" onClick={() => navigate(`/venues`)}>
@@ -251,13 +271,29 @@ const Reels = () => {
             </button>
           </div>
 
+          {/* Desktop navigation arrows - hidden on mobile */}
           {currentIndex > 0 && (
-            <button className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[200%] z-10" onClick={goPrev}>
-              <ChevronUp className="w-8 h-8 text-white/50" />
+            <button
+              className="hidden md:flex absolute top-20 left-1/2 -translate-x-1/2 z-20 w-11 h-11 rounded-full items-center justify-center"
+              style={{ background: "rgba(0,0,0,0.3)" }}
+              onClick={goPrev}
+            >
+              <ChevronUp className="w-6 h-6 text-white" />
             </button>
           )}
           {currentIndex < reels.length - 1 && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 text-white/50 text-xs flex flex-col items-center">
+            <button
+              className="hidden md:flex absolute bottom-20 left-1/2 -translate-x-1/2 z-20 w-11 h-11 rounded-full items-center justify-center"
+              style={{ background: "rgba(0,0,0,0.3)" }}
+              onClick={goNext}
+            >
+              <ChevronDown className="w-6 h-6 text-white" />
+            </button>
+          )}
+
+          {/* Mobile swipe hint */}
+          {currentIndex < reels.length - 1 && (
+            <div className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 z-10 text-white/50 text-xs flex flex-col items-center">
               <ChevronDown className="w-6 h-6 animate-bounce" />
               <span>{t("reels.swipe_up", "Yukarı kaydır")}</span>
             </div>
