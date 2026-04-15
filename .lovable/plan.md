@@ -1,56 +1,31 @@
 
 
-# Group Feed & Group Posts
+# Enable Realtime for Wall Feed
 
 ## Overview
-Three changes: filter group posts out of the main wall, create a group detail page with Feed and Members tabs, and add a route for `/groups/:id`.
+Two changes: a migration to add `wall_posts` to the realtime publication, and a `useEffect` in `Wall.tsx` that subscribes to INSERT events and prepends new posts (skipping group posts).
 
-## Step 1 — Filter main wall feed
+## Change 1 — Migration
 
-**File: `src/pages/Wall.tsx`** (line 43)
+Create a migration with:
+```sql
+ALTER PUBLICATION supabase_realtime ADD TABLE public.wall_posts;
+```
 
-Add `.is("group_id", null)` to the wall_posts query so group posts don't appear in the public feed.
+## Change 2 — Realtime subscription in `Wall.tsx`
 
-## Step 2 — Create GroupDetail page
+Add a `useEffect` that:
 
-**New file: `src/pages/GroupDetail.tsx`**
+1. Creates a Supabase channel subscribing to `postgres_changes` INSERT events on `wall_posts`
+2. On each payload, checks `new.group_id` — if not null, ignores it
+3. If `group_id` is null, converts the row to a `FeedItem` (same mapping as the existing query) and prepends it to the `wall-posts` query cache via `queryClient.setQueryData`
+4. Returns a cleanup function that unsubscribes the channel
 
-A page at `/groups/:id` with two tabs (Feed, Members) using the existing Tabs component.
-
-**Feed tab:**
-- Query `wall_posts` where `group_id = id` and `(status = 'active' OR status IS NULL)`, ordered by `created_at DESC`
-- Render posts with the same card layout as Wall.tsx: UserName, timeAgo, content, MediaGrid, LikeButton, CommentsSection
-- "Post to Group" button (visible only to members) opens a Dialog with Textarea + MediaUpload. On submit: INSERT into `wall_posts` with `group_id`, `user_id`, `content`, `photos`, `status: 'active'`
-- Empty state: "Be the first to post in this group"
-
-**Members tab:**
-- Query `group_members` where `group_id = id`, then fetch `profiles` for each `user_id`
-- Show avatar, display_name (linked to `/profile/:userId`), role badge (admin/owner/member)
-- Message button per member (skip for self) — opens/creates a DM conversation, same pattern as LostFound contact button
-
-**Header area:**
-- Shows group name, description, category badge, member count
-- Join/Leave button based on membership status
-
-## Step 3 — Add route
-
-**File: `src/App.tsx`**
-
-Add import for GroupDetail and route: `<Route path="/groups/:id" element={<GroupDetail />} />`
-
-## Step 4 — Make group cards clickable
-
-**File: `src/pages/Groups.tsx`**
-
-Wrap the group card title or the card itself with a link/onClick to navigate to `/groups/${group.id}` so users can reach the detail page.
+**Note on district filtering**: The current Wall component has no district/scope selector, so there is no district state to filter by. The subscription will accept all non-group posts. If a scope selector is added later, the subscription can be updated to filter by `district_id`.
 
 ## Files changed
 | File | Change |
 |------|--------|
-| `src/pages/Wall.tsx` | Add `.is("group_id", null)` to wall_posts query |
-| `src/pages/GroupDetail.tsx` | New page with Feed + Members tabs |
-| `src/App.tsx` | Add route `/groups/:id` |
-| `src/pages/Groups.tsx` | Make group cards navigate to detail page |
-
-No database migrations needed — `group_id` and `status` columns already exist on `wall_posts`.
+| New migration SQL | `ALTER PUBLICATION supabase_realtime ADD TABLE public.wall_posts` |
+| `src/pages/Wall.tsx` | Add `useEffect` import, add realtime subscription effect |
 
