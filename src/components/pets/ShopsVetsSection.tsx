@@ -43,15 +43,9 @@ const ShopsVetsSection = () => {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"newest" | "nearest" | "popular">("newest");
   const [view, setView] = useState<"list" | "map">("list");
-  let userLat: number | null = null;
-  let userLng: number | null = null;
-  try {
-    const loc = useLocationCtx();
-    userLat = loc?.latitude ?? null;
-    userLng = loc?.longitude ?? null;
-  } catch {
-    // LocationProvider may not exist
-  }
+  const loc = useLocationCtx();
+  const userLat = loc?.lat ?? null;
+  const userLng = loc?.lng ?? null;
 
   const { data: dbPosts = [] } = useQuery({
     queryKey: ["pet-posts-shops-vets"],
