@@ -330,10 +330,7 @@ const LostFound = () => {
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl">
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("lostfound.title", "Lost & Found")}</h1>
-          <p className="text-sm text-muted-foreground">{t("lostfound.subtitle", "Help your neighbors find what they've lost")}</p>
-        </div>
+        <div />
         <div className="flex gap-2">
           <Dialog open={showLostForm} onOpenChange={setShowLostForm}>
             <DialogTrigger asChild>
