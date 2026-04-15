@@ -1,6 +1,5 @@
-import { useState } from "react";
-import { ShoppingBag, Search, Plus, MapPin, MoreHorizontal, Flag } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useRef } from "react";
+import { Search, Plus, Flag, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -17,16 +16,56 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { SkeletonGrid } from "@/components/shared/SkeletonCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DistanceLabel } from "@/components/shared/DistanceLabel";
+import SortFilterBar, { type SortOption } from "@/components/shared/SortFilterBar";
+
+const categoryMeta: Record<string, { bg: string; emoji: string }> = {
+  Electronics: { bg: "#EFF4FF", emoji: "📱" },
+  Furniture: { bg: "#FEF3C7", emoji: "🪑" },
+  Clothing: { bg: "#EDE9FE", emoji: "👕" },
+  Books: { bg: "#DCFCE7", emoji: "📚" },
+  Vehicles: { bg: "#F1F5F9", emoji: "🚗" },
+  Services: { bg: "#E0F2FE", emoji: "🛠️" },
+  Other: { bg: "#F9FAFB", emoji: "📦" },
+};
+
+const subCategories: Record<string, string[]> = {
+  Electronics: ["Telefon", "Bilgisayar", "Tablet", "TV", "Kamera", "Oyun", "Diğer"],
+  Furniture: ["Koltuk", "Masa", "Yatak", "Dolap", "Raf", "Diğer"],
+  Clothing: ["Kadın", "Erkek", "Çocuk", "Ayakkabı", "Çanta", "Diğer"],
+  Books: ["Roman", "Ders Kitabı", "Dergi", "Çizgi Roman", "Diğer"],
+  Vehicles: ["Araba", "Motosiklet", "Bisiklet", "Yedek Parça", "Diğer"],
+  Services: ["Temizlik", "Taşıma", "Kurulum", "Diğer"],
+};
+
+const parsePrice = (p: string | null) => {
+  if (!p) return 0;
+  return parseFloat(p.replace(/[^0-9.]/g, "")) || 0;
+};
+
+const formatTimeAgo = (d: string) => {
+  const diff = Date.now() - new Date(d).getTime();
+  const h = Math.floor(diff / 3600000);
+  if (h < 1) return "az önce";
+  if (h < 24) return `${h}sa`;
+  return `${Math.floor(h / 24)}g`;
+};
 
 const Classifieds = () => {
   const [reportTarget, setReportTarget] = useState<{ id: string } | null>(null);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
+  const [subCategory, setSubCategory] = useState<string | null>(null);
   const [postOpen, setPostOpen] = useState(false);
+  const [sort, setSort] = useState<SortOption>("newest");
+  const [priceMin, setPriceMin] = useState("");
+  const [priceMax, setPriceMax] = useState("");
+  const [appliedMin, setAppliedMin] = useState<number | null>(null);
+  const [appliedMax, setAppliedMax] = useState<number | null>(null);
   const queryClient = useQueryClient();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const subRef = useRef<HTMLDivElement>(null);
 
   const handleContact = (userId: string) => {
     if (!user) { navigate("/auth"); return; }
@@ -62,28 +101,133 @@ const Classifieds = () => {
     },
   });
 
-  const filtered = listings.filter((item: any) => {
-    const matchesSearch = item.title.toLowerCase().includes(search.toLowerCase()) ||
-      (item.description || "").toLowerCase().includes(search.toLowerCase());
-    const matchesCat = category === "All" || item.category === category;
-    return matchesSearch && matchesCat;
-  });
+  const processItems = () => {
+    let items = listings.filter((item: any) => {
+      const matchesSearch = item.title.toLowerCase().includes(search.toLowerCase()) ||
+        (item.description || "").toLowerCase().includes(search.toLowerCase());
+      const matchesCat = category === "All" || item.category === category;
+      return matchesSearch && matchesCat;
+    });
+
+    if (appliedMin !== null) items = items.filter((i: any) => parsePrice(i.price) >= appliedMin);
+    if (appliedMax !== null) items = items.filter((i: any) => parsePrice(i.price) <= appliedMax);
+
+    const sorted = [...items];
+    if (sort === "price_asc") sorted.sort((a: any, b: any) => parsePrice(a.price) - parsePrice(b.price));
+    else if (sort === "price_desc") sorted.sort((a: any, b: any) => parsePrice(b.price) - parsePrice(a.price));
+    else sorted.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    return sorted;
+  };
+
+  const applyFilter = () => {
+    setAppliedMin(priceMin ? parseFloat(priceMin) : null);
+    setAppliedMax(priceMax ? parseFloat(priceMax) : null);
+  };
+  const clearFilter = () => { setPriceMin(""); setPriceMax(""); setAppliedMin(null); setAppliedMax(null); };
+  const filterActive = appliedMin !== null || appliedMax !== null;
+
+  const handleCategoryChange = (cat: string) => {
+    setCategory(cat);
+    setSubCategory(null);
+  };
+
+  const currentSubCats = category !== "All" && category !== "Other" ? subCategories[category] || [] : [];
+
+  const getMeta = (cat: string | null) => categoryMeta[cat || "Other"] || categoryMeta.Other;
+
+  const ClassifiedCard = ({ item }: { item: any }) => {
+    const photo = item.photos && item.photos.length > 0 ? item.photos[0] : null;
+    const meta = getMeta(item.category);
+
+    return (
+      <div style={{ borderRadius: 12, overflow: "hidden", backgroundColor: "white", border: "1px solid #E2EBFC" }}>
+        {/* Photo area */}
+        <div style={{ position: "relative", height: 140, backgroundColor: meta.bg }}>
+          {photo ? (
+            <img src={photo} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>
+              {meta.emoji}
+            </div>
+          )}
+        </div>
+
+        {/* Card body */}
+        <div style={{ padding: 12 }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+            <div className="flex items-center gap-2">
+              {item.category && (
+                <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 10, backgroundColor: "#F1F5F9", color: "#64748B" }}>
+                  {item.category}
+                </span>
+              )}
+            </div>
+            {user && item.user_id && item.user_id !== user.id && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="p-1 text-muted-foreground hover:text-foreground"><MoreHorizontal className="w-3.5 h-3.5" /></button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setReportTarget({ id: item.id })}>
+                    <Flag className="w-4 h-4 mr-2" /> Şikayet Et
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
+
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#1E3A5F", marginBottom: 4 }}>{item.title}</div>
+
+          {item.price && (
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#1E3A5F", marginBottom: 6 }}>
+              {item.currency || "₺"}{item.price}
+            </div>
+          )}
+
+          {item.description && (
+            <p style={{ fontSize: 12, color: "#64748B", marginBottom: 8, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+              {item.description}
+            </p>
+          )}
+
+          <div className="flex items-center gap-2" style={{ marginBottom: 6 }}>
+            {item.user_id && <UserName userId={item.user_id} showAvatar avatarSize="w-4 h-4" />}
+            <span style={{ fontSize: 11, color: "#94A3B8" }}>· {formatTimeAgo(item.created_at)}</span>
+          </div>
+
+          <DistanceLabel lat={item.lat} lng={item.lng} neighborhood={item.neighborhood} />
+        </div>
+
+        {/* Contact button */}
+        <button
+          onClick={() => item.user_id && handleContact(item.user_id)}
+          style={{
+            width: "100%", padding: 8, backgroundColor: "#E74C3C", color: "white",
+            fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer",
+            borderRadius: "0 0 12px 12px",
+          }}
+        >
+          Mesaj
+        </button>
+      </div>
+    );
+  };
+
+  const processed = processItems();
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6">
         <div className="max-w-6xl mx-auto">
-
-
-
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
             <div className="relative w-full sm:w-80">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder={t("common.search", "Search...")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+              <Input placeholder="Ara..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
             </div>
             <Dialog open={postOpen} onOpenChange={setPostOpen}>
               <DialogTrigger asChild>
-                <Button className="gap-2"><Plus className="w-4 h-4" /> {t("classifieds.post_ad", "Post Ad")}</Button>
+                <Button className="gap-2"><Plus className="w-4 h-4" /> İlan Ver</Button>
               </DialogTrigger>
               <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                 <ClassifiedPostForm
@@ -94,60 +238,61 @@ const Classifieds = () => {
             </Dialog>
           </div>
 
-          <div className="flex flex-wrap gap-2 mb-6">
+          {/* Category pills */}
+          <div className="flex flex-wrap gap-2 mb-3">
             {categoryNames.map((cat) => (
-              <Button key={cat} variant={category === cat ? "default" : "outline"} size="sm" onClick={() => setCategory(cat)}>
-                {cat}
+              <Button key={cat} variant={category === cat ? "default" : "outline"} size="sm" onClick={() => handleCategoryChange(cat)}>
+                {cat === "All" ? "Tümü" : cat}
               </Button>
             ))}
           </div>
 
+          {/* Sub-category carousel */}
+          {currentSubCats.length > 0 && (
+            <div
+              ref={subRef}
+              className="flex gap-2 mb-4 overflow-x-auto pb-1"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
+              {currentSubCats.map((sub) => (
+                <button
+                  key={sub}
+                  onClick={() => setSubCategory(subCategory === sub ? null : sub)}
+                  className="flex-shrink-0 transition-colors"
+                  style={{
+                    padding: "4px 12px",
+                    borderRadius: 16,
+                    fontSize: 11,
+                    fontWeight: subCategory === sub ? 500 : 400,
+                    backgroundColor: subCategory === sub ? "#1E3A5F" : "white",
+                    color: subCategory === sub ? "white" : "#64748B",
+                    border: subCategory === sub ? "none" : "0.5px solid #E2EBFC",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {sub}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Sort & Filter */}
+          <SortFilterBar
+            sort={sort} onSortChange={setSort}
+            priceMin={priceMin} priceMax={priceMax}
+            onPriceMinChange={setPriceMin} onPriceMaxChange={setPriceMax}
+            onApplyFilter={applyFilter} onClearFilter={clearFilter}
+            filterActive={filterActive}
+          />
+
           {isLoading ? (
-            <SkeletonGrid count={2} />
-          ) : filtered.length === 0 ? (
-            <EmptyState emoji="🛍️" message={t("empty.classifieds", "Henüz ilan yok. İlk ilanı sen ver!")} actionLabel={t("classifieds.post_ad", "Post Ad")} onAction={() => setPostOpen(true)} />
+            <SkeletonGrid count={4} hasPhoto photoHeight={140} />
+          ) : processed.length === 0 ? (
+            <EmptyState emoji="🛍️" message="Henüz ilan yok. İlk ilanı sen ver!" actionLabel="İlan Ver" onAction={() => setPostOpen(true)} />
           ) : (
-            <div className="grid md:grid-cols-2 gap-6">
-              {filtered.map((item: any) => (
-                <Card key={item.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                        <ShoppingBag className="w-6 h-6 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <Badge variant={item.type === "offer" ? "default" : "secondary"}>
-                              {item.type === "offer" ? t("classifieds.offering", "Offering") : t("classifieds.looking_for", "Looking for")}
-                            </Badge>
-                            {item.category && <Badge variant="outline">{item.category}</Badge>}
-                          </div>
-                          {user && item.user_id && item.user_id !== user.id && (
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <button className="p-1 text-muted-foreground hover:text-foreground"><MoreHorizontal className="w-4 h-4" /></button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => setReportTarget({ id: item.id })}>
-                                  <Flag className="w-4 h-4 mr-2" /> Report listing
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          )}
-                        </div>
-                        <CardTitle className="text-xl mb-1">{item.title}</CardTitle>
-                        {item.description && <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>}
-                        {item.price && <p className="text-primary font-semibold mt-2">{item.currency}{item.price}</p>}
-                        {item.user_id && <div className="mt-1"><UserName userId={item.user_id} showAvatar /></div>}
-                        <div className="mt-1"><DistanceLabel lat={item.lat} lng={item.lng} neighborhood={item.neighborhood} /></div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <Button variant="outline" className="w-full" onClick={() => item.user_id && handleContact(item.user_id)}>{t("common.contact", "Contact")}</Button>
-                  </CardContent>
-                </Card>
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {processed.map((item: any) => (
+                <ClassifiedCard key={item.id} item={item} />
               ))}
             </div>
           )}
