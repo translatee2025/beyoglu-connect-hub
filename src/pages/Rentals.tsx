@@ -80,9 +80,9 @@ const Rentals = () => {
   });
 
   const { data: offeringListings = [], isLoading: offeringLoading } = useQuery({
-    queryKey: ["rentals-offering", listingMode],
+    queryKey: ["rentals-offering"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("classifieds").select("*").eq("section", "rental").eq("listing_mode", listingMode).order("created_at", { ascending: false });
+      const { data, error } = await supabase.from("classifieds").select("*").eq("section", "rental").eq("listing_mode", "offering").order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
