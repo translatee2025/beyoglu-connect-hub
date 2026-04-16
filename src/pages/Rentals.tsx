@@ -119,13 +119,14 @@ const Rentals = () => {
   const mapPins = (items: any[]) => items.filter((i) => i.lat && i.lng).map((i) => ({ lat: i.lat, lng: i.lng, title: i.title, badge: i.category, extra: i.price ? `${i.currency || "₺"}${i.price}` : undefined }));
 
   const RentalCard = ({ item }: { item: any }) => {
-    const photo = item.photos && item.photos.length > 0 ? item.photos[0] : null;
+    const photo = Array.isArray(item.photos) && item.photos.length > 0 ? item.photos[0] : null;
+    const [imgError, setImgError] = useState(false);
     const price = item.price;
     return (
       <div style={{ borderRadius: 12, overflow: "hidden", backgroundColor: "white", border: "1px solid #E2EBFC" }}>
         <div style={{ position: "relative", height: 180, backgroundColor: "#EFF4FF" }}>
-          {photo ? (
-            <img src={photo} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          {photo && !imgError ? (
+            <img src={photo} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={() => setImgError(true)} />
           ) : (
             <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32 }}>🏠</div>
           )}
