@@ -109,22 +109,33 @@ export type Database = {
       classifieds: {
         Row: {
           address: string | null
+          available_from: string | null
           category: string | null
           contact_preference: string | null
           created_at: string
           currency: string | null
           description: string | null
+          floor_number: number | null
           id: string
+          is_furnished: boolean | null
           lat: number | null
+          latitude: number | null
           listing_mode: string | null
+          listing_type: string | null
           lng: number | null
+          longitude: number | null
           neighborhood: string | null
+          parking_type: string | null
+          pets_allowed: boolean | null
           phone: string | null
           photos: string[] | null
           price: string | null
+          room_type: string | null
           section: Database["public"]["Enums"]["classified_section"]
+          size_m2: number | null
           status: Database["public"]["Enums"]["classified_status"]
           title: string
+          total_floors: number | null
           type: string | null
           updated_at: string
           user_id: string
@@ -132,22 +143,33 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          available_from?: string | null
           category?: string | null
           contact_preference?: string | null
           created_at?: string
           currency?: string | null
           description?: string | null
+          floor_number?: number | null
           id?: string
+          is_furnished?: boolean | null
           lat?: number | null
+          latitude?: number | null
           listing_mode?: string | null
+          listing_type?: string | null
           lng?: number | null
+          longitude?: number | null
           neighborhood?: string | null
+          parking_type?: string | null
+          pets_allowed?: boolean | null
           phone?: string | null
           photos?: string[] | null
           price?: string | null
+          room_type?: string | null
           section?: Database["public"]["Enums"]["classified_section"]
+          size_m2?: number | null
           status?: Database["public"]["Enums"]["classified_status"]
           title: string
+          total_floors?: number | null
           type?: string | null
           updated_at?: string
           user_id: string
@@ -155,22 +177,33 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          available_from?: string | null
           category?: string | null
           contact_preference?: string | null
           created_at?: string
           currency?: string | null
           description?: string | null
+          floor_number?: number | null
           id?: string
+          is_furnished?: boolean | null
           lat?: number | null
+          latitude?: number | null
           listing_mode?: string | null
+          listing_type?: string | null
           lng?: number | null
+          longitude?: number | null
           neighborhood?: string | null
+          parking_type?: string | null
+          pets_allowed?: boolean | null
           phone?: string | null
           photos?: string[] | null
           price?: string | null
+          room_type?: string | null
           section?: Database["public"]["Enums"]["classified_section"]
+          size_m2?: number | null
           status?: Database["public"]["Enums"]["classified_status"]
           title?: string
+          total_floors?: number | null
           type?: string | null
           updated_at?: string
           user_id?: string
@@ -394,6 +427,59 @@ export type Database = {
           venue_name?: string | null
         }
         Relationships: []
+      }
+      families: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          district_id: string | null
+          id: string
+          is_active: boolean | null
+          neighborhood: string | null
+          photos: string[] | null
+          post_type: string
+          price: number | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          district_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          neighborhood?: string | null
+          photos?: string[] | null
+          post_type: string
+          price?: number | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          district_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          neighborhood?: string | null
+          photos?: string[] | null
+          post_type?: string
+          price?: number | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "families_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       group_members: {
         Row: {
@@ -958,6 +1044,7 @@ export type Database = {
           age_years: number | null
           bio: string | null
           breed: string | null
+          breed_id: string | null
           created_at: string
           district_id: string | null
           energy_level: string | null
@@ -980,9 +1067,11 @@ export type Database = {
             | Database["public"]["Enums"]["pet_personality"][]
             | null
           photo_url: string | null
+          photos: string[] | null
           size: string | null
           size_preference: string[] | null
           species: Database["public"]["Enums"]["pet_species"]
+          species_id: string | null
           updated_at: string
           weight_kg: number | null
         }
@@ -991,6 +1080,7 @@ export type Database = {
           age_years?: number | null
           bio?: string | null
           breed?: string | null
+          breed_id?: string | null
           created_at?: string
           district_id?: string | null
           energy_level?: string | null
@@ -1013,9 +1103,11 @@ export type Database = {
             | Database["public"]["Enums"]["pet_personality"][]
             | null
           photo_url?: string | null
+          photos?: string[] | null
           size?: string | null
           size_preference?: string[] | null
           species?: Database["public"]["Enums"]["pet_species"]
+          species_id?: string | null
           updated_at?: string
           weight_kg?: number | null
         }
@@ -1024,6 +1116,7 @@ export type Database = {
           age_years?: number | null
           bio?: string | null
           breed?: string | null
+          breed_id?: string | null
           created_at?: string
           district_id?: string | null
           energy_level?: string | null
@@ -1046,18 +1139,112 @@ export type Database = {
             | Database["public"]["Enums"]["pet_personality"][]
             | null
           photo_url?: string | null
+          photos?: string[] | null
           size?: string | null
           size_preference?: string[] | null
           species?: Database["public"]["Enums"]["pet_species"]
+          species_id?: string | null
           updated_at?: string
           weight_kg?: number | null
         }
         Relationships: [
           {
+            foreignKeyName: "pet_profiles_breed_id_fkey"
+            columns: ["breed_id"]
+            isOneToOne: false
+            referencedRelation: "breeds"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pet_profiles_district_id_fkey"
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pet_profiles_species_id_fkey"
+            columns: ["species_id"]
+            isOneToOne: false
+            referencedRelation: "species"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pet_sitting_posts: {
+        Row: {
+          available_days: string[] | null
+          created_at: string | null
+          description: string | null
+          district_id: string | null
+          id: string
+          is_active: boolean | null
+          latitude: number | null
+          listing_type: string
+          longitude: number | null
+          neighborhood: string | null
+          photos: string[] | null
+          price: number | null
+          price_type: string | null
+          service_type: string
+          species_id: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          available_days?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          district_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          latitude?: number | null
+          listing_type: string
+          longitude?: number | null
+          neighborhood?: string | null
+          photos?: string[] | null
+          price?: number | null
+          price_type?: string | null
+          service_type: string
+          species_id?: string | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          available_days?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          district_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          latitude?: number | null
+          listing_type?: string
+          longitude?: number | null
+          neighborhood?: string | null
+          photos?: string[] | null
+          price?: number | null
+          price_type?: string | null
+          service_type?: string
+          species_id?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pet_sitting_posts_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pet_sitting_posts_species_id_fkey"
+            columns: ["species_id"]
+            isOneToOne: false
+            referencedRelation: "species"
             referencedColumns: ["id"]
           },
         ]
@@ -1073,6 +1260,7 @@ export type Database = {
           district_id: string | null
           gender: string | null
           id: string
+          language_preference: string | null
           messages_public: boolean
           neighborhood: string | null
           phone: string | null
@@ -1092,6 +1280,7 @@ export type Database = {
           district_id?: string | null
           gender?: string | null
           id?: string
+          language_preference?: string | null
           messages_public?: boolean
           neighborhood?: string | null
           phone?: string | null
@@ -1111,6 +1300,7 @@ export type Database = {
           district_id?: string | null
           gender?: string | null
           id?: string
+          language_preference?: string | null
           messages_public?: boolean
           neighborhood?: string | null
           phone?: string | null
@@ -1383,6 +1573,42 @@ export type Database = {
           id?: string
           status?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_privacy_settings: {
+        Row: {
+          allow_messages: string | null
+          created_at: string | null
+          id: string
+          show_age: boolean | null
+          show_gender: boolean | null
+          show_neighborhood: boolean | null
+          show_photo: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          allow_messages?: string | null
+          created_at?: string | null
+          id?: string
+          show_age?: boolean | null
+          show_gender?: boolean | null
+          show_neighborhood?: boolean | null
+          show_photo?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          allow_messages?: string | null
+          created_at?: string | null
+          id?: string
+          show_age?: boolean | null
+          show_gender?: boolean | null
+          show_neighborhood?: boolean | null
+          show_photo?: boolean | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []

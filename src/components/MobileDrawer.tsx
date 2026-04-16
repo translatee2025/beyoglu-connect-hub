@@ -29,7 +29,7 @@ const sections = [
     items: [
       { to: "/groups", icon: Users, label: "Groups" },
       { to: "/pets", icon: Dog, label: "Pets" },
-      { to: "#", icon: Heart, label: "Families" },
+      { to: "/families", icon: Heart, label: "Families" },
       { to: "/lost-found", icon: Search, label: "Lost & Found" },
     ],
   },
