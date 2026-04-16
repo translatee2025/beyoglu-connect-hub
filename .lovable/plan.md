@@ -1,38 +1,38 @@
 
 
-# Remove Hero Sections from All Pages
+# Database Migrations Plan
 
-## Pages to modify (7 total)
+## 7 Migrations (schema only, no frontend except Families stub)
 
-Each page has a centered icon/heading/subtitle block that needs to be removed. The page should start directly with its functional content (search bar, tabs, filters).
+### Migration 1 — `profiles.language_preference`
+Add `language_preference text DEFAULT 'tr'` to profiles.
 
-### 1. `src/pages/NeighborHelp.tsx` (lines 81-87)
-Remove the `<div className="text-center mb-8">` block containing the HandHelping icon, "Neighbor Help" h1, and subtitle paragraph. Page starts with the search bar + post button row.
+### Migration 2 — `pet_profiles` species/breed FKs + photos array
+Add `species_id uuid REFERENCES species(id)`, `breed_id uuid REFERENCES breeds(id)`, `photos text[] DEFAULT '{}'`. Then backfill `species_id` from existing enum via `UPDATE ... SET species_id = (SELECT id FROM species WHERE LOWER(name_en) = LOWER(species::text))`.
 
-### 2. `src/pages/Events.tsx` (lines 124-131)
-Remove the `<div className="text-center mb-12">` block containing "Etkinlikler" h1 and subtitle. Keep the create button row and tabs below.
+### Migration 3 — Create `pet_sitting_posts`
+New table with service_type, listing_type, species_id FK, price, price_type, available_days, neighborhood, district_id FK, lat/lng, photos, is_active. RLS: public read, owner insert/update/delete.
 
-### 3. `src/pages/LostFound.tsx` (lines 333-336)
-Remove the h1 "Lost & Found" and subtitle paragraph. Keep the action buttons row.
+### Migration 4 — Create `families`
+New table with post_type, title, description, category, neighborhood, district_id FK, photos, price, is_active. RLS: public read, owner insert/update/delete.
 
-### 4. `src/pages/Parking.tsx` (lines 111-117)
-Remove the `<div className="text-center mb-8">` block with Car icon, "Parking Finder" h1, and subtitle. Page starts with tabs.
+Frontend: Update nav links from `#` to `/families` in AppSidebar and MobileDrawer. Create `/families` page with "coming soon" message.
 
-### 5. `src/pages/Rentals.tsx` (lines 117-123)
-Remove the `<div className="text-center mb-8">` block with Home icon, "Rental Finder" h1, and subtitle. Page starts with tabs.
+### Migration 5 — Create `user_privacy_settings`
+New table with show_photo, allow_messages, show_age, show_gender, show_neighborhood. RLS: owner-only for all operations.
 
-### 6. `src/pages/Classifieds.tsx` (lines 73-76)
-Remove the `<div className="text-center mb-8">` block with "Classifieds" h1 and subtitle. Page starts with search bar.
+### Migration 6 — Classifieds rental columns
+Add: room_type, size_m2, is_furnished, pets_allowed, floor_number, total_floors, available_from, latitude, longitude, listing_type.
 
-### 7. `src/pages/Groups.tsx` (lines 240-247)
-Remove the `<div className="text-center mb-8">` block with "Community Groups" h1 and subtitle. Page starts with search bar.
+### Migration 7 — Classifieds parking column
+Add: parking_type with check constraint (kapali/acik/otomatik).
 
-### 8. `src/pages/Pets.tsx` (lines 83-91)
-Remove the `<div className="text-center mb-12">` block with Dog icon, "Pet Community" h1, and subtitle. Page starts with search bar.
+### Verification
+After migrations, query `information_schema.columns` for all affected tables and output results.
 
-## What does NOT change
-- Wall/feed page — untouched
-- Venues page — already has no large hero (just a small inline h1, which stays)
-- No data queries, routing, or functionality changes
-- All buttons, forms, tabs remain intact
+### Technical Notes
+- All CHECK constraints use simple value lists (no time-based checks), so they're safe
+- Migrations use `IF NOT EXISTS` / `ADD COLUMN IF NOT EXISTS` for idempotency
+- Existing columns (species enum, breed text) kept for backward compatibility
+- The families page is a minimal stub — no data fetching yet
 
