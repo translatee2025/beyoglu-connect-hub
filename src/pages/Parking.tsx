@@ -116,11 +116,12 @@ const Parking = () => {
 
   const ParkingCard = ({ item }: { item: any }) => {
     const photo = Array.isArray(item.photos) && item.photos.length > 0 ? item.photos[0] : null;
+    const [imgError, setImgError] = useState(false);
     return (
     <div style={{ borderRadius: 12, overflow: "hidden", backgroundColor: "white", border: "1px solid #E2EBFC" }}>
-      {photo ? (
+      {photo && !imgError ? (
         <div style={{ width: "100%", height: 140, overflow: "hidden" }}>
-          <img src={photo} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <img src={photo} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={() => setImgError(true)} />
         </div>
       ) : null}
       <div style={{ padding: 14 }}>
