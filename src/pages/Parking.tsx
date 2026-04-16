@@ -78,7 +78,7 @@ const Parking = () => {
   const { data: offeringListings = [], isLoading: offeringLoading } = useQuery({
     queryKey: ["parking-offering"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("classifieds").select("*").eq("section", "parking").eq("listing_mode", "rent").order("created_at", { ascending: false });
+      const { data, error } = await supabase.from("classifieds").select("*").eq("section", "parking").eq("listing_mode", "offering").order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -126,8 +126,8 @@ const Parking = () => {
       ) : null}
       <div style={{ padding: 14 }}>
       <div className="flex items-center gap-2" style={{ marginBottom: 8 }}>
-        <Badge variant={item.listing_mode === "rent" ? "default" : "secondary"} style={{ fontSize: 11 }}>
-          {item.listing_mode === "rent" ? t("common.available", "Available") : t("common.looking_for", "Looking")}
+        <Badge variant={item.listing_mode === "offering" ? "default" : "secondary"} style={{ fontSize: 11 }}>
+          {item.listing_mode === "offering" ? t("common.available", "Available") : t("common.looking_for", "Looking")}
         </Badge>
         {item.category && <Badge variant="outline" style={{ fontSize: 11 }}>{item.category}</Badge>}
       </div>
@@ -271,7 +271,7 @@ const ParkingPostForm = ({ mode, onSuccess }: { mode: "looking" | "offer"; onSuc
       const { error } = await supabase.from("classifieds").insert({
         user_id: user.id, section: "parking" as any, category: form.category, title: form.title,
         description: form.description, price: form.price, neighborhood: form.neighborhood, phone: form.phone,
-        listing_mode: mode === "looking" ? "looking" : "rent", photos: photos.length > 0 ? photos : null,
+        listing_mode: mode === "looking" ? "looking" : "offering", photos: photos.length > 0 ? photos : null,
       });
       if (error) throw error;
     },

@@ -72,7 +72,7 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
 
     if (appliedMin !== null || appliedMax !== null) {
       list = list.filter((p: any) => {
-        const num = parseFloat((p.price || "").replace(/[^\d.]/g, ""));
+        const num = parseFloat(String(p.price || "").replace(/[^\d.]/g, ""));
         if (isNaN(num)) return false;
         if (appliedMin !== null && num < appliedMin) return false;
         if (appliedMax !== null && num > appliedMax) return false;
@@ -84,8 +84,8 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
       list.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     } else if (sort === "price_asc" || sort === "price_desc") {
       list.sort((a: any, b: any) => {
-        const pa = parseFloat((a.price || "0").replace(/[^\d.]/g, "")) || 0;
-        const pb = parseFloat((b.price || "0").replace(/[^\d.]/g, "")) || 0;
+        const pa = parseFloat(String(a.price || "0").replace(/[^\d.]/g, "")) || 0;
+        const pb = parseFloat(String(b.price || "0").replace(/[^\d.]/g, "")) || 0;
         return sort === "price_asc" ? pa - pb : pb - pa;
       });
     }
