@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,23 +49,11 @@ function createColoredIcon(color: string) {
   });
 }
 
-const useTimeAgo = () => {
-  return (date: string) => {
-    const diff = Date.now() - new Date(date).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 1) return "az önce";
-    if (mins < 60) return `${mins}dk`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}sa`;
-    const days = Math.floor(hrs / 24);
-    return `${days}g`;
-  };
-};
-
 // ─── Photo Upload ───
 function LostFoundPhotoUpload({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -107,7 +95,7 @@ function LostFoundPhotoUpload({ value, onChange }: { value: string[]; onChange: 
         <>
           <input ref={inputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => handleFiles(e.target.files)} />
           <Button type="button" variant="outline" size="sm" className="gap-2 w-full border-dashed" disabled={uploading || !user} onClick={() => inputRef.current?.click()}>
-            {uploading ? <><Loader2 className="w-4 h-4 animate-spin" /> Yükleniyor...</> : <><ImagePlus className="w-4 h-4" /> Fotoğraf Ekle</>}
+            {uploading ? <><Loader2 className="w-4 h-4 animate-spin" /> {t("lost_found.uploading", "Uploading...")}</> : <><ImagePlus className="w-4 h-4" /> {t("lost_found.add_photo", "Add Photo")}</>}
           </Button>
         </>
       )}
@@ -120,6 +108,7 @@ function ReportForm({ type, onSuccess }: { type: "lost" | "found"; onSuccess: ()
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const CATEGORIES = ["Pet", "Keys", "Wallet", "Phone", "Documents", "Bag", "Jewelry", "Electronics", "Other"];
@@ -132,7 +121,7 @@ function ReportForm({ type, onSuccess }: { type: "lost" | "found"; onSuccess: ()
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) { navigate("/auth"); return; }
-    if (!form.title.trim()) { toast({ title: "Başlık gerekli", variant: "destructive" }); return; }
+    if (!form.title.trim()) { toast({ title: t("common.title_required", "Title required"), variant: "destructive" }); return; }
     setLoading(true);
     try {
       const { error } = await supabase.from("lost_found_posts").insert({
@@ -144,56 +133,67 @@ function ReportForm({ type, onSuccess }: { type: "lost" | "found"; onSuccess: ()
         photo_urls: form.photo_urls.length > 0 ? form.photo_urls : [],
       });
       if (error) throw error;
-      toast({ title: type === "lost" ? "Kayıp ilanı oluşturuldu" : "Bulundu ilanı oluşturuldu" });
+      toast({ title: type === "lost" ? t("lost_found.lost_created", "Lost report created") : t("lost_found.found_created", "Found report created") });
       queryClient.invalidateQueries({ queryKey: ["lost-found"] });
       onSuccess();
     } catch (err: any) {
-      toast({ title: "Hata", description: err.message, variant: "destructive" });
+      toast({ title: t("common.error", "Error"), description: err.message, variant: "destructive" });
     } finally { setLoading(false); }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
-      <div><Label>Başlık *</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder={type === "lost" ? "örn. Siyah kedi" : "Bulduğum..."} required /></div>
-      <div><Label>Kategori</Label>
+      <div><Label>{t("lost_found.title_required", "Title *")}</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder={type === "lost" ? t("lost_found.lost_placeholder", "e.g. Black cat") : t("lost_found.found_placeholder", "I found...")} required /></div>
+      <div><Label>{t("lost_found.category", "Category")}</Label>
         <Select value={form.category} onValueChange={v => setForm({ ...form, category: v })}>
-          <SelectTrigger><SelectValue placeholder="Kategori seçin" /></SelectTrigger>
+          <SelectTrigger><SelectValue placeholder={t("lost_found.select_category", "Select category")} /></SelectTrigger>
           <SelectContent>{CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
         </Select>
       </div>
-      <div><Label>Açıklama</Label><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} /></div>
-      <div><Label>Konum</Label><Input value={form.neighborhood} onChange={e => setForm({ ...form, neighborhood: e.target.value })} placeholder="Nerede kayboldu/bulundu?" /></div>
-      <div><Label>Son görülme tarihi</Label>
+      <div><Label>{t("lost_found.description", "Description")}</Label><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} /></div>
+      <div><Label>{t("lost_found.location", "Location")}</Label><Input value={form.neighborhood} onChange={e => setForm({ ...form, neighborhood: e.target.value })} placeholder={t("lost_found.location_placeholder", "Where was it lost/found?")} /></div>
+      <div><Label>{t("lost_found.last_seen", "Last seen date")}</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !lastSeenAt && "text-muted-foreground")}>
-              <CalendarIcon className="mr-2 h-4 w-4" />{lastSeenAt ? format(lastSeenAt, "PPP") : "Tarih seçin"}
+              <CalendarIcon className="mr-2 h-4 w-4" />{lastSeenAt ? format(lastSeenAt, "PPP") : t("lost_found.select_date", "Select date")}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={lastSeenAt} onSelect={setLastSeenAt} initialFocus className="p-3 pointer-events-auto" /></PopoverContent>
         </Popover>
       </div>
-      <div><Label>Telefon (opsiyonel)</Label><Input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+90..." /></div>
-      <div><Label>Fotoğraflar</Label><LostFoundPhotoUpload value={form.photo_urls} onChange={urls => setForm({ ...form, photo_urls: urls })} /></div>
-      <Button type="submit" disabled={loading} className="w-full">{loading ? "Gönderiliyor..." : type === "lost" ? "Kayıp Bildir" : "Bulundu Bildir"}</Button>
+      <div><Label>{t("lost_found.phone_optional", "Phone (optional)")}</Label><Input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+90..." /></div>
+      <div><Label>{t("lost_found.photos", "Photos")}</Label><LostFoundPhotoUpload value={form.photo_urls} onChange={urls => setForm({ ...form, photo_urls: urls })} /></div>
+      <Button type="submit" disabled={loading} className="w-full">{loading ? t("common.sending", "Sending...") : type === "lost" ? t("lost_found.report_lost", "Report Lost") : t("lost_found.report_found", "Report Found")}</Button>
     </form>
   );
 }
 
 // ─── Post Card ───
 function PostCard({ post, isOwner }: { post: any; isOwner: boolean }) {
-  const timeAgo = useTimeAgo();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const timeAgo = (date: string) => {
+    const diff = Date.now() - new Date(date).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return t("time.just_now", "just now");
+    if (mins < 60) return `${mins}${t("time.min_ago", "m").replace("{n}", "")}`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}${t("time.hours_short", "h").replace("{n}", "")}`;
+    const days = Math.floor(hrs / 24);
+    return `${days}${t("time.days_short", "d").replace("{n}", "")}`;
+  };
 
   const resolvePost = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("lost_found_posts").update({ status: "resolved", resolved_at: new Date().toISOString() } as any).eq("id", post.id);
       if (error) throw error;
     },
-    onSuccess: () => { toast({ title: "Çözüldü olarak işaretlendi!" }); queryClient.invalidateQueries({ queryKey: ["lost-found"] }); },
+    onSuccess: () => { toast({ title: t("lost_found.resolved_marked", "Marked as resolved!") }); queryClient.invalidateQueries({ queryKey: ["lost-found"] }); },
   });
 
   const handleContact = async () => {
@@ -227,7 +227,7 @@ function PostCard({ post, isOwner }: { post: any; isOwner: boolean }) {
           </div>
         )}
         <div style={{ position: "absolute", top: 8, left: 8, background: "#1E3A5F", color: "#fff", fontSize: 10, fontWeight: 500, padding: "3px 8px", borderRadius: "0 0 6px 0" }}>
-          {post.type === "lost" ? "🔴 Kayıp" : "🟢 Bulundu"}
+          {post.type === "lost" ? t("lost_found.lost_label", "🔴 Lost") : t("lost_found.found_label", "🟢 Found")}
         </div>
       </div>
       <CardContent className="p-3 space-y-1.5">
@@ -243,11 +243,11 @@ function PostCard({ post, isOwner }: { post: any; isOwner: boolean }) {
         <div style={{ fontSize: 11, color: "#94A3B8" }}>{timeAgo(post.created_at)}</div>
         <div className="flex gap-2 pt-1">
           <Button size="sm" className="flex-1 gap-1" onClick={handleContact} style={{ background: "#E74C3C", color: "#fff", border: "none", fontSize: 12, borderRadius: 6 }}>
-            <MessageCircle className="w-3.5 h-3.5" /> İletişim
+            <MessageCircle className="w-3.5 h-3.5" /> {t("lost_found.contact", "Contact")}
           </Button>
           {isOwner && (
             <Button size="sm" variant="outline" className="gap-1" onClick={() => resolvePost.mutate()} disabled={resolvePost.isPending} style={{ fontSize: 12, borderRadius: 6 }}>
-              <CheckCircle className="w-3.5 h-3.5" /> Çözüldü
+              <CheckCircle className="w-3.5 h-3.5" /> {t("lost_found.resolved", "Resolved")}
             </Button>
           )}
         </div>
@@ -260,6 +260,7 @@ function PostCard({ post, isOwner }: { post: any; isOwner: boolean }) {
 function LostFoundMap({ posts }: { posts: any[] }) {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   const postsWithCoords = posts.filter(p => p.last_seen_lat && p.last_seen_lng);
 
@@ -305,7 +306,7 @@ function LostFoundMap({ posts }: { posts: any[] }) {
                   onClick={() => handleContact(post)}
                   style={{ width: "100%", background: "#E74C3C", color: "#fff", border: "none", borderRadius: 6, padding: "5px 0", fontSize: 12, fontWeight: 500, cursor: "pointer" }}
                 >
-                  İletişim
+                  {t("lost_found.contact", "Contact")}
                 </button>
               </div>
             </Popup>
@@ -323,6 +324,7 @@ const LostFound = () => {
   const [showLostForm, setShowLostForm] = useState(false);
   const [showFoundForm, setShowFoundForm] = useState(false);
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ["lost-found", activeTab],
@@ -339,11 +341,9 @@ const LostFound = () => {
 
   return (
     <div className="mx-auto px-4 py-6" style={{ maxWidth: 700 }}>
-      {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h1 style={{ fontSize: 18, fontWeight: 700, color: "#1E3A5F" }}>Kayıp & Bulundu</h1>
+        <h1 style={{ fontSize: 18, fontWeight: 700, color: "#1E3A5F" }}>{t("lost_found.title", "Lost & Found")}</h1>
         <div className="flex gap-2">
-          {/* View toggle */}
           <div className="flex rounded-lg overflow-hidden" style={{ border: "1px solid #E2E8F0" }}>
             <button onClick={() => setViewMode("list")} style={{ padding: "5px 10px", background: viewMode === "list" ? "#1E3A5F" : "#fff", color: viewMode === "list" ? "#fff" : "#64748B" }}>
               <List className="w-4 h-4" />
@@ -354,24 +354,23 @@ const LostFound = () => {
           </div>
           <Dialog open={showLostForm} onOpenChange={setShowLostForm}>
             <DialogTrigger asChild>
-              <Button size="sm" style={{ background: "#E74C3C", color: "#fff", fontSize: 12 }}><Plus className="w-4 h-4 mr-1" /> Kayıp Bildir</Button>
+              <Button size="sm" style={{ background: "#E74C3C", color: "#fff", fontSize: 12 }}><Plus className="w-4 h-4 mr-1" /> {t("lost_found.report_lost", "Report Lost")}</Button>
             </DialogTrigger>
-            <DialogContent><DialogHeader><DialogTitle>Kayıp Bildir</DialogTitle></DialogHeader><ReportForm type="lost" onSuccess={() => setShowLostForm(false)} /></DialogContent>
+            <DialogContent><DialogHeader><DialogTitle>{t("lost_found.report_lost", "Report Lost")}</DialogTitle></DialogHeader><ReportForm type="lost" onSuccess={() => setShowLostForm(false)} /></DialogContent>
           </Dialog>
           <Dialog open={showFoundForm} onOpenChange={setShowFoundForm}>
             <DialogTrigger asChild>
-              <Button size="sm" variant="outline" style={{ fontSize: 12, borderColor: "#1E3A5F", color: "#1E3A5F" }}><Plus className="w-4 h-4 mr-1" /> Bulundu Bildir</Button>
+              <Button size="sm" variant="outline" style={{ fontSize: 12, borderColor: "#1E3A5F", color: "#1E3A5F" }}><Plus className="w-4 h-4 mr-1" /> {t("lost_found.report_found", "Report Found")}</Button>
             </DialogTrigger>
-            <DialogContent><DialogHeader><DialogTitle>Bulundu Bildir</DialogTitle></DialogHeader><ReportForm type="found" onSuccess={() => setShowFoundForm(false)} /></DialogContent>
+            <DialogContent><DialogHeader><DialogTitle>{t("lost_found.report_found", "Report Found")}</DialogTitle></DialogHeader><ReportForm type="found" onSuccess={() => setShowFoundForm(false)} /></DialogContent>
           </Dialog>
         </div>
       </div>
 
-      {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="w-full grid grid-cols-2 mb-4">
-          <TabsTrigger value="lost" style={{ fontSize: 13 }}>🔴 Kayıp</TabsTrigger>
-          <TabsTrigger value="found" style={{ fontSize: 13 }}>🟢 Bulundu</TabsTrigger>
+          <TabsTrigger value="lost" style={{ fontSize: 13 }}>{t("lost_found.lost_tab", "🔴 Lost")}</TabsTrigger>
+          <TabsTrigger value="found" style={{ fontSize: 13 }}>{t("lost_found.found_tab", "🟢 Found")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab}>
@@ -387,10 +386,10 @@ const LostFound = () => {
             <div className="text-center py-16">
               <span style={{ fontSize: 48 }}>🐾</span>
               <h3 className="mt-3" style={{ fontSize: 15, fontWeight: 600, color: "#1E3A5F" }}>
-                {activeTab === "lost" ? "Henüz kayıp ilanı yok" : "Henüz bulundu ilanı yok"}
+                {activeTab === "lost" ? t("lost_found.no_lost", "No lost reports yet") : t("lost_found.no_found", "No found reports yet")}
               </h3>
               <p style={{ fontSize: 13, color: "#94A3B8", marginTop: 4 }}>
-                {activeTab === "lost" ? "Kayıp bir hayvan varsa 'Kayıp Bildir' ile ilan oluşturun." : "Bir hayvan buldunuz mu? 'Bulundu Bildir' ile sahibine ulaşın."}
+                {activeTab === "lost" ? t("lost_found.no_lost_desc", "If you lost an animal, create a report with 'Report Lost'.") : t("lost_found.no_found_desc", "Found an animal? Reach the owner with 'Report Found'.")}
               </p>
             </div>
           ) : (

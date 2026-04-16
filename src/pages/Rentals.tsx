@@ -40,14 +40,6 @@ const parsePrice = (p: string | null) => {
   return parseFloat(p.replace(/[^0-9.]/g, "")) || 0;
 };
 
-const formatTimeAgo = (d: string) => {
-  const diff = Date.now() - new Date(d).getTime();
-  const h = Math.floor(diff / 3600000);
-  if (h < 1) return "az önce";
-  if (h < 24) return `${h}sa`;
-  return `${Math.floor(h / 24)}g`;
-};
-
 const Rentals = () => {
   const [mainTab, setMainTab] = useState("offering");
   const [search, setSearch] = useState("");
@@ -68,6 +60,14 @@ const Rentals = () => {
   const handleContact = (userId: string) => {
     if (!user) { navigate("/auth"); return; }
     navigate(`/messages?to=${userId}`);
+  };
+
+  const formatTimeAgo = (d: string) => {
+    const diff = Date.now() - new Date(d).getTime();
+    const h = Math.floor(diff / 3600000);
+    if (h < 1) return t("time.just_now", "just now");
+    if (h < 24) return `${h}${t("time.hours_short", "h").replace("{n}", "")}`;
+    return `${Math.floor(h / 24)}${t("time.days_short", "d").replace("{n}", "")}`;
   };
 
   const { data: lookingListings = [], isLoading: lookingLoading } = useQuery({
@@ -95,11 +95,9 @@ const Rentals = () => {
       return matchesSearch && matchesCat;
     });
 
-    // Price filter
     if (appliedMin !== null) filtered = filtered.filter(i => parsePrice(i.price) >= appliedMin);
     if (appliedMax !== null) filtered = filtered.filter(i => parsePrice(i.price) <= appliedMax);
 
-    // Sort
     const sorted = [...filtered];
     if (sort === "price_asc") sorted.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
     else if (sort === "price_desc") sorted.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
@@ -125,7 +123,6 @@ const Rentals = () => {
     const price = item.price;
     return (
       <div style={{ borderRadius: 12, overflow: "hidden", backgroundColor: "white", border: "1px solid #E2EBFC" }}>
-        {/* Photo area */}
         <div style={{ position: "relative", height: 180, backgroundColor: "#EFF4FF" }}>
           {photo ? (
             <img src={photo} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -143,7 +140,6 @@ const Rentals = () => {
           )}
         </div>
 
-        {/* Card body */}
         <div style={{ padding: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: "#1E3A5F", marginBottom: 4 }}>{item.title}</div>
           <div style={{ fontSize: 11, color: "#94A3B8", marginBottom: 6 }}>
@@ -161,7 +157,6 @@ const Rentals = () => {
           <DistanceLabel lat={item.lat} lng={item.lng} neighborhood={item.neighborhood} />
         </div>
 
-        {/* Contact button */}
         <button
           onClick={() => item.user_id && handleContact(item.user_id)}
           style={{
@@ -170,7 +165,7 @@ const Rentals = () => {
             borderRadius: "0 0 12px 12px",
           }}
         >
-          Mesaj Gönder
+          {t("common.send_message", "Send Message")}
         </button>
       </div>
     );
@@ -186,13 +181,13 @@ const Rentals = () => {
                 onClick={() => setMainTab("offering")}
                 className={`flex-1 py-3 text-sm font-medium text-center transition-colors ${mainTab === "offering" ? "text-[#1E3A5F] border-b-2 border-[#1E3A5F]" : "text-[#94A3B8] hover:text-[#64748B]"}`}
               >
-                {t("rentals.offers", "İlanlar")}
+                {t("rentals.offers", "Listings")}
               </button>
               <button
                 onClick={() => setMainTab("looking")}
                 className={`flex-1 py-3 text-sm font-medium text-center transition-colors ${mainTab === "looking" ? "text-[#1E3A5F] border-b-2 border-[#1E3A5F]" : "text-[#94A3B8] hover:text-[#64748B]"}`}
               >
-                {t("rentals.requests", "Arıyorum")}
+                {t("rentals.requests", "Looking")}
               </button>
             </div>
 
@@ -200,10 +195,10 @@ const Rentals = () => {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                 <div className="relative w-full sm:w-80">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input placeholder={t("common.search", "Ara...")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+                  <Input placeholder={t("common.search", "Search...")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
                 </div>
                 <Dialog open={postOpen} onOpenChange={setPostOpen}>
-                  <DialogTrigger asChild><Button className="gap-2"><Plus className="w-4 h-4" /> {t("rentals.post_looking", "İlan Ver")}</Button></DialogTrigger>
+                  <DialogTrigger asChild><Button className="gap-2"><Plus className="w-4 h-4" /> {t("rentals.post_looking", "Post a Request")}</Button></DialogTrigger>
                   <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                     <RentalPostForm mode="looking" onSuccess={() => { setPostOpen(false); queryClient.invalidateQueries({ queryKey: ["rentals-looking"] }); }} />
                   </DialogContent>
@@ -220,7 +215,7 @@ const Rentals = () => {
                 filterActive={filterActive}
               />
               {lookingLoading ? <SkeletonGrid count={3} hasPhoto photoHeight={180} />
-                : processItems(lookingListings).length === 0 ? <EmptyStateComponent emoji="🏠" message={t("empty.rentals", "Bu bölgede henüz ilan yok.")} />
+                : processItems(lookingListings).length === 0 ? <EmptyStateComponent emoji="🏠" message={t("empty.rentals", "No listings in this area yet.")} />
                 : <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{processItems(lookingListings).map((item: any) => <RentalCard key={item.id} item={item} />)}</div>}
             </TabsContent>
 
@@ -229,15 +224,15 @@ const Rentals = () => {
                 <div className="flex items-center gap-3">
                   <div className="relative w-full sm:w-64">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input placeholder={t("common.search", "Ara...")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+                    <Input placeholder={t("common.search", "Search...")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
                   </div>
                   <div className="flex rounded-lg border border-border overflow-hidden">
-                    <button className={`px-4 py-2 text-sm font-medium transition-colors ${listingMode === "rent" ? "bg-[#1E3A5F] text-white" : "bg-white text-[#64748B]"}`} onClick={() => setListingMode("rent")}>{t("rentals.rent", "Kiralık")}</button>
-                    <button className={`px-4 py-2 text-sm font-medium transition-colors ${listingMode === "sell" ? "bg-[#1E3A5F] text-white" : "bg-white text-[#64748B]"}`} onClick={() => setListingMode("sell")}>{t("rentals.sale", "Satılık")}</button>
+                    <button className={`px-4 py-2 text-sm font-medium transition-colors ${listingMode === "rent" ? "bg-[#1E3A5F] text-white" : "bg-white text-[#64748B]"}`} onClick={() => setListingMode("rent")}>{t("rentals.rent", "For Rent")}</button>
+                    <button className={`px-4 py-2 text-sm font-medium transition-colors ${listingMode === "sell" ? "bg-[#1E3A5F] text-white" : "bg-white text-[#64748B]"}`} onClick={() => setListingMode("sell")}>{t("rentals.sale", "For Sale")}</button>
                   </div>
                 </div>
                 <Dialog open={postOpen} onOpenChange={setPostOpen}>
-                  <DialogTrigger asChild><Button className="gap-2"><Plus className="w-4 h-4" /> {t("rentals.list_apt", "İlan Ver")}</Button></DialogTrigger>
+                  <DialogTrigger asChild><Button className="gap-2"><Plus className="w-4 h-4" /> {t("rentals.list_apt", "List Apartment")}</Button></DialogTrigger>
                   <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                     <RentalPostForm mode="offer" onSuccess={() => { setPostOpen(false); queryClient.invalidateQueries({ queryKey: ["rentals-offering"] }); }} />
                   </DialogContent>
@@ -254,12 +249,12 @@ const Rentals = () => {
                 filterActive={filterActive}
               />
               <div className="flex gap-2 mb-4">
-                <Button variant={viewMode === "list" ? "default" : "outline"} size="sm" onClick={() => setViewMode("list")} className="gap-1"><List className="w-4 h-4" /> {t("common.list", "Liste")}</Button>
-                <Button variant={viewMode === "map" ? "default" : "outline"} size="sm" onClick={() => setViewMode("map")} className="gap-1"><Map className="w-4 h-4" /> {t("common.map", "Harita")}</Button>
+                <Button variant={viewMode === "list" ? "default" : "outline"} size="sm" onClick={() => setViewMode("list")} className="gap-1"><List className="w-4 h-4" /> {t("common.list", "List")}</Button>
+                <Button variant={viewMode === "map" ? "default" : "outline"} size="sm" onClick={() => setViewMode("map")} className="gap-1"><Map className="w-4 h-4" /> {t("common.map", "Map")}</Button>
               </div>
               {viewMode === "list" ? (
                 offeringLoading ? <SkeletonGrid count={3} hasPhoto photoHeight={180} />
-                : processItems(offeringListings).length === 0 ? <EmptyStateComponent emoji="🏠" message={t("empty.rentals", "Bu bölgede henüz ilan yok.")} actionLabel={t("rentals.list_apt", "İlan Ver")} onAction={() => setPostOpen(true)} />
+                : processItems(offeringListings).length === 0 ? <EmptyStateComponent emoji="🏠" message={t("empty.rentals", "No listings in this area yet.")} actionLabel={t("rentals.list_apt", "List Apartment")} onAction={() => setPostOpen(true)} />
                 : <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{processItems(offeringListings).map((item: any) => <RentalCard key={item.id} item={item} />)}</div>
               ) : (
                 <ListingMap items={mapPins(processItems(offeringListings))} height="400px" />
@@ -289,52 +284,52 @@ const RentalPostForm = ({ mode, onSuccess }: { mode: "looking" | "offer"; onSucc
       });
       if (error) throw error;
     },
-    onSuccess: () => { toast({ title: t("common.posted", "Paylaşıldı!") }); onSuccess(); },
-    onError: (e: any) => toast({ title: t("common.error", "Hata"), description: e.message, variant: "destructive" }),
+    onSuccess: () => { toast({ title: t("common.posted", "Posted!") }); onSuccess(); },
+    onError: (e: any) => toast({ title: t("common.error", "Error"), description: e.message, variant: "destructive" }),
   });
 
   return (
     <div className="space-y-4">
-      <DialogHeader><DialogTitle>{mode === "looking" ? t("rentals.i_need", "Ev Arıyorum") : t("rentals.list_apt", "Daire İlanı Ver")}</DialogTitle></DialogHeader>
+      <DialogHeader><DialogTitle>{mode === "looking" ? t("rentals.i_need", "Looking for a Place") : t("rentals.list_apt", "List an Apartment")}</DialogTitle></DialogHeader>
       <Progress value={(step / 2) * 100} className="h-1.5" />
-      <p className="text-xs text-muted-foreground text-center">{t("common.step_of", "Adım")} {step} / 2</p>
+      <p className="text-xs text-muted-foreground text-center">{t("common.step_of", "Step")} {step} / 2</p>
 
       {step === 1 && (
         <div className="space-y-3">
-          <div><Label>Başlık *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder={mode === "looking" ? "ör. Taksim yakını 2+1 arıyorum" : "ör. İstiklal yakını aydınlık 2+1"} /></div>
+          <div><Label>{t("common.title_required", "Title *")}</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder={mode === "looking" ? t("rentals.looking_placeholder", "e.g. Looking for 2+1 near Taksim") : t("rentals.offer_placeholder", "e.g. Bright 2+1 near İstiklal")} /></div>
           {mode === "offer" && (
-            <div><Label>İlan Türü</Label>
+            <div><Label>{t("common.listing_type", "Listing Type")}</Label>
               <Select value={form.listingMode} onValueChange={(v) => setForm({ ...form, listingMode: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent><SelectItem value="rent">{t("rentals.for_rent", "Kiralık")}</SelectItem><SelectItem value="sell">{t("rentals.for_sale", "Satılık")}</SelectItem></SelectContent>
+                <SelectContent><SelectItem value="rent">{t("rentals.rent", "For Rent")}</SelectItem><SelectItem value="sell">{t("rentals.sale", "For Sale")}</SelectItem></SelectContent>
               </Select>
             </div>
           )}
-          <div><Label>Kategori</Label>
+          <div><Label>{t("common.category", "Category")}</Label>
             <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-              <SelectTrigger><SelectValue placeholder="Tip seçin" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={t("common.select_type", "Select type")} /></SelectTrigger>
               <SelectContent>{aptCategoryKeys.filter(c => c.key !== "All").map(c => <SelectItem key={c.key} value={c.key}>{t(c.tKey, c.fallback)}</SelectItem>)}</SelectContent>
             </Select>
           </div>
-          <div><Label>{mode === "looking" ? "Bütçe (₺)" : "Fiyat (₺)"}</Label><Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="15.000" /></div>
-          <div><Label>Açıklama</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} /></div>
+          <div><Label>{mode === "looking" ? t("rentals.budget", "Budget (₺)") : t("rentals.price", "Price (₺)")}</Label><Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="15.000" /></div>
+          <div><Label>{t("common.description", "Description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} /></div>
         </div>
       )}
 
       {step === 2 && (
         <div className="space-y-3">
-          <div><Label>Fotoğraf / Video</Label><MediaUpload value={photos} onChange={setPhotos} maxFiles={8} /></div>
-          <div><Label>Mahalle</Label><Input value={form.neighborhood} onChange={(e) => setForm({ ...form, neighborhood: e.target.value })} placeholder="Cihangir" /></div>
-          <div><Label>Telefon</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+90 5xx xxx xx xx" /></div>
+          <div><Label>{t("common.photos_video", "Photo / Video")}</Label><MediaUpload value={photos} onChange={setPhotos} maxFiles={8} /></div>
+          <div><Label>{t("common.neighborhood", "Neighborhood")}</Label><Input value={form.neighborhood} onChange={(e) => setForm({ ...form, neighborhood: e.target.value })} placeholder="Cihangir" /></div>
+          <div><Label>{t("common.phone", "Phone")}</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+90 5xx xxx xx xx" /></div>
         </div>
       )}
 
       <div className="flex gap-2">
-        {step > 1 && <Button variant="outline" onClick={() => setStep(1)} className="gap-1"><ArrowLeft className="w-4 h-4" /> Geri</Button>}
+        {step > 1 && <Button variant="outline" onClick={() => setStep(1)} className="gap-1"><ArrowLeft className="w-4 h-4" /> {t("common.back", "Back")}</Button>}
         {step < 2 ? (
-          <Button className="flex-1 gap-1" onClick={() => setStep(2)} disabled={!form.title.trim()}>İleri <ArrowRight className="w-4 h-4" /></Button>
+          <Button className="flex-1 gap-1" onClick={() => setStep(2)} disabled={!form.title.trim()}>{t("common.next", "Next")} <ArrowRight className="w-4 h-4" /></Button>
         ) : (
-          <Button className="flex-1" onClick={() => mutation.mutate()} disabled={!form.title || mutation.isPending}>{mutation.isPending ? "Gönderiliyor..." : "Paylaş"}</Button>
+          <Button className="flex-1" onClick={() => mutation.mutate()} disabled={!form.title || mutation.isPending}>{mutation.isPending ? t("common.sending", "Sending...") : t("common.share", "Share")}</Button>
         )}
       </div>
     </div>
