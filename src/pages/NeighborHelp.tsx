@@ -84,12 +84,12 @@ const NeighborHelp = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "#94A3B8" }} />
-          <Input placeholder={t("common.search", "Ara...")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" style={{ fontSize: 13 }} />
+          <Input placeholder={t("common.search", "Search...")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" style={{ fontSize: 13 }} />
         </div>
         <Dialog open={postOpen} onOpenChange={setPostOpen}>
           <DialogTrigger asChild>
             <Button size="sm" style={{ background: "#E74C3C", color: "#fff", border: "none", fontSize: 12 }}>
-              <Plus className="w-4 h-4 mr-1" /> {t("common.post", "Paylaş")}
+              <Plus className="w-4 h-4 mr-1" /> {t("common.post", "Post")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -121,7 +121,7 @@ const NeighborHelp = () => {
       {isLoading ? (
         <SkeletonList count={3} />
       ) : filtered.length === 0 ? (
-        <EmptyState emoji="🤝" message={t("empty.help", "Henüz ilan yok. Yardım iste veya yardım teklif et!")} actionLabel={t("help.post_title", "Yardım İlanı Paylaş")} onAction={() => setPostOpen(true)} />
+        <EmptyState emoji="🤝" message={t("empty.help", "No posts yet. Ask for help or offer your skills!")} actionLabel={t("help.post_title", "Post Help Listing")} onAction={() => setPostOpen(true)} />
       ) : (
         <div className="space-y-3">
           {filtered.map((post: any) => {
@@ -203,7 +203,7 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const mutation = useMutation({
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Lütfen giriş yapın");
+      if (!user) throw new Error("Please log in");
       const { error } = await supabase.from("neighbor_help_posts").insert({
         user_id: user.id, help_type: form.helpType, category: form.category,
         title: form.title, description: form.description,
@@ -212,13 +212,13 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
       } as any);
       if (error) throw error;
     },
-    onSuccess: () => { toast({ title: t("common.posted", "Paylaşıldı!") }); onSuccess(); },
-    onError: (e: any) => toast({ title: t("common.error", "Hata"), description: e.message, variant: "destructive" }),
+    onSuccess: () => { toast({ title: t("common.posted", "Posted!") }); onSuccess(); },
+    onError: (e: any) => toast({ title: t("common.error", "Error"), description: e.message, variant: "destructive" }),
   });
 
   return (
     <div style={{ padding: 4 }}>
-      <DialogHeader><DialogTitle style={{ fontSize: 16, fontWeight: 700, color: "#1E3A5F" }}>{t("help.post_title", "Yardım İlanı Paylaş")}</DialogTitle></DialogHeader>
+      <DialogHeader><DialogTitle style={{ fontSize: 16, fontWeight: 700, color: "#1E3A5F" }}>{t("help.post_title", "Post Help Listing")}</DialogTitle></DialogHeader>
       <Progress value={(step / 2) * 100} className="h-1.5 mt-3" />
       <p className="text-center mt-1 mb-4" style={{ fontSize: 11, color: "#94A3B8" }}>{step} / 2</p>
 
@@ -267,27 +267,27 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
             </Select>
           </div>
           <div>
-            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.title", "Başlık")} *</Label>
-            <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder={t("help.title_placeholder", "örn. Banyo tesisatı tamir edebilirim")} style={{ fontSize: 13 }} />
+            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.title", "Title")} *</Label>
+            <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder={t("help.title_placeholder", "e.g. I can fix bathroom plumbing")} style={{ fontSize: 13 }} />
           </div>
           <div>
-            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.description", "Açıklama")}</Label>
+            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.description", "Description")}</Label>
             <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} style={{ fontSize: 13 }} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.price", "Ücret")} (₺)</Label>
+              <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.price", "Price")} (₺)</Label>
               <Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="500" style={{ fontSize: 13 }} />
             </div>
             <div>
-              <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.price_type", "Ücret Tipi")}</Label>
+              <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.price_type", "Price Type")}</Label>
               <Select value={form.priceType} onValueChange={(v) => setForm({ ...form, priceType: v })}>
                 <SelectTrigger style={{ fontSize: 13 }}><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="fixed">{t("common.fixed", "Sabit")}</SelectItem>
-                  <SelectItem value="per_hour">{t("common.per_hour", "Saatlik")}</SelectItem>
-                  <SelectItem value="per_day">{t("common.per_day", "Günlük")}</SelectItem>
-                  <SelectItem value="negotiable">{t("common.negotiable", "Pazarlık")}</SelectItem>
+                  <SelectItem value="fixed">{t("common.fixed", "Fixed")}</SelectItem>
+                  <SelectItem value="per_hour">{t("common.per_hour", "Per Hour")}</SelectItem>
+                  <SelectItem value="per_day">{t("common.per_day", "Per Day")}</SelectItem>
+                  <SelectItem value="negotiable">{t("common.negotiable", "Negotiable")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -298,16 +298,16 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
       {step === 2 && (
         <div className="space-y-4">
           <div>
-            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.photos", "Fotoğraflar")}</Label>
+            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.photos", "Photos")}</Label>
             <PhotoUploader value={photos} onChange={setPhotos} maxFiles={5} pathPrefix="neighbor_help" />
           </div>
           <div>
-            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.neighborhood", "Semt")}</Label>
+            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.neighborhood", "Neighborhood")}</Label>
             <Input value={form.neighborhood} onChange={(e) => setForm({ ...form, neighborhood: e.target.value })} style={{ fontSize: 13 }} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.phone", "Telefon")}</Label>
+              <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.phone", "Phone")}</Label>
               <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+90 5xx" style={{ fontSize: 13 }} />
             </div>
             <div>
@@ -319,14 +319,14 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
       )}
 
       <div className="flex gap-2 mt-5">
-        {step > 1 && <Button variant="outline" onClick={() => setStep(1)} className="gap-1" style={{ fontSize: 12 }}><ArrowLeft className="w-4 h-4" /> {t("common.back", "Geri")}</Button>}
+        {step > 1 && <Button variant="outline" onClick={() => setStep(1)} className="gap-1" style={{ fontSize: 12 }}><ArrowLeft className="w-4 h-4" /> {t("common.back", "Back")}</Button>}
         {step < 2 ? (
           <Button className="flex-1 gap-1" onClick={() => setStep(2)} disabled={!form.title.trim()} style={{ background: "#1E3A5F", color: "#fff", fontSize: 12 }}>
-            {t("common.next", "İleri")} <ArrowRight className="w-4 h-4" />
+            {t("common.next", "Next")} <ArrowRight className="w-4 h-4" />
           </Button>
         ) : (
           <Button className="flex-1" onClick={() => mutation.mutate()} disabled={!form.title || mutation.isPending} style={{ background: "#E74C3C", color: "#fff", fontSize: 12 }}>
-            {mutation.isPending ? t("common.posting", "Paylaşılıyor...") : t("common.post", "Paylaş")}
+            {mutation.isPending ? t("common.posting", "Posting...") : t("common.post", "Post")}
           </Button>
         )}
       </div>
