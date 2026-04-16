@@ -59,7 +59,13 @@ const EventDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const locale = language === "tr" ? "tr-TR" : "en-US";
+  const formatEventDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" }) +
+      " · " + d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+  };
   const queryClient = useQueryClient();
 
   const { data: event, isLoading } = useQuery({
