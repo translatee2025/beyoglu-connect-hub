@@ -260,7 +260,7 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
           </div>
 
           <div>
-            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.category", "Kategori")}</Label>
+            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.category", "Category")}</Label>
             <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
               <SelectTrigger style={{ fontSize: 13 }}><SelectValue /></SelectTrigger>
               <SelectContent>{helpCategoryKeys.filter(c => c.key !== "All").map(c => <SelectItem key={c.key} value={c.key}>{t(c.tKey, c.fallback)}</SelectItem>)}</SelectContent>

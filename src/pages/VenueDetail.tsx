@@ -128,9 +128,9 @@ const VenueDetail = () => {
       setReviewText("");
       setReviewRating(5);
       queryClient.invalidateQueries({ queryKey: ["venue-reviews", venueId] });
-      toast({ title: "Yorum eklendi!" });
+      toast({ title: t("venues.review_added", "Review added!") });
     },
-    onError: (e: any) => toast({ title: "Hata", description: e.message, variant: "destructive" }),
+    onError: (e: any) => toast({ title: t("common.error", "Error"), description: e.message, variant: "destructive" }),
   });
 
   if (isLoading) return <div className="flex justify-center py-20 text-[#94A3B8] text-sm">Yükleniyor...</div>;
@@ -187,7 +187,7 @@ const VenueDetail = () => {
                     color: openStatus ? "#166534" : "#DC2626",
                   }}
                 >
-                  {openStatus ? "Açık" : "Kapalı"}
+                  {openStatus ? t("venues.open", "Open") : t("venues.closed", "Closed")}
                 </span>
               )}
             </div>
@@ -333,7 +333,7 @@ const VenueDetail = () => {
                 return (
                   <div key={day} className="flex justify-between text-[12px]" style={{ fontWeight: isToday ? 600 : 400 }}>
                     <span style={{ color: isToday ? "#1E3A5F" : "#64748B" }}>{DAY_LABELS[day]}</span>
-                    <span style={{ color: h ? "#374151" : "#94A3B8" }}>{h ? `${h.open} – ${h.close}` : "Kapalı"}</span>
+                    <span style={{ color: h ? "#374151" : "#94A3B8" }}>{h ? `${h.open} – ${h.close}` : t("venues.closed", "Closed")}</span>
                   </div>
                 );
               })}
