@@ -217,7 +217,7 @@ const Groups = () => {
       {isLoading ? (
         <SkeletonGrid count={2} hasPhoto photoHeight={120} />
       ) : filtered.length === 0 ? (
-        <EmptyState emoji="👥" message={t("empty.groups", "Henüz grup yok. İlk grubu sen oluştur!")} actionLabel={t("groups.create", "Grup Oluştur")} onAction={() => setPostOpen(true)} />
+        <EmptyState emoji="👥" message={t("empty.groups", "No groups yet. Create the first one!")} actionLabel={t("groups.create", "Create Group")} onAction={() => setPostOpen(true)} />
       ) : (
         <div className="grid sm:grid-cols-2 gap-3">
           {filtered.map((group: any) => {

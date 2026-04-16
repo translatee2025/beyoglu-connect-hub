@@ -106,7 +106,7 @@ const MobileDrawer = ({ open, onClose }: { open: boolean; onClose: () => void })
               className="w-full text-white text-sm font-medium py-2.5 rounded-lg"
               style={{ backgroundColor: "#E74C3C" }}
             >
-              {t("nav.login", "Giriş Yap")}
+              {t("nav.login", "Log In")}
             </button>
           )}
         </div>
@@ -178,7 +178,7 @@ const MobileDrawer = ({ open, onClose }: { open: boolean; onClose: () => void })
               className="ml-auto text-xs"
               style={{ color: "#E74C3C" }}
             >
-              {t("nav.logout", "Çıkış")}
+              {t("nav.logout", "Log Out")}
             </button>
           )}
         </div>
