@@ -12,7 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Upload, X } from "lucide-react";
+import { X } from "lucide-react";
+import { PhotoUploader } from "@/components/shared/PhotoUploader";
 
 const CATEGORIES = ["Music", "Sports", "Food", "Art", "Networking", "Community", "Other"];
 
@@ -36,29 +37,13 @@ export default function CreateEventForm({ open, onOpenChange }: Props) {
   const [address, setAddress] = useState("");
   const [isFree, setIsFree] = useState(true);
   const [price, setPrice] = useState("");
-  const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [coverPreview, setCoverPreview] = useState<string | null>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setCoverFile(file);
-    setCoverPreview(URL.createObjectURL(file));
-  };
+  const [coverPhotos, setCoverPhotos] = useState<string[]>([]);
 
   const createEvent = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
 
-      let coverUrl: string | null = null;
-      if (coverFile) {
-        const ext = coverFile.name.split(".").pop();
-        const path = `${user.id}/${Date.now()}.${ext}`;
-        const { error: uploadError } = await supabase.storage.from("events").upload(path, coverFile);
-        if (uploadError) throw uploadError;
-        const { data: urlData } = supabase.storage.from("events").getPublicUrl(path);
-        coverUrl = urlData.publicUrl;
-      }
+      const coverUrl = coverPhotos.length > 0 ? coverPhotos[0] : null;
 
       const { error } = await supabase.from("events").insert({
         user_id: user.id,
@@ -90,7 +75,7 @@ export default function CreateEventForm({ open, onOpenChange }: Props) {
   const resetForm = () => {
     setTitle(""); setDescription(""); setCategory(""); setStartAt(""); setEndAt("");
     setVenueName(""); setAddress(""); setIsFree(true); setPrice("");
-    setCoverFile(null); setCoverPreview(null);
+    setCoverPhotos([]);
   };
 
   return (

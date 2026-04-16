@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { MediaUpload } from "@/components/shared/MediaUpload";
+import { PhotoUploader } from "@/components/shared/PhotoUploader";
 import ListingMap from "@/components/shared/ListingMap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -318,7 +318,7 @@ const RentalPostForm = ({ mode, onSuccess }: { mode: "looking" | "offer"; onSucc
 
       {step === 2 && (
         <div className="space-y-3">
-          <div><Label>{t("common.photos_video", "Photo / Video")}</Label><MediaUpload value={photos} onChange={setPhotos} maxFiles={8} /></div>
+          <div><Label>{t("common.photos", "Photos")}</Label><PhotoUploader value={photos} onChange={setPhotos} maxFiles={5} pathPrefix="classifieds" /></div>
           <div><Label>{t("common.neighborhood", "Neighborhood")}</Label><Input value={form.neighborhood} onChange={(e) => setForm({ ...form, neighborhood: e.target.value })} placeholder="Cihangir" /></div>
           <div><Label>{t("common.phone", "Phone")}</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+90 5xx xxx xx xx" /></div>
         </div>

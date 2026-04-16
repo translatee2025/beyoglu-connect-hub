@@ -8,7 +8,7 @@ import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { MediaUpload } from "@/components/shared/MediaUpload";
+import { PhotoUploader } from "@/components/shared/PhotoUploader";
 import { useLanguage } from "@/providers/LanguageProvider";
 
 interface ClassifiedPostFormProps { categories: string[]; onSuccess: () => void; }
@@ -54,7 +54,7 @@ const ClassifiedPostForm = ({ categories, onSuccess }: ClassifiedPostFormProps) 
           <div><Label>{t("classifieds.neighborhood", "Neighborhood")}</Label><Input value={form.neighborhood} onChange={(e) => setForm({ ...form, neighborhood: e.target.value })} placeholder="e.g. Beyoğlu" /></div>
         </div>
         <div><Label>{t("classifieds.description", "Description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
-        <div><Label>{t("classifieds.photos", "Photos / Videos")}</Label><MediaUpload value={photos} onChange={setPhotos} maxFiles={8} /></div>
+        <div><Label>{t("classifieds.photos", "Photos")}</Label><PhotoUploader value={photos} onChange={setPhotos} maxFiles={5} pathPrefix="classifieds" /></div>
         <div><Label>{t("classifieds.phone", "Phone")}</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+90 5xx xxx xx xx" /></div>
         <Button className="w-full" onClick={() => mutation.mutate()} disabled={!form.title || mutation.isPending}>
           {mutation.isPending ? t("common.posting", "Posting...") : t("classifieds.post_btn", "Post Ad")}
