@@ -161,8 +161,10 @@ const Parking = () => {
       >
         {t("common.send_message", "Send Message")}
       </button>
+      </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
