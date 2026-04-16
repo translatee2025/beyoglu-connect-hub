@@ -53,6 +53,7 @@ const VenueDetail = () => {
   const { venueId } = useParams<{ venueId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [reportOpen, setReportOpen] = useState(false);
   const [reviewText, setReviewText] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
