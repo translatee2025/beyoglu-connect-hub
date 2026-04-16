@@ -1,35 +1,59 @@
 
 
-# Fix: Rental & Parking Images Not Displaying
+# Full Audit: Why Nothing Is Working
 
-## Problem
+## Root Causes Found
 
-The rental cards show empty blue-gray rectangles instead of apartment photos. The database has correct photo URLs (Unsplash links), the code correctly extracts `item.photos[0]`, and the `<img>` tag is rendered — but the images don't visually appear.
+### Issue 1: Parking page shows empty — listing_mode mismatch
+**Parking.tsx line 80** queries `listing_mode = "rent"` for the "offering" tab, but all seeded parking data has `listing_mode = "offering"`. Result: zero rows returned, empty state shown.
 
-**Root cause**: Two potential issues working together:
+The parking form also saves new listings as `"rent"` (line 274), which is inconsistent with rentals which uses `"offering"`.
 
-1. **Unsplash hotlinking may be blocked** in the preview environment — the `<img>` renders but returns a broken/empty response, showing only the `#EFF4FF` background.
-2. **No fallback on image load error** — when the `<img>` fails to load, there's no `onError` handler to show the house emoji or placeholder.
+**Fix**: Update the parking offering query to use `listing_mode = "offering"`, matching what the seeded data (and the rental page) uses. Also update the parking form to save as `"offering"` instead of `"rent"`.
 
-## Plan
+### Issue 2: Images still not displaying — picsum.photos may be blocked
+The previous fix replaced Unsplash URLs with `picsum.photos` URLs. But `picsum.photos` can also be blocked or rate-limited in the preview sandbox. The `onError` fallback was added but if ALL images fail, every card shows the 🏠 emoji — which looks like nothing works.
 
-### Step 1: Add `onError` fallback to RentalCard image
+**Fix**: Replace external image URLs with placeholder SVG data URIs for the seeded data, OR use Unsplash with the proper `source.unsplash.com` redirect format which is more reliable. Also add visible `alt` text and a colored background so failed images still look intentional.
 
-In `src/pages/Rentals.tsx`, update the `RentalCard` component to handle broken images gracefully. Add state tracking for image load failure and fall back to the emoji placeholder when the image fails.
+### Issue 3: Wall feed shows skeleton loaders
+Data exists (30 wall posts with correct `district_id` for Beyoğlu, `group_id = null`, RLS open for all reads). The query should succeed. Possible causes:
+- Build error from recent edits preventing deployment
+- React Query `staleTime: 5min` caching a previous error
+- The screenshot captured a transient loading state
 
-### Step 2: Replace Unsplash URLs with working alternatives
+**Fix**: Add error handling to the wall query with `onError` logging. Verify the build compiles cleanly. Check for TypeScript errors in recently edited files (Groups.tsx, NeighborHelp.tsx, PetSittingWalkingSection.tsx).
 
-Update the seeded rental photo URLs in the database. Replace the `?w=800` Unsplash URLs (which may be blocked by hotlink protection) with `?auto=format&fit=crop&w=800&q=80` format, or use Unsplash's `source.unsplash.com` redirect service, or replace with `picsum.photos` URLs that reliably work in preview environments.
+### Issue 4: Pet sitting cards may not match filter logic
+Seeded `pet_sitting_posts` data has `listing_type = "offering"` or `"looking"` and `service_type = "sitting"` or `"walking"`. The PetSittingWalkingSection filters by these exact values. This should work, but the `price` column is `numeric` type while the code does `(p.price || "").replace(...)` which would crash on a number.
 
-Run an UPDATE query on the classifieds table to fix all rental and parking photo URLs.
+**Fix**: Cast `price` to string before string operations: `String(p.price || "")`.
 
-### Step 3: Apply same fix to ParkingCard in `src/pages/Parking.tsx`
+## Implementation Plan
 
-Add the same `onError` fallback pattern to parking card images.
+### Step 1: Fix Parking listing_mode mismatch
+In `src/pages/Parking.tsx`:
+- Change the offering query from `.eq("listing_mode", "rent")` to `.eq("listing_mode", "offering")`
+- Change the parking form insert from `listing_mode: "rent"` to `listing_mode: "offering"`
 
-## Technical details
+### Step 2: Fix pet sitting price string crash
+In `src/components/pets/PetSittingWalkingSection.tsx`:
+- Change `(p.price || "").replace(...)` to `String(p.price || "").replace(...)` in all price parsing
+- Fix the card price display similarly
 
-- Only 2 files modified: `Rentals.tsx`, `Parking.tsx`
-- One database UPDATE to fix photo URLs
-- No logic, routing, or query changes
+### Step 3: Replace image URLs with reliable sources
+Run a database UPDATE to replace picsum.photos URLs with a more reliable pattern — either `https://placehold.co/800x600/EFF4FF/1E3A5F?text=🏠` style data URIs or keep picsum but add cache-busting. Also ensure `onError` handlers in both RentalCard and ParkingCard show a styled placeholder (not just an emoji).
+
+### Step 4: Run TypeScript build check
+Run `npx tsc --noEmit` to catch any compilation errors from recent edits that may prevent the app from building and deploying.
+
+### Step 5: Add error boundary logging to Wall feed
+Add `onError` callback to the wall-posts useQuery to surface any silent failures. Also add a brief `console.log` to confirm data is being fetched.
+
+## Files Changed
+- `src/pages/Parking.tsx` — fix listing_mode query and form
+- `src/components/pets/PetSittingWalkingSection.tsx` — fix price type handling
+- `src/pages/Rentals.tsx` — verify image rendering works
+- Database UPDATE for image URLs
+- Build verification
 
