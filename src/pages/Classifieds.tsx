@@ -42,14 +42,6 @@ const parsePrice = (p: string | null) => {
   return parseFloat(p.replace(/[^0-9.]/g, "")) || 0;
 };
 
-const formatTimeAgo = (d: string) => {
-  const diff = Date.now() - new Date(d).getTime();
-  const h = Math.floor(diff / 3600000);
-  if (h < 1) return "az önce";
-  if (h < 24) return `${h}sa`;
-  return `${Math.floor(h / 24)}g`;
-};
-
 const Classifieds = () => {
   const [reportTarget, setReportTarget] = useState<{ id: string } | null>(null);
   const [search, setSearch] = useState("");
@@ -70,6 +62,14 @@ const Classifieds = () => {
   const handleContact = (userId: string) => {
     if (!user) { navigate("/auth"); return; }
     navigate(`/messages?to=${userId}`);
+  };
+
+  const formatTimeAgo = (d: string) => {
+    const diff = Date.now() - new Date(d).getTime();
+    const h = Math.floor(diff / 3600000);
+    if (h < 1) return t("time.just_now", "just now");
+    if (h < 24) return `${h}${t("time.hours_short", "h").replace("{n}", "")}`;
+    return `${Math.floor(h / 24)}${t("time.days_short", "d").replace("{n}", "")}`;
   };
 
   const { data: categories = [] } = useQuery({
@@ -142,7 +142,6 @@ const Classifieds = () => {
 
     return (
       <div style={{ borderRadius: 12, overflow: "hidden", backgroundColor: "white", border: "1px solid #E2EBFC" }}>
-        {/* Photo area */}
         <div style={{ position: "relative", height: 140, backgroundColor: meta.bg }}>
           {photo ? (
             <img src={photo} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -153,7 +152,6 @@ const Classifieds = () => {
           )}
         </div>
 
-        {/* Card body */}
         <div style={{ padding: 12 }}>
           <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
             <div className="flex items-center gap-2">
@@ -170,7 +168,7 @@ const Classifieds = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => setReportTarget({ id: item.id })}>
-                    <Flag className="w-4 h-4 mr-2" /> Şikayet Et
+                    <Flag className="w-4 h-4 mr-2" /> {t("common.report", "Report")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -199,7 +197,6 @@ const Classifieds = () => {
           <DistanceLabel lat={item.lat} lng={item.lng} neighborhood={item.neighborhood} />
         </div>
 
-        {/* Contact button */}
         <button
           onClick={() => item.user_id && handleContact(item.user_id)}
           style={{
@@ -208,7 +205,7 @@ const Classifieds = () => {
             borderRadius: "0 0 12px 12px",
           }}
         >
-          Mesaj
+          {t("common.message", "Message")}
         </button>
       </div>
     );
@@ -223,11 +220,11 @@ const Classifieds = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
             <div className="relative w-full sm:w-80">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Ara..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+              <Input placeholder={t("common.search", "Search...")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
             </div>
             <Dialog open={postOpen} onOpenChange={setPostOpen}>
               <DialogTrigger asChild>
-                <Button className="gap-2"><Plus className="w-4 h-4" /> İlan Ver</Button>
+                <Button className="gap-2"><Plus className="w-4 h-4" /> {t("common.post_listing", "Post Listing")}</Button>
               </DialogTrigger>
               <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                 <ClassifiedPostForm
@@ -238,16 +235,14 @@ const Classifieds = () => {
             </Dialog>
           </div>
 
-          {/* Category pills */}
           <div className="flex flex-wrap gap-2 mb-3">
             {categoryNames.map((cat) => (
               <Button key={cat} variant={category === cat ? "default" : "outline"} size="sm" onClick={() => handleCategoryChange(cat)}>
-                {cat === "All" ? "Tümü" : cat}
+                {cat === "All" ? t("classifieds.all", "All") : cat}
               </Button>
             ))}
           </div>
 
-          {/* Sub-category carousel */}
           {currentSubCats.length > 0 && (
             <div
               ref={subRef}
@@ -260,9 +255,7 @@ const Classifieds = () => {
                   onClick={() => setSubCategory(subCategory === sub ? null : sub)}
                   className="flex-shrink-0 transition-colors"
                   style={{
-                    padding: "4px 12px",
-                    borderRadius: 16,
-                    fontSize: 11,
+                    padding: "4px 12px", borderRadius: 16, fontSize: 11,
                     fontWeight: subCategory === sub ? 500 : 400,
                     backgroundColor: subCategory === sub ? "#1E3A5F" : "white",
                     color: subCategory === sub ? "white" : "#64748B",
@@ -276,7 +269,6 @@ const Classifieds = () => {
             </div>
           )}
 
-          {/* Sort & Filter */}
           <SortFilterBar
             sort={sort} onSortChange={setSort}
             priceMin={priceMin} priceMax={priceMax}
@@ -288,7 +280,7 @@ const Classifieds = () => {
           {isLoading ? (
             <SkeletonGrid count={4} hasPhoto photoHeight={140} />
           ) : processed.length === 0 ? (
-            <EmptyState emoji="🛍️" message="Henüz ilan yok. İlk ilanı sen ver!" actionLabel="İlan Ver" onAction={() => setPostOpen(true)} />
+            <EmptyState emoji="🛍️" message={t("classifieds.no_listings", "No listings yet. Be the first to post!")} actionLabel={t("common.post_listing", "Post Listing")} onAction={() => setPostOpen(true)} />
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {processed.map((item: any) => (

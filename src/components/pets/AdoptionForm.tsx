@@ -10,6 +10,7 @@ import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSpecies, useBreeds } from "@/hooks/useSpeciesBreeds";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface AdoptionFormProps { onSuccess: () => void; onBack: () => void; }
 
@@ -21,6 +22,7 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
   });
   const [photos, setPhotos] = useState<string[]>([]);
   const { toast } = useToast();
+  const { t } = useLanguage();
   const { speciesOptions, isLoading: speciesLoading } = useSpecies();
   const { breedOptions, isLoading: breedsLoading } = useBreeds(form.species);
 
@@ -34,7 +36,7 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
       const ext = file.name.split(".").pop();
       const path = `pets/${Date.now()}_${index}.${ext}`;
       const { error } = await supabase.storage.from("user-media").upload(path, file);
-      if (error) { toast({ title: "Upload failed", variant: "destructive" }); return; }
+      if (error) { toast({ title: t("pets.upload_failed", "Upload failed"), variant: "destructive" }); return; }
       const { data: { publicUrl } } = supabase.storage.from("user-media").getPublicUrl(path);
       const newPhotos = [...photos];
       newPhotos[index] = publicUrl;
@@ -46,7 +48,7 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
   const mutation = useMutation({
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Giriş yapın");
+      if (!user) throw new Error(t("pets.login_required", "Please log in"));
       const { error } = await supabase.from("pet_posts").insert({
         user_id: user.id,
         post_type: "adoption" as any,
@@ -69,8 +71,8 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
       } as any);
       if (error) throw error;
     },
-    onSuccess: () => { toast({ title: "Sahiplendirme ilanı oluşturuldu! ✅" }); onSuccess(); },
-    onError: (e: any) => toast({ title: "Hata", description: e.message, variant: "destructive" }),
+    onSuccess: () => { toast({ title: t("pets.adoption_success", "Adoption listing created! ✅") }); onSuccess(); },
+    onError: (e: any) => toast({ title: t("common.error", "Error"), description: e.message, variant: "destructive" }),
   });
 
   const cardStyle = (active: boolean) => ({
@@ -84,14 +86,13 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
       <DialogHeader>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={onBack}><ArrowLeft className="w-4 h-4" /></Button>
-          <DialogTitle>🐾 Sahiplendirme İlanı</DialogTitle>
+          <DialogTitle>{t("pets.adoption_form_title", "🐾 Adoption Listing")}</DialogTitle>
         </div>
       </DialogHeader>
 
       <div className="space-y-4">
-        {/* Photo upload - 5 slots */}
         <div>
-          <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>Fotoğraflar (ilk = profil)</Label>
+          <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>{t("pets.photos_label", "Photos (first = profile)")}</Label>
           <div className="flex gap-2">
             {[0, 1, 2, 3, 4].map((i) => (
               <button
@@ -110,17 +111,15 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
           </div>
         </div>
 
-        {/* Pet name */}
         <div>
-          <Label className="text-xs" style={{ color: "#1E3A5F" }}>Hayvan Adı</Label>
+          <Label className="text-xs" style={{ color: "#1E3A5F" }}>{t("pets.pet_name_field", "Pet Name")}</Label>
           <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} style={{ border: "1px solid #E2EBFC" }} />
         </div>
 
-        {/* Species emoji cards */}
         <div>
-          <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>Tür</Label>
+          <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>{t("pets.species_label", "Species")}</Label>
           {speciesLoading ? (
-            <p className="text-xs" style={{ color: "#94A3B8" }}>Yükleniyor...</p>
+            <p className="text-xs" style={{ color: "#94A3B8" }}>{t("loading", "Loading...")}</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {speciesOptions.map((s) => (
@@ -138,12 +137,11 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
           )}
         </div>
 
-        {/* Breed scrollable pills */}
         {form.species && (
           <div>
-            <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>Cins</Label>
+            <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>{t("pets.breed_label", "Breed")}</Label>
             {breedsLoading ? (
-              <p className="text-xs" style={{ color: "#94A3B8" }}>Yükleniyor...</p>
+              <p className="text-xs" style={{ color: "#94A3B8" }}>{t("loading", "Loading...")}</p>
             ) : (
               <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
                 {breedOptions.map((b) => (
@@ -165,75 +163,73 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
           </div>
         )}
 
-        {/* Age */}
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label className="text-xs" style={{ color: "#1E3A5F" }}>Yaş (Yıl)</Label>
+            <Label className="text-xs" style={{ color: "#1E3A5F" }}>{t("pets.age_years", "Age (Years)")}</Label>
             <Input type="number" min={0} value={form.age_years} onChange={(e) => setForm({ ...form, age_years: e.target.value })} style={{ border: "1px solid #E2EBFC" }} />
           </div>
           <div>
-            <Label className="text-xs" style={{ color: "#1E3A5F" }}>Yaş (Ay)</Label>
+            <Label className="text-xs" style={{ color: "#1E3A5F" }}>{t("pets.age_months", "Age (Months)")}</Label>
             <Input type="number" min={0} max={11} value={form.age_months} onChange={(e) => setForm({ ...form, age_months: e.target.value })} style={{ border: "1px solid #E2EBFC" }} />
           </div>
         </div>
 
-        {/* Gender */}
         <div>
-          <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>Cinsiyet</Label>
+          <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>{t("pets.gender_label", "Gender")}</Label>
           <div className="grid grid-cols-2 gap-2">
-            <button onClick={() => setForm({ ...form, gender: "male" })} className="p-3 rounded-lg text-center text-sm font-semibold" style={cardStyle(form.gender === "male")}>Erkek 🐾</button>
-            <button onClick={() => setForm({ ...form, gender: "female" })} className="p-3 rounded-lg text-center text-sm font-semibold" style={cardStyle(form.gender === "female")}>Dişi 🐾</button>
+            <button onClick={() => setForm({ ...form, gender: "male" })} className="p-3 rounded-lg text-center text-sm font-semibold" style={cardStyle(form.gender === "male")}>{t("pets.male_label", "Male 🐾")}</button>
+            <button onClick={() => setForm({ ...form, gender: "female" })} className="p-3 rounded-lg text-center text-sm font-semibold" style={cardStyle(form.gender === "female")}>{t("pets.female_label", "Female 🐾")}</button>
           </div>
         </div>
 
-        {/* Size */}
         <div>
-          <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>Boyut</Label>
+          <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>{t("pets.size_label", "Size")}</Label>
           <div className="grid grid-cols-4 gap-1.5">
             {[
-              { v: "tiny", l: "Mini" }, { v: "small", l: "Küçük" }, { v: "medium", l: "Orta" }, { v: "large", l: "Büyük" },
+              { v: "tiny", l: t("pets.size_tiny", "Tiny") },
+              { v: "small", l: t("pets.size_small", "Small") },
+              { v: "medium", l: t("pets.size_medium", "Medium") },
+              { v: "large", l: t("pets.size_large", "Large") },
             ].map((s) => (
               <button key={s.v} onClick={() => setForm({ ...form, size: s.v })} className="py-2 rounded-lg text-xs font-semibold text-center" style={cardStyle(form.size === s.v)}>{s.l}</button>
             ))}
           </div>
         </div>
 
-        {/* Energy level */}
         <div>
-          <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>Enerji Seviyesi</Label>
+          <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>{t("pets.energy_label", "Energy Level")}</Label>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { v: "low", l: "Sakin 😌" }, { v: "moderate", l: "Orta ⚡" }, { v: "high", l: "Enerjik 🚀" },
+              { v: "low", l: t("pets.energy_low", "Calm 😌") },
+              { v: "moderate", l: t("pets.energy_moderate", "Moderate ⚡") },
+              { v: "high", l: t("pets.energy_high", "Energetic 🚀") },
             ].map((e) => (
               <button key={e.v} onClick={() => setForm({ ...form, energy_level: e.v })} className="py-2 rounded-lg text-xs font-semibold text-center" style={cardStyle(form.energy_level === e.v)}>{e.l}</button>
             ))}
           </div>
         </div>
 
-        {/* Toggles */}
         <div className="space-y-3">
           {[
-            { key: "is_vaccinated" as const, label: "Aşılı mı?" },
-            { key: "is_neutered" as const, label: "Kısırlaştırılmış mı?" },
-            { key: "good_with_children" as const, label: "Çocuklarla iyi geçinir mi?" },
-            { key: "good_with_pets" as const, label: "Diğer hayvanlarla iyi geçinir mi?" },
-          ].map((t) => (
-            <div key={t.key} className="flex items-center justify-between">
-              <Label className="text-xs" style={{ color: "#1E3A5F" }}>{t.label}</Label>
-              <Switch checked={form[t.key]} onCheckedChange={(v) => setForm({ ...form, [t.key]: v })} />
+            { key: "is_vaccinated" as const, label: t("pets.is_vaccinated", "Vaccinated?") },
+            { key: "is_neutered" as const, label: t("pets.is_neutered", "Neutered?") },
+            { key: "good_with_children" as const, label: t("pets.good_with_children", "Good with children?") },
+            { key: "good_with_pets" as const, label: t("pets.good_with_pets", "Good with other pets?") },
+          ].map((tgl) => (
+            <div key={tgl.key} className="flex items-center justify-between">
+              <Label className="text-xs" style={{ color: "#1E3A5F" }}>{tgl.label}</Label>
+              <Switch checked={form[tgl.key]} onCheckedChange={(v) => setForm({ ...form, [tgl.key]: v })} />
             </div>
           ))}
         </div>
 
-        {/* Description */}
         <div>
-          <Label className="text-xs" style={{ color: "#1E3A5F" }}>Açıklama</Label>
+          <Label className="text-xs" style={{ color: "#1E3A5F" }}>{t("pets.description_label", "Description")}</Label>
           <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} style={{ border: "1px solid #E2EBFC" }} />
         </div>
 
-        {/* Neighborhood */}
         <div>
-          <Label className="text-xs" style={{ color: "#1E3A5F" }}>Mahalle</Label>
+          <Label className="text-xs" style={{ color: "#1E3A5F" }}>{t("pets.neighborhood_label", "Neighborhood")}</Label>
           <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Cihangir, Beyoğlu" style={{ border: "1px solid #E2EBFC" }} />
         </div>
 
@@ -243,7 +239,7 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
           onClick={() => mutation.mutate()}
           disabled={!form.title || mutation.isPending}
         >
-          {mutation.isPending ? "Gönderiliyor..." : "Sahiplendirme İlanı Yayınla"}
+          {mutation.isPending ? t("common.sending", "Sending...") : t("pets.submit_adoption", "Publish Adoption Listing")}
         </Button>
       </div>
     </div>

@@ -37,14 +37,6 @@ const parsePrice = (p: string | null) => {
   return parseFloat(p.replace(/[^0-9.]/g, "")) || 0;
 };
 
-const formatTimeAgo = (d: string) => {
-  const diff = Date.now() - new Date(d).getTime();
-  const h = Math.floor(diff / 3600000);
-  if (h < 1) return "az önce";
-  if (h < 24) return `${h}sa`;
-  return `${Math.floor(h / 24)}g`;
-};
-
 const Parking = () => {
   const [mainTab, setMainTab] = useState("offering");
   const [search, setSearch] = useState("");
@@ -64,6 +56,14 @@ const Parking = () => {
   const handleContact = (userId: string) => {
     if (!user) { navigate("/auth"); return; }
     navigate(`/messages?to=${userId}`);
+  };
+
+  const formatTimeAgo = (d: string) => {
+    const diff = Date.now() - new Date(d).getTime();
+    const h = Math.floor(diff / 3600000);
+    if (h < 1) return t("time.just_now", "just now");
+    if (h < 24) return `${h}${t("time.hours_short", "h").replace("{n}", "")}`;
+    return `${Math.floor(h / 24)}${t("time.days_short", "d").replace("{n}", "")}`;
   };
 
   const { data: lookingListings = [], isLoading: lookingLoading } = useQuery({
@@ -118,7 +118,7 @@ const Parking = () => {
     <div style={{ borderRadius: 12, overflow: "hidden", backgroundColor: "white", border: "1px solid #E2EBFC", padding: 14 }}>
       <div className="flex items-center gap-2" style={{ marginBottom: 8 }}>
         <Badge variant={item.listing_mode === "rent" ? "default" : "secondary"} style={{ fontSize: 11 }}>
-          {item.listing_mode === "rent" ? "Müsait" : "Arıyorum"}
+          {item.listing_mode === "rent" ? t("common.available", "Available") : t("common.looking_for", "Looking")}
         </Badge>
         {item.category && <Badge variant="outline" style={{ fontSize: 11 }}>{item.category}</Badge>}
       </div>
@@ -151,7 +151,7 @@ const Parking = () => {
           fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer", borderRadius: 8,
         }}
       >
-        Mesaj Gönder
+        {t("common.send_message", "Send Message")}
       </button>
     </div>
   );
@@ -166,13 +166,13 @@ const Parking = () => {
                 onClick={() => setMainTab("offering")}
                 className={`flex-1 py-3 text-sm font-medium text-center transition-colors ${mainTab === "offering" ? "text-[#1E3A5F] border-b-2 border-[#1E3A5F]" : "text-[#94A3B8] hover:text-[#64748B]"}`}
               >
-                Otopark İlanları
+                {t("parking.listings", "Parking Listings")}
               </button>
               <button
                 onClick={() => setMainTab("looking")}
                 className={`flex-1 py-3 text-sm font-medium text-center transition-colors ${mainTab === "looking" ? "text-[#1E3A5F] border-b-2 border-[#1E3A5F]" : "text-[#94A3B8] hover:text-[#64748B]"}`}
               >
-                Arıyorum
+                {t("common.looking_for", "Looking")}
               </button>
             </div>
 
@@ -180,10 +180,10 @@ const Parking = () => {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                 <div className="relative w-full sm:w-80">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input placeholder="Ara..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+                  <Input placeholder={t("common.search", "Search...")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
                 </div>
                 <Dialog open={postOpen} onOpenChange={setPostOpen}>
-                  <DialogTrigger asChild><Button className="gap-2"><Plus className="w-4 h-4" /> İlan Ver</Button></DialogTrigger>
+                  <DialogTrigger asChild><Button className="gap-2"><Plus className="w-4 h-4" /> {t("common.post_listing", "Post Listing")}</Button></DialogTrigger>
                   <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                     <ParkingPostForm mode="looking" onSuccess={() => { setPostOpen(false); queryClient.invalidateQueries({ queryKey: ["parking-looking"] }); }} />
                   </DialogContent>
@@ -200,7 +200,7 @@ const Parking = () => {
                 filterActive={filterActive}
               />
               {lookingLoading ? <SkeletonGrid count={3} />
-                : processItems(lookingListings).length === 0 ? <EmptyStateComponent emoji="🅿️" message="Henüz otopark ilanı yok." />
+                : processItems(lookingListings).length === 0 ? <EmptyStateComponent emoji="🅿️" message={t("parking.no_listings", "No parking listings yet.")} />
                 : <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{processItems(lookingListings).map((item: any) => <ParkingCard key={item.id} item={item} />)}</div>}
             </TabsContent>
 
@@ -208,10 +208,10 @@ const Parking = () => {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                 <div className="relative w-full sm:w-80">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input placeholder="Ara..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+                  <Input placeholder={t("common.search", "Search...")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
                 </div>
                 <Dialog open={postOpen} onOpenChange={setPostOpen}>
-                  <DialogTrigger asChild><Button className="gap-2"><Plus className="w-4 h-4" /> Otopark İlanı Ver</Button></DialogTrigger>
+                  <DialogTrigger asChild><Button className="gap-2"><Plus className="w-4 h-4" /> {t("parking.post_listing", "Post Parking Listing")}</Button></DialogTrigger>
                   <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                     <ParkingPostForm mode="offer" onSuccess={() => { setPostOpen(false); queryClient.invalidateQueries({ queryKey: ["parking-offering"] }); }} />
                   </DialogContent>
@@ -228,12 +228,12 @@ const Parking = () => {
                 filterActive={filterActive}
               />
               <div className="flex gap-2 mb-4">
-                <Button variant={viewMode === "list" ? "default" : "outline"} size="sm" onClick={() => setViewMode("list")} className="gap-1"><List className="w-4 h-4" /> Liste</Button>
-                <Button variant={viewMode === "map" ? "default" : "outline"} size="sm" onClick={() => setViewMode("map")} className="gap-1"><Map className="w-4 h-4" /> Harita</Button>
+                <Button variant={viewMode === "list" ? "default" : "outline"} size="sm" onClick={() => setViewMode("list")} className="gap-1"><List className="w-4 h-4" /> {t("common.list", "List")}</Button>
+                <Button variant={viewMode === "map" ? "default" : "outline"} size="sm" onClick={() => setViewMode("map")} className="gap-1"><Map className="w-4 h-4" /> {t("common.map", "Map")}</Button>
               </div>
               {viewMode === "list" ? (
                 offeringLoading ? <SkeletonGrid count={3} />
-                : processItems(offeringListings).length === 0 ? <EmptyStateComponent emoji="🅿️" message="Henüz otopark ilanı yok." actionLabel="İlan Ver" onAction={() => setPostOpen(true)} />
+                : processItems(offeringListings).length === 0 ? <EmptyStateComponent emoji="🅿️" message={t("parking.no_listings", "No parking listings yet.")} actionLabel={t("common.post_listing", "Post Listing")} onAction={() => setPostOpen(true)} />
                 : <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{processItems(offeringListings).map((item: any) => <ParkingCard key={item.id} item={item} />)}</div>
               ) : (
                 <ListingMap items={mapPins(processItems(offeringListings))} height="400px" />
@@ -264,44 +264,44 @@ const ParkingPostForm = ({ mode, onSuccess }: { mode: "looking" | "offer"; onSuc
       });
       if (error) throw error;
     },
-    onSuccess: () => { toast({ title: "Paylaşıldı!" }); onSuccess(); },
-    onError: (e: any) => toast({ title: "Hata", description: e.message, variant: "destructive" }),
+    onSuccess: () => { toast({ title: t("common.posted", "Posted!") }); onSuccess(); },
+    onError: (e: any) => toast({ title: t("common.error", "Error"), description: e.message, variant: "destructive" }),
   });
 
   return (
     <div className="space-y-4">
-      <DialogHeader><DialogTitle>{mode === "looking" ? "Otopark Arıyorum" : "Otopark İlanı Ver"}</DialogTitle></DialogHeader>
+      <DialogHeader><DialogTitle>{mode === "looking" ? t("parking.looking_title", "Looking for Parking") : t("parking.offer_title", "Post Parking Spot")}</DialogTitle></DialogHeader>
       <Progress value={(step / 2) * 100} className="h-1.5" />
-      <p className="text-xs text-muted-foreground text-center">Adım {step} / 2</p>
+      <p className="text-xs text-muted-foreground text-center">{t("common.step_of", "Step")} {step} / 2</p>
 
       {step === 1 && (
         <div className="space-y-3">
-          <div><Label>Başlık *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder={mode === "looking" ? "ör. Taksim yakını garaj arıyorum" : "ör. Kapalı garaj yeri"} /></div>
-          <div><Label>Otopark Tipi</Label>
+          <div><Label>{t("common.title_required", "Title *")}</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder={mode === "looking" ? t("parking.looking_placeholder", "e.g. Looking for garage near Taksim") : t("parking.offer_placeholder", "e.g. Covered garage spot")} /></div>
+          <div><Label>{t("parking.type_label", "Parking Type")}</Label>
             <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-              <SelectTrigger><SelectValue placeholder="Tip seçin" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={t("common.select_type", "Select type")} /></SelectTrigger>
               <SelectContent>{parkingTypeKeys.filter(c => c.key !== "All").map(c => <SelectItem key={c.key} value={c.key}>{t(c.tKey, c.fallback)}</SelectItem>)}</SelectContent>
             </Select>
           </div>
-          <div><Label>{mode === "looking" ? "Bütçe (₺/ay)" : "Fiyat (₺/ay)"}</Label><Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="2.000" /></div>
-          <div><Label>Açıklama</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} /></div>
+          <div><Label>{mode === "looking" ? t("common.budget_monthly", "Budget (₺/mo)") : t("common.price_monthly", "Price (₺/mo)")}</Label><Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="2.000" /></div>
+          <div><Label>{t("common.description", "Description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} /></div>
         </div>
       )}
 
       {step === 2 && (
         <div className="space-y-3">
-          <div><Label>Fotoğraf / Video</Label><MediaUpload value={photos} onChange={setPhotos} maxFiles={6} /></div>
-          <div><Label>Mahalle</Label><Input value={form.neighborhood} onChange={(e) => setForm({ ...form, neighborhood: e.target.value })} /></div>
-          <div><Label>Telefon</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+90 5xx xxx xx xx" /></div>
+          <div><Label>{t("common.photos_video", "Photo / Video")}</Label><MediaUpload value={photos} onChange={setPhotos} maxFiles={6} /></div>
+          <div><Label>{t("common.neighborhood", "Neighborhood")}</Label><Input value={form.neighborhood} onChange={(e) => setForm({ ...form, neighborhood: e.target.value })} /></div>
+          <div><Label>{t("common.phone", "Phone")}</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+90 5xx xxx xx xx" /></div>
         </div>
       )}
 
       <div className="flex gap-2">
-        {step > 1 && <Button variant="outline" onClick={() => setStep(1)} className="gap-1"><ArrowLeft className="w-4 h-4" /> Geri</Button>}
+        {step > 1 && <Button variant="outline" onClick={() => setStep(1)} className="gap-1"><ArrowLeft className="w-4 h-4" /> {t("common.back", "Back")}</Button>}
         {step < 2 ? (
-          <Button className="flex-1 gap-1" onClick={() => setStep(2)} disabled={!form.title.trim()}>İleri <ArrowRight className="w-4 h-4" /></Button>
+          <Button className="flex-1 gap-1" onClick={() => setStep(2)} disabled={!form.title.trim()}>{t("common.next", "Next")} <ArrowRight className="w-4 h-4" /></Button>
         ) : (
-          <Button className="flex-1" onClick={() => mutation.mutate()} disabled={!form.title || mutation.isPending}>{mutation.isPending ? "Gönderiliyor..." : "Paylaş"}</Button>
+          <Button className="flex-1" onClick={() => mutation.mutate()} disabled={!form.title || mutation.isPending}>{mutation.isPending ? t("common.sending", "Sending...") : t("common.share", "Share")}</Button>
         )}
       </div>
     </div>
