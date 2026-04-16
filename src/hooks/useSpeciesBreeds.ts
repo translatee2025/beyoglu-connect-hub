@@ -38,7 +38,7 @@ export function useSpecies() {
   const speciesOptions = useMemo(
     () =>
       species.map((s) => ({
-        value: s.name_en.toLowerCase(),
+        value: s.id,
         label: `${s.emoji} ${language === "tr" ? s.name_tr : s.name_en}`,
         id: s.id,
         emoji: s.emoji,
@@ -58,8 +58,13 @@ export function useBreeds(speciesValue?: string) {
   const { language } = useLanguage();
   const { species } = useSpecies();
 
+  // speciesValue can be either a UUID (id) or a lowercase name
   const speciesId = useMemo(() => {
     if (!speciesValue) return null;
+    // Check if it's already a UUID
+    const directMatch = species.find((s) => s.id === speciesValue);
+    if (directMatch) return directMatch.id;
+    // Fallback: match by lowercase name
     const found = species.find(
       (s) => s.name_en.toLowerCase() === speciesValue.toLowerCase()
     );

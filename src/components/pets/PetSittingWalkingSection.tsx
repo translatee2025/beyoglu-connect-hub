@@ -38,9 +38,8 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
     queryKey: ["pet-sitting-walking-posts"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("pet_posts")
+        .from("pet_sitting_posts")
         .select("*")
-        .eq("post_type", "pet_sitting")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -66,8 +65,8 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
     let list = posts.filter((p: any) => {
       const st = p.service_type || "sitting";
       if (st !== serviceType) return false;
-      if (offerFilter === "offer" && !p.is_offering) return false;
-      if (offerFilter === "want" && p.is_offering) return false;
+      if (offerFilter === "offer" && p.listing_type !== "offering") return false;
+      if (offerFilter === "want" && p.listing_type !== "looking") return false;
       return true;
     });
 
@@ -194,7 +193,7 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
       ) : (
         <div className="space-y-3">
           {filtered.map((post: any) => {
-            const isOffer = !!post.is_offering;
+            const isOffer = post.listing_type === "offering";
             return (
               <div
                 key={post.id}

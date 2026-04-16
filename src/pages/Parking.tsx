@@ -114,8 +114,16 @@ const Parking = () => {
 
   const mapPins = (items: any[]) => items.filter((i) => i.lat && i.lng).map((i) => ({ lat: i.lat, lng: i.lng, title: i.title, badge: i.category, extra: i.price ? `₺${i.price}/ay` : undefined }));
 
-  const ParkingCard = ({ item }: { item: any }) => (
-    <div style={{ borderRadius: 12, overflow: "hidden", backgroundColor: "white", border: "1px solid #E2EBFC", padding: 14 }}>
+  const ParkingCard = ({ item }: { item: any }) => {
+    const photo = Array.isArray(item.photos) && item.photos.length > 0 ? item.photos[0] : null;
+    return (
+    <div style={{ borderRadius: 12, overflow: "hidden", backgroundColor: "white", border: "1px solid #E2EBFC" }}>
+      {photo ? (
+        <div style={{ width: "100%", height: 140, overflow: "hidden" }}>
+          <img src={photo} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        </div>
+      ) : null}
+      <div style={{ padding: 14 }}>
       <div className="flex items-center gap-2" style={{ marginBottom: 8 }}>
         <Badge variant={item.listing_mode === "rent" ? "default" : "secondary"} style={{ fontSize: 11 }}>
           {item.listing_mode === "rent" ? t("common.available", "Available") : t("common.looking_for", "Looking")}
@@ -153,8 +161,10 @@ const Parking = () => {
       >
         {t("common.send_message", "Send Message")}
       </button>
+      </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
