@@ -1,0 +1,1 @@
+ALTER TABLE public.pet_sitting_posts DROP CONSTRAINT IF EXISTS pet_sitting_posts_user_id_fkey;
