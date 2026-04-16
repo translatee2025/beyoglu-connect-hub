@@ -5,7 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Upload } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { PhotoUploader } from "@/components/shared/PhotoUploader";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -26,24 +27,7 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
   const { speciesOptions, isLoading: speciesLoading } = useSpecies();
   const { breedOptions, isLoading: breedsLoading } = useBreeds(form.species);
 
-  const handlePhotoUpload = async (index: number) => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-      const ext = file.name.split(".").pop();
-      const path = `pets/${Date.now()}_${index}.${ext}`;
-      const { error } = await supabase.storage.from("user-media").upload(path, file);
-      if (error) { toast({ title: t("pets.upload_failed", "Upload failed"), variant: "destructive" }); return; }
-      const { data: { publicUrl } } = supabase.storage.from("user-media").getPublicUrl(path);
-      const newPhotos = [...photos];
-      newPhotos[index] = publicUrl;
-      setPhotos(newPhotos);
-    };
-    input.click();
-  };
+  // Photo upload handled by PhotoUploader component
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -93,22 +77,7 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
       <div className="space-y-4">
         <div>
           <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>{t("pets.photos_label", "Photos (first = profile)")}</Label>
-          <div className="flex gap-2">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <button
-                key={i}
-                onClick={() => handlePhotoUpload(i)}
-                className="flex-1 aspect-square rounded-lg flex items-center justify-center overflow-hidden transition-all"
-                style={{ border: `2px dashed ${photos[i] ? "#1E3A5F" : "#E2EBFC"}`, backgroundColor: photos[i] ? undefined : "#F8FAFF" }}
-              >
-                {photos[i] ? (
-                  <img src={photos[i]} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <Upload className="w-4 h-4" style={{ color: "#94A3B8" }} />
-                )}
-              </button>
-            ))}
-          </div>
+          <PhotoUploader value={photos} onChange={setPhotos} maxFiles={5} pathPrefix="pet_posts" />
         </div>
 
         <div>
