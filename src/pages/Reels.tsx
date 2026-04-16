@@ -302,7 +302,7 @@ const Reels = () => {
           {showComments && (
             <div className="absolute bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t z-50 flex flex-col h-[55vh] rounded-t-2xl">
               <div className="flex items-center justify-between p-3 border-b">
-                <h3 className="font-bold text-foreground">{t("reels.comments", "Yorumlar")}</h3>
+                <h3 className="font-bold text-foreground">{t("reels.comments", "Comments")}</h3>
                 <button onClick={() => setShowComments(false)}>
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
@@ -312,7 +312,7 @@ const Reels = () => {
                   <Input
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    placeholder={t("reels.add_comment", "Yorum ekle...")}
+                    placeholder={t("reels.add_comment", "Add a comment...")}
                     onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
                   />
                   <Button size="icon" onClick={handleAddComment} disabled={!newComment.trim()}>

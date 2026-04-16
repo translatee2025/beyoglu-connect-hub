@@ -175,7 +175,7 @@ const FriendFinder = () => {
                       border: `1px solid ${filters.species === "all" ? "#1E3A5F" : "#E2EBFC"}`,
                     }}
                   >
-                    🐾 Tümü
+                    🐾 {t("filter.all", "All")}
                   </button>
                   {speciesOptions.map(s => (
                     <button
