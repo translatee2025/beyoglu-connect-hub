@@ -205,7 +205,7 @@ const Venues = () => {
                               color: openStatus ? "#166534" : "#DC2626",
                             }}
                           >
-                            {openStatus ? "Açık" : "Kapalı"}
+                            {openStatus ? t("venues.open", "Open") : t("venues.closed", "Closed")}
                           </span>
                         )}
                       </div>

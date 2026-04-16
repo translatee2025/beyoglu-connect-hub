@@ -261,13 +261,13 @@ const Reels = () => {
               <div className="rounded-full h-12 w-12 bg-white/20 backdrop-blur-sm flex items-center justify-center">
                 <MessageCircle className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xs text-white">{t("reels.comments", "Yorumlar")}</span>
+              <span className="text-xs text-white">{t("reels.comments", "Comments")}</span>
             </button>
             <button className="flex flex-col items-center gap-1" onClick={handleShare}>
               <div className="rounded-full h-12 w-12 bg-white/20 backdrop-blur-sm flex items-center justify-center">
                 <Share2 className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xs text-white">{t("reels.share", "Paylaş")}</span>
+              <span className="text-xs text-white">{t("reels.share", "Share")}</span>
             </button>
           </div>
 
@@ -295,14 +295,14 @@ const Reels = () => {
           {currentIndex < reels.length - 1 && (
             <div className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 z-10 text-white/50 text-xs flex flex-col items-center">
               <ChevronDown className="w-6 h-6 animate-bounce" />
-              <span>{t("reels.swipe_up", "Yukarı kaydır")}</span>
+              <span>{t("reels.swipe_up", "Swipe up")}</span>
             </div>
           )}
 
           {showComments && (
             <div className="absolute bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t z-50 flex flex-col h-[55vh] rounded-t-2xl">
               <div className="flex items-center justify-between p-3 border-b">
-                <h3 className="font-bold text-foreground">{t("reels.comments", "Yorumlar")}</h3>
+                <h3 className="font-bold text-foreground">{t("reels.comments", "Comments")}</h3>
                 <button onClick={() => setShowComments(false)}>
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
@@ -312,7 +312,7 @@ const Reels = () => {
                   <Input
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    placeholder={t("reels.add_comment", "Yorum ekle...")}
+                    placeholder={t("reels.add_comment", "Add a comment...")}
                     onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
                   />
                   <Button size="icon" onClick={handleAddComment} disabled={!newComment.trim()}>
@@ -334,7 +334,7 @@ const Reels = () => {
                     </div>
                   ))}
                   {comments.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-8">{t("reels.no_comments", "Henüz yorum yok")}</p>
+                    <p className="text-sm text-muted-foreground text-center py-8">{t("reels.no_comments", "No comments yet")}</p>
                   )}
                 </div>
               </ScrollArea>
@@ -345,8 +345,8 @@ const Reels = () => {
         <div className="h-full flex items-center justify-center">
           <div className="text-center">
             <MessageCircle className="w-16 h-16 text-white/30 mx-auto mb-4" />
-            <p className="text-white/60 mb-4">{t("reels.no_reels", "Henüz reel yok. İlk paylaşan siz olun!")}</p>
-            <Button onClick={() => setPostOpen(true)}>{t("reels.create", "Reel Oluştur")}</Button>
+            <p className="text-white/60 mb-4">{t("reels.no_reels", "No reels yet. Be the first to share!")}</p>
+            <Button onClick={() => setPostOpen(true)}>{t("reels.create", "Create Reel")}</Button>
           </div>
         </div>
       )}
@@ -364,8 +364,8 @@ const ReelPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const mutation = useMutation({
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error(t("common.please_login", "Lütfen giriş yapın"));
-      if (!media.length) throw new Error(t("reels.add_media", "Fotoğraf veya video ekleyin"));
+      if (!user) throw new Error(t("common.please_login", "Please log in"));
+      if (!media.length) throw new Error(t("reels.add_media", "Add a photo or video"));
       const { error } = await supabase.from("reels").insert({
         user_id: user.id,
         media_url: media[0],
@@ -375,18 +375,18 @@ const ReelPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
       });
       if (error) throw error;
     },
-    onSuccess: () => { toast({ title: t("reels.posted", "Reel paylaşıldı! 🎬") }); onSuccess(); },
-    onError: (e: any) => toast({ title: t("common.error", "Hata"), description: e.message, variant: "destructive" }),
+    onSuccess: () => { toast({ title: t("reels.posted", "Reel posted! 🎬") }); onSuccess(); },
+    onError: (e: any) => toast({ title: t("common.error", "Error"), description: e.message, variant: "destructive" }),
   });
 
   return (
     <div className="space-y-4">
-      <DialogHeader><DialogTitle>{t("reels.create", "Reel Oluştur")}</DialogTitle></DialogHeader>
-      <div><Label>{t("reels.media", "Fotoğraf veya Video")} *</Label><MediaUpload value={media} onChange={setMedia} maxFiles={1} /></div>
-      <div><Label>{t("reels.caption", "Açıklama")}</Label><Textarea value={caption} onChange={(e) => setCaption(e.target.value)} placeholder={t("reels.caption_placeholder", "Neler oluyor?")} rows={3} /></div>
-      <div><Label>{t("common.neighborhood", "Mahalle")}</Label><Input value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} placeholder={t("common.neighborhood_placeholder", "ör. Cihangir")} /></div>
+      <DialogHeader><DialogTitle>{t("reels.create", "Create Reel")}</DialogTitle></DialogHeader>
+      <div><Label>{t("reels.media", "Photo or Video")} *</Label><MediaUpload value={media} onChange={setMedia} maxFiles={1} /></div>
+      <div><Label>{t("reels.caption", "Caption")}</Label><Textarea value={caption} onChange={(e) => setCaption(e.target.value)} placeholder={t("reels.caption_placeholder", "What's happening?")} rows={3} /></div>
+      <div><Label>{t("common.neighborhood", "Neighborhood")}</Label><Input value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} placeholder={t("common.neighborhood_placeholder", "e.g. Cihangir")} /></div>
       <Button className="w-full" onClick={() => mutation.mutate()} disabled={!media.length || mutation.isPending}>
-        {mutation.isPending ? t("common.posting", "Paylaşılıyor...") : t("reels.post", "Reel Paylaş")}
+        {mutation.isPending ? t("common.posting", "Posting...") : t("reels.post", "Post Reel")}
       </Button>
     </div>
   );

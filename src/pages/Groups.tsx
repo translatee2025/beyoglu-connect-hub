@@ -132,12 +132,12 @@ const Groups = () => {
       // Send notification to owner for request groups
       if (role === "pending") {
         const { data: profile } = await supabase.from("profiles").select("display_name").eq("user_id", user.id).maybeSingle();
-        const name = profile?.display_name || "Birisi";
+        const name = profile?.display_name || "Someone";
         await supabase.from("notifications").insert({
           user_id: group.created_by,
           type: "group_request",
-          title: "Grup katılma isteği",
-          body: `${name} gruba katılmak istiyor`,
+          title: "Group join request",
+          body: `${name} wants to join the group`,
           link: `/groups/${group.id}`,
         });
       }
@@ -147,12 +147,12 @@ const Groups = () => {
       queryClient.invalidateQueries({ queryKey: ["group-memberships", user?.id] });
       toast({
         title: group.group_type === "request"
-          ? t("groups.toast.request_sent", "Katılma isteği gönderildi")
-          : t("groups.toast.joined", "Gruba katıldınız"),
+          ? t("groups.toast.request_sent", "Join request sent")
+          : t("groups.toast.joined", "You joined the group"),
       });
     },
     onError: (err: Error) => {
-      toast({ title: t("common.error", "Hata"), description: err.message, variant: "destructive" });
+      toast({ title: t("common.error", "Error"), description: err.message, variant: "destructive" });
     },
   });
 
@@ -163,9 +163,9 @@ const Groups = () => {
   };
 
   const getTypeBadge = (type: string) => {
-    if (type === "public") return { label: "Herkese Açık", bg: "#DCFCE7", color: "#16A34A" };
-    if (type === "request") return { label: "İstek Gerekli", bg: "#FEF3C7", color: "#D97706" };
-    return { label: "Gizli", bg: "#E0F2FE", color: "#1E3A5F" };
+    if (type === "public") return { label: t("groups.type.public", "Public"), bg: "#DCFCE7", color: "#16A34A" };
+    if (type === "request") return { label: t("groups.type.request", "Request"), bg: "#FEF3C7", color: "#D97706" };
+    return { label: t("groups.type.private", "Private"), bg: "#E0F2FE", color: "#1E3A5F" };
   };
 
   return (
@@ -175,7 +175,7 @@ const Groups = () => {
         <Dialog open={postOpen} onOpenChange={setPostOpen}>
           <DialogTrigger asChild>
             <Button size="sm" style={{ background: "#E74C3C", color: "#fff", border: "none", fontSize: 12 }}>
-              <Plus className="w-4 h-4 mr-1" /> {t("groups.create_button", "Grup Oluştur")}
+              <Plus className="w-4 h-4 mr-1" /> {t("groups.create_button", "Create Group")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto p-0">
@@ -196,7 +196,7 @@ const Groups = () => {
 
       {/* Category pills */}
       <div className="flex flex-wrap gap-1.5 mb-4">
-        {[{ key: "all", label: t("groups.category.all", "Tümü") }, ...CATEGORIES.map(c => ({ key: c.key, label: c.label }))].map(tab => (
+        {[{ key: "all", label: t("groups.category.all", "All") }, ...CATEGORIES.map(c => ({ key: c.key, label: c.label }))].map(tab => (
           <button
             key={tab.key}
             onClick={() => setCategory(tab.key)}
@@ -217,7 +217,7 @@ const Groups = () => {
       {isLoading ? (
         <SkeletonGrid count={2} hasPhoto photoHeight={120} />
       ) : filtered.length === 0 ? (
-        <EmptyState emoji="👥" message={t("empty.groups", "Henüz grup yok. İlk grubu sen oluştur!")} actionLabel={t("groups.create", "Grup Oluştur")} onAction={() => setPostOpen(true)} />
+        <EmptyState emoji="👥" message={t("empty.groups", "No groups yet. Create the first one!")} actionLabel={t("groups.create", "Create Group")} onAction={() => setPostOpen(true)} />
       ) : (
         <div className="grid sm:grid-cols-2 gap-3">
           {filtered.map((group: any) => {
@@ -278,7 +278,7 @@ const Groups = () => {
                     onClick={(e) => { e.stopPropagation(); handleJoin(group); }}
                     style={!isJoined && !isPending && group.group_type !== "private" ? { background: "#1E3A5F", color: "#fff", border: "none", fontSize: 12 } : { fontSize: 12 }}
                   >
-                    {isJoined ? "✓ Üye" : isPending ? "⏳ İstek Gönderildi" : group.group_type === "request" ? "İstek Gönder" : group.group_type === "private" ? "Sadece Davet" : "Katıl"}
+                    {isJoined ? t("groups.member", "✓ Member") : isPending ? t("groups.pending", "⏳ Pending") : group.group_type === "request" ? t("groups.send_request", "Request") : group.group_type === "private" ? t("groups.invite_only", "Invite Only") : t("groups.join", "Join")}
                   </Button>
                 </div>
               </div>
@@ -325,10 +325,10 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
   const mutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Login required");
-      if (!form.name.trim()) throw new Error("İsim gerekli");
-      if (form.description.trim().length < 20) throw new Error("Açıklama en az 20 karakter olmalı");
-      if (!form.category) throw new Error("Kategori seçin");
-      if (!form.groupType) throw new Error("Tür seçin");
+      if (!form.name.trim()) throw new Error("Name is required");
+      if (form.description.trim().length < 20) throw new Error("Description must be at least 20 characters");
+      if (!form.category) throw new Error("Select a category");
+      if (!form.groupType) throw new Error("Select a type");
 
       const { data: group, error } = await supabase.from("groups").insert({
         name: form.name.trim(),
@@ -344,7 +344,7 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
       await supabase.from("group_members").insert({ group_id: group.id, user_id: user.id, role: "owner" });
     },
     onSuccess: () => {
-      toast({ title: t("groups.toast.created", "Grup oluşturuldu!") });
+      toast({ title: t("groups.toast.created", "Group created!") });
       onSuccess();
     },
     onError: (err: Error) => {
@@ -356,7 +356,7 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <div style={{ padding: 20 }}>
-      <h2 style={{ fontSize: 18, fontWeight: 700, color: "#1E3A5F", marginBottom: 20 }}>{t("groups.form.title", "Yeni Grup Oluştur")}</h2>
+      <h2 style={{ fontSize: 18, fontWeight: 700, color: "#1E3A5F", marginBottom: 20 }}>{t("groups.form.title", "Create New Group")}</h2>
 
       {/* Cover photo */}
       <div className="mb-4">
@@ -372,7 +372,7 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
             <button onClick={() => fileRef.current?.click()} disabled={uploading} className="w-full flex items-center justify-center gap-2 border-dashed border-2 rounded-xl" style={{ height: 80, borderColor: "#CBD5E1", color: "#94A3B8", fontSize: 13 }}>
               {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-5 h-5" />}
-              {uploading ? "Yükleniyor..." : "Kapak Fotoğrafı Ekle"}
+              {uploading ? "Uploading..." : t("groups.form.add_cover", "Add Cover Photo")}
             </button>
           </>
         )}

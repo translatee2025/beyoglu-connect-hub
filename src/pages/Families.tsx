@@ -31,7 +31,7 @@ const Families = () => {
         className="text-white text-sm font-medium px-6 py-2.5 rounded-lg"
         style={{ backgroundColor: "#E74C3C" }}
       >
-        {t("families.share", "Paylaş")}
+        {t("families.share", "Share")}
       </button>
     </div>
   );

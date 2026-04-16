@@ -233,7 +233,7 @@ const Wall = () => {
                 : { backgroundColor: 'white', border: '0.5px solid #C7D7F7', color: '#64748B' }),
             }}
           >
-            İstanbul
+            {t("location.istanbul", "İstanbul")}
           </button>
           {districts.map((d) => (
             <button
@@ -342,7 +342,7 @@ const Wall = () => {
         {wallLoading ? (
           <SkeletonFeedList count={3} />
         ) : filteredItems.length === 0 ? (
-          <EmptyState emoji="🌟" message={t("empty.feed", "Henüz gönderi yok. İlk gönderiyi sen yap! 🌟")} actionLabel={t("common.post", "Paylaş")} onAction={() => {}} />
+          <EmptyState emoji="🌟" message={t("empty.feed", "No posts yet. Be the first to share! 🌟")} actionLabel={t("common.post", "Post")} onAction={() => {}} />
         ) : (
           <div className="space-y-3">
             {filteredItems.map((item) => {

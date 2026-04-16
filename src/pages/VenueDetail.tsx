@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLanguage } from "@/providers/LanguageProvider";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,6 +53,7 @@ const VenueDetail = () => {
   const { venueId } = useParams<{ venueId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [reportOpen, setReportOpen] = useState(false);
   const [reviewText, setReviewText] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
@@ -126,9 +128,9 @@ const VenueDetail = () => {
       setReviewText("");
       setReviewRating(5);
       queryClient.invalidateQueries({ queryKey: ["venue-reviews", venueId] });
-      toast({ title: "Yorum eklendi!" });
+      toast({ title: t("venues.review_added", "Review added!") });
     },
-    onError: (e: any) => toast({ title: "Hata", description: e.message, variant: "destructive" }),
+    onError: (e: any) => toast({ title: t("common.error", "Error"), description: e.message, variant: "destructive" }),
   });
 
   if (isLoading) return <div className="flex justify-center py-20 text-[#94A3B8] text-sm">Yükleniyor...</div>;
@@ -185,7 +187,7 @@ const VenueDetail = () => {
                     color: openStatus ? "#166534" : "#DC2626",
                   }}
                 >
-                  {openStatus ? "Açık" : "Kapalı"}
+                  {openStatus ? t("venues.open", "Open") : t("venues.closed", "Closed")}
                 </span>
               )}
             </div>
@@ -225,7 +227,7 @@ const VenueDetail = () => {
               style={{ border: "1px solid #1E3A5F", color: "#1E3A5F" }}
               onClick={() => navigator.share?.({ url: window.location.href, title: venue.name }).catch(() => {})}
             >
-              <Share2 className="w-3.5 h-3.5 inline mr-1" />Paylaş
+              <Share2 className="w-3.5 h-3.5 inline mr-1" />{t("common.share", "Share")}
             </button>
           </div>
 
@@ -331,7 +333,7 @@ const VenueDetail = () => {
                 return (
                   <div key={day} className="flex justify-between text-[12px]" style={{ fontWeight: isToday ? 600 : 400 }}>
                     <span style={{ color: isToday ? "#1E3A5F" : "#64748B" }}>{DAY_LABELS[day]}</span>
-                    <span style={{ color: h ? "#374151" : "#94A3B8" }}>{h ? `${h.open} – ${h.close}` : "Kapalı"}</span>
+                    <span style={{ color: h ? "#374151" : "#94A3B8" }}>{h ? `${h.open} – ${h.close}` : t("venues.closed", "Closed")}</span>
                   </div>
                 );
               })}

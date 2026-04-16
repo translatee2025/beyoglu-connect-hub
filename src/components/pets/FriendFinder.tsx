@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useLanguage } from "@/providers/LanguageProvider";
 import { Heart, Filter, MapPin, Dog, X, List, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,7 @@ const defaultFilters: Filters = {
 
 const FriendFinder = () => {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"swipe" | "list">("swipe");
@@ -175,7 +177,7 @@ const FriendFinder = () => {
                       border: `1px solid ${filters.species === "all" ? "#1E3A5F" : "#E2EBFC"}`,
                     }}
                   >
-                    🐾 Tümü
+                    🐾 {t("filter.all", "All")}
                   </button>
                   {speciesOptions.map(s => (
                     <button

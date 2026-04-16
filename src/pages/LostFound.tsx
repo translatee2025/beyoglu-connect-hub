@@ -299,7 +299,7 @@ function LostFoundMap({ posts }: { posts: any[] }) {
                   )}
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: "#1E3A5F" }}>{post.title}</div>
-                    <div style={{ fontSize: 11, color: "#94A3B8" }}>{new Date(post.created_at).toLocaleDateString("tr-TR")}</div>
+                    <div style={{ fontSize: 11, color: "#94A3B8" }}>{new Date(post.created_at).toLocaleDateString()}</div>
                   </div>
                 </div>
                 <button

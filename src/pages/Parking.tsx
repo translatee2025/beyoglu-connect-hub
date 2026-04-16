@@ -24,12 +24,12 @@ import { DistanceLabel } from "@/components/shared/DistanceLabel";
 import SortFilterBar, { type SortOption } from "@/components/shared/SortFilterBar";
 
 const parkingTypeKeys = [
-  { key: "All", tKey: "filter.all", fallback: "Tümü" },
-  { key: "Garage", tKey: "parking.type.garage", fallback: "Garaj" },
-  { key: "Open Air", tKey: "parking.type.open_air", fallback: "Açık Otopark" },
-  { key: "Street", tKey: "parking.type.street", fallback: "Yol Kenarı" },
-  { key: "Underground", tKey: "parking.type.underground", fallback: "Yeraltı" },
-  { key: "Valet", tKey: "parking.type.valet", fallback: "Vale" },
+  { key: "All", tKey: "filter.all", fallback: "All" },
+  { key: "Garage", tKey: "parking.type.garage", fallback: "Garage" },
+  { key: "Open Air", tKey: "parking.type.open_air", fallback: "Open Air" },
+  { key: "Street", tKey: "parking.type.street", fallback: "Street" },
+  { key: "Underground", tKey: "parking.type.underground", fallback: "Underground" },
+  { key: "Valet", tKey: "parking.type.valet", fallback: "Valet" },
 ];
 
 const parsePrice = (p: string | null) => {
@@ -136,7 +136,7 @@ const Parking = () => {
 
       {item.price && (
         <div style={{ fontSize: 16, fontWeight: 700, color: "#1E3A5F", marginBottom: 6 }}>
-          {item.price} ₺/ay
+          {item.price} ₺/{t("common.month_short", "mo")}
         </div>
       )}
 

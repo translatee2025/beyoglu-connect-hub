@@ -36,11 +36,7 @@ const getPlaceholder = (category?: string | null) => {
   return CATEGORY_PLACEHOLDERS[category.toLowerCase()] || { bg: "#EFF4FF", emoji: "📅" };
 };
 
-const formatEventDate = (dateStr: string) => {
-  const d = new Date(dateStr);
-  return d.toLocaleDateString("tr-TR", { weekday: "long", day: "numeric", month: "long" }) +
-    " · " + d.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
-};
+// formatEventDate moved inside component
 
 function EventMap({ lat, lng }: { lat: number; lng: number }) {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -63,7 +59,13 @@ const EventDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const locale = language === "tr" ? "tr-TR" : "en-US";
+  const formatEventDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" }) +
+      " · " + d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+  };
   const queryClient = useQueryClient();
 
   const { data: event, isLoading } = useQuery({
@@ -230,14 +232,14 @@ const EventDetail = () => {
               }
               onClick={() => { if (!user) { navigate("/auth"); return; } toggleRsvp.mutate(); }}
             >
-              {isAttending ? "✓ Katılıyorum" : event.is_free ? "Katıl" : "Bilet Al"}
+              {isAttending ? t("events.attending", "✓ Attending") : event.is_free ? t("events.join", "Join") : t("events.buy_ticket", "Buy Ticket")}
             </button>
             <button
               className="py-2 px-4 rounded-lg text-xs font-medium"
               style={{ border: "1px solid #1E3A5F", color: "#1E3A5F" }}
               onClick={() => navigator.share?.({ url: window.location.href, title: event.title }).catch(() => {})}
             >
-              <Share2 className="w-3.5 h-3.5 inline mr-1" />Paylaş
+              <Share2 className="w-3.5 h-3.5 inline mr-1" />{t("common.share", "Share")}
             </button>
             {isOwner && (
               <button
@@ -254,7 +256,7 @@ const EventDetail = () => {
           {event.user_id && (
             <div className="flex items-center gap-1.5 text-[11px] pt-2" style={{ borderTop: "1px solid #E2EBFC", color: "#94A3B8" }}>
               <UserName userId={event.user_id} showAvatar avatarSize="w-5 h-5" className="text-[11px]" />
-              <span>tarafından oluşturuldu</span>
+              <span>{t("events.created_by", "created by")}</span>
             </div>
           )}
         </div>

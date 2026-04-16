@@ -101,7 +101,7 @@ const GroupDetail = () => {
       queryClient.invalidateQueries({ queryKey: ["group-posts", id] });
     },
     onError: (err: Error) => {
-      toast({ title: t("common.error", "Hata"), description: err.message, variant: "destructive" });
+      toast({ title: t("common.error", "Error"), description: err.message, variant: "destructive" });
     },
   });
 
@@ -209,7 +209,7 @@ const GroupDetail = () => {
     <div className="mx-auto px-4 py-6" style={{ maxWidth: 680 }}>
       {/* Back */}
       <button onClick={() => navigate("/groups")} className="flex items-center gap-1 mb-4" style={{ fontSize: 13, color: "#64748B" }}>
-        <ArrowLeft className="w-4 h-4" /> {t("common.back", "Geri")}
+        <ArrowLeft className="w-4 h-4" /> {t("common.back", "Back")}
       </button>
 
       {/* Header card */}
@@ -243,7 +243,7 @@ const GroupDetail = () => {
             <Button variant="secondary" className="w-full" disabled style={{ fontSize: 12 }}>⏳ İstek Gönderildi</Button>
           ) : (
             <Button className="w-full" onClick={() => joinMutation.mutate()} disabled={joinMutation.isPending} style={{ background: "#1E3A5F", color: "#fff", fontSize: 12 }}>
-              {group.group_type === "request" ? "İstek Gönder" : "Katıl"}
+              {group.group_type === "request" ? t("groups.send_request", "Request") : t("groups.join", "Join")}
             </Button>
           )}
         </div>
