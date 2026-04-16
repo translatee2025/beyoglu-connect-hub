@@ -299,6 +299,12 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
+  const GROUP_TYPES = [
+    { key: "public", label: t("groups.type.public", "Public"), desc: t("groups.type.public_desc", "Anyone can join"), icon: GlobeIcon, color: "#16A34A" },
+    { key: "request", label: t("groups.type.request", "Request Required"), desc: t("groups.type.request_desc", "Admin approves"), icon: UserPlus, color: "#D97706" },
+    { key: "private", label: t("groups.type.private", "Private"), desc: t("groups.type.private_desc", "Invite only"), icon: Lock, color: "#1E3A5F" },
+  ];
+
   const [form, setForm] = useState({
     name: "", description: "", category: "", groupType: "", coverPhoto: "",
   });
