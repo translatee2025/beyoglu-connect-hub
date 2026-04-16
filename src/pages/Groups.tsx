@@ -35,11 +35,7 @@ const CATEGORIES = [
   { key: "other", label: "Other", emoji: "🌟" },
 ];
 
-const GROUP_TYPES = [
-  { key: "public", label: "Herkese Açık", desc: "Herkes katılabilir", icon: GlobeIcon, color: "#16A34A" },
-  { key: "request", label: "İstek Gerekli", desc: "Yönetici onaylar", icon: UserPlus, color: "#D97706" },
-  { key: "private", label: "Gizli", desc: "Sadece davetle", icon: Lock, color: "#1E3A5F" },
-];
+// GROUP_TYPES moved inside component to access t()
 
 const legacyCategoryMap: Record<string, string> = {
   Community: "community", "Food & Dining": "food-dining", Education: "education",
@@ -47,13 +43,7 @@ const legacyCategoryMap: Record<string, string> = {
 };
 const normalizeCategory = (v: string) => legacyCategoryMap[v] || v;
 
-const timeAgo = (date: string) => {
-  const diff = Date.now() - new Date(date).getTime();
-  const hrs = Math.floor(diff / 3600000);
-  if (hrs < 1) return `${Math.max(1, Math.floor(diff / 60000))}dk önce`;
-  if (hrs < 24) return `${hrs} saat önce`;
-  return `${Math.floor(hrs / 24)} gün önce`;
-};
+// timeAgo moved inside component to access t()
 
 const Groups = () => {
   const [search, setSearch] = useState("");

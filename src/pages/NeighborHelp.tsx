@@ -36,15 +36,7 @@ const helpCategoryKeys = [
   { key: "Mixed / Other", tKey: "help.category.other", fallback: "Mixed / Other" },
 ];
 
-const timeAgo = (date: string) => {
-  const diff = Date.now() - new Date(date).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "az önce";
-  if (mins < 60) return `${mins}dk önce`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}sa önce`;
-  return `${Math.floor(hrs / 24)}g önce`;
-};
+// timeAgo is defined inside the component to access t()
 
 const NeighborHelp = () => {
   const [search, setSearch] = useState("");
