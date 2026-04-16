@@ -1,57 +1,35 @@
 
 
-# Fix Translation System — Complete Plan
+# Fix: Rental & Parking Images Not Displaying
 
-## Part 1: Balance the translations table
+## Problem
 
-**Data operation** using the insert tool:
+The rental cards show empty blue-gray rectangles instead of apartment photos. The database has correct photo URLs (Unsplash links), the code correctly extracts `item.photos[0]`, and the `<img>` tag is rendered — but the images don't visually appear.
 
-1. Query all TR keys missing EN equivalents (~339 keys)
-2. Query all EN keys missing TR equivalents (check reverse)
-3. Insert missing EN translations with proper English values derived from the TR text
-4. Insert missing TR translations if any exist only in EN
+**Root cause**: Two potential issues working together:
 
-This will be a large batch INSERT of ~340 rows into `translations`. I'll generate the English values based on the Turkish originals.
+1. **Unsplash hotlinking may be blocked** in the preview environment — the `<img>` renders but returns a broken/empty response, showing only the `#EFF4FF` background.
+2. **No fallback on image load error** — when the `<img>` fails to load, there's no `onError` handler to show the house emoji or placeholder.
 
-## Part 2: Save language preference per user
+## Plan
 
-**Edit `src/providers/LanguageProvider.tsx`**:
+### Step 1: Add `onError` fallback to RentalCard image
 
-- Import `supabase` and `useAuth` — but since LanguageProvider wraps AuthProvider, we can't use `useAuth`. Instead, listen to `supabase.auth.onAuthStateChange` directly inside LanguageProvider.
-- On auth state change (sign in): fetch `profiles.language_preference` for the user, and if it exists, call `setLanguageState(preference)` and update localStorage.
-- In `setLanguage()`: if a user is logged in, also run `supabase.from('profiles').update({ language_preference: lang }).eq('user_id', user.id)`.
-- Priority order on load: logged-in user's DB preference > localStorage > 'tr' default.
+In `src/pages/Rentals.tsx`, update the `RentalCard` component to handle broken images gracefully. Add state tracking for image load failure and fall back to the emoji placeholder when the image fails.
 
-## Part 3: Fix hardcoded strings in 8 files
+### Step 2: Replace Unsplash URLs with working alternatives
 
-For each file, replace every hardcoded Turkish/English UI string with `t('namespace.key', 'fallback')`. Then insert both TR and EN translation rows.
+Update the seeded rental photo URLs in the database. Replace the `?w=800` Unsplash URLs (which may be blocked by hotlink protection) with `?auto=format&fit=crop&w=800&q=80` format, or use Unsplash's `source.unsplash.com` redirect service, or replace with `picsum.photos` URLs that reliably work in preview environments.
 
-### Files and approximate string counts:
+Run an UPDATE query on the classifieds table to fix all rental and parking photo URLs.
 
-1. **AdoptionForm.tsx** (~20 strings): "Sahiplendirme İlanı", "Fotoğraflar", "Hayvan Adı", "Tür", "Cins", "Yaş (Yıl)", "Yaş (Ay)", "Cinsiyet", "Erkek", "Dişi", "Boyut", "Mini/Küçük/Orta/Büyük", "Enerji Seviyesi", "Sakin/Orta/Enerjik", toggle labels, "Açıklama", "Mahalle", submit button text, loading text, success/error toasts.
+### Step 3: Apply same fix to ParkingCard in `src/pages/Parking.tsx`
 
-2. **Rentals.tsx** (~15 strings): "Mesaj Gönder", "₺/ay", form labels "Başlık", "İlan Türü", "Bütçe", "Fiyat", "Açıklama", "Fotoğraf / Video", "Mahalle", "Telefon", "Geri", "İleri", "Gönderiliyor...", "Paylaş".
-
-3. **Parking.tsx** (~20 strings): "Otopark İlanları", "Arıyorum", "Ara...", "İlan Ver", "Otopark İlanı Ver", "Liste", "Harita", "Mesaj Gönder", "Müsait", form labels, "Otopark Arıyorum", "Adım", "Başlık", "Otopark Tipi", "Bütçe/Fiyat", "Geri", "İleri", "Paylaş", "Paylaşıldı!", "Hata".
-
-4. **NeighborHelp.tsx** (~5 strings): "Ne yapmak istiyorsun?", time ago strings ("az önce", "dk önce", etc.), price type labels. Most strings already use `t()`.
-
-5. **Classifieds.tsx** (~10 strings): "Ara...", "İlan Ver", "Tümü", "Mesaj", "Şikayet Et", "Henüz ilan yok. İlk ilanı sen ver!", subcategory names (Telefon, Bilgisayar, etc.).
-
-6. **AppSidebar.tsx** (~15 strings): Section labels "DISCOVER", "COMMUNITY", "SERVICES", nav items "Feed", "Venues", "Events", "Reels", "Groups", "Pets", "Families", "Lost & Found", "Rentals", "Parking", "Help", "Classifieds", "Jobs", "Log In".
-
-7. **MobileDrawer.tsx** (~15 strings): Same nav items as sidebar, "Giriş Yap", "Çıkış".
-
-8. **LostFound.tsx** (~25 strings): "Kayıp & Bulundu", "Kayıp Bildir", "Bulundu Bildir", form labels, "Başlık", "Kategori", "Açıklama", "Konum", "Son görülme tarihi", "Tarih seçin", "Telefon", "Fotoğraflar", "Fotoğraf Ekle", "Yükleniyor...", "Gönderiliyor...", "İletişim", "Çözüldü", empty state messages.
-
-### Translation inserts
-
-All new keys will be inserted as both TR and EN rows. Estimated ~120 new translation key pairs (~240 rows total).
+Add the same `onError` fallback pattern to parking card images.
 
 ## Technical details
 
-- No routing, table structure, or query logic changes
-- LanguageProvider will use `supabase.auth.onAuthStateChange` directly (not useAuth) since it wraps AuthProvider
-- Navigation labels use `t('nav.feed', 'Feed')` pattern — sections array becomes a function using `t()`
-- Time-ago helper strings in Parking/Classifieds/LostFound will use `t()` for "az önce", "sa", "g" etc.
+- Only 2 files modified: `Rentals.tsx`, `Parking.tsx`
+- One database UPDATE to fix photo URLs
+- No logic, routing, or query changes
 
