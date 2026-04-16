@@ -1,38 +1,57 @@
 
 
-# Database Migrations Plan
+# Fix Translation System — Complete Plan
 
-## 7 Migrations (schema only, no frontend except Families stub)
+## Part 1: Balance the translations table
 
-### Migration 1 — `profiles.language_preference`
-Add `language_preference text DEFAULT 'tr'` to profiles.
+**Data operation** using the insert tool:
 
-### Migration 2 — `pet_profiles` species/breed FKs + photos array
-Add `species_id uuid REFERENCES species(id)`, `breed_id uuid REFERENCES breeds(id)`, `photos text[] DEFAULT '{}'`. Then backfill `species_id` from existing enum via `UPDATE ... SET species_id = (SELECT id FROM species WHERE LOWER(name_en) = LOWER(species::text))`.
+1. Query all TR keys missing EN equivalents (~339 keys)
+2. Query all EN keys missing TR equivalents (check reverse)
+3. Insert missing EN translations with proper English values derived from the TR text
+4. Insert missing TR translations if any exist only in EN
 
-### Migration 3 — Create `pet_sitting_posts`
-New table with service_type, listing_type, species_id FK, price, price_type, available_days, neighborhood, district_id FK, lat/lng, photos, is_active. RLS: public read, owner insert/update/delete.
+This will be a large batch INSERT of ~340 rows into `translations`. I'll generate the English values based on the Turkish originals.
 
-### Migration 4 — Create `families`
-New table with post_type, title, description, category, neighborhood, district_id FK, photos, price, is_active. RLS: public read, owner insert/update/delete.
+## Part 2: Save language preference per user
 
-Frontend: Update nav links from `#` to `/families` in AppSidebar and MobileDrawer. Create `/families` page with "coming soon" message.
+**Edit `src/providers/LanguageProvider.tsx`**:
 
-### Migration 5 — Create `user_privacy_settings`
-New table with show_photo, allow_messages, show_age, show_gender, show_neighborhood. RLS: owner-only for all operations.
+- Import `supabase` and `useAuth` — but since LanguageProvider wraps AuthProvider, we can't use `useAuth`. Instead, listen to `supabase.auth.onAuthStateChange` directly inside LanguageProvider.
+- On auth state change (sign in): fetch `profiles.language_preference` for the user, and if it exists, call `setLanguageState(preference)` and update localStorage.
+- In `setLanguage()`: if a user is logged in, also run `supabase.from('profiles').update({ language_preference: lang }).eq('user_id', user.id)`.
+- Priority order on load: logged-in user's DB preference > localStorage > 'tr' default.
 
-### Migration 6 — Classifieds rental columns
-Add: room_type, size_m2, is_furnished, pets_allowed, floor_number, total_floors, available_from, latitude, longitude, listing_type.
+## Part 3: Fix hardcoded strings in 8 files
 
-### Migration 7 — Classifieds parking column
-Add: parking_type with check constraint (kapali/acik/otomatik).
+For each file, replace every hardcoded Turkish/English UI string with `t('namespace.key', 'fallback')`. Then insert both TR and EN translation rows.
 
-### Verification
-After migrations, query `information_schema.columns` for all affected tables and output results.
+### Files and approximate string counts:
 
-### Technical Notes
-- All CHECK constraints use simple value lists (no time-based checks), so they're safe
-- Migrations use `IF NOT EXISTS` / `ADD COLUMN IF NOT EXISTS` for idempotency
-- Existing columns (species enum, breed text) kept for backward compatibility
-- The families page is a minimal stub — no data fetching yet
+1. **AdoptionForm.tsx** (~20 strings): "Sahiplendirme İlanı", "Fotoğraflar", "Hayvan Adı", "Tür", "Cins", "Yaş (Yıl)", "Yaş (Ay)", "Cinsiyet", "Erkek", "Dişi", "Boyut", "Mini/Küçük/Orta/Büyük", "Enerji Seviyesi", "Sakin/Orta/Enerjik", toggle labels, "Açıklama", "Mahalle", submit button text, loading text, success/error toasts.
+
+2. **Rentals.tsx** (~15 strings): "Mesaj Gönder", "₺/ay", form labels "Başlık", "İlan Türü", "Bütçe", "Fiyat", "Açıklama", "Fotoğraf / Video", "Mahalle", "Telefon", "Geri", "İleri", "Gönderiliyor...", "Paylaş".
+
+3. **Parking.tsx** (~20 strings): "Otopark İlanları", "Arıyorum", "Ara...", "İlan Ver", "Otopark İlanı Ver", "Liste", "Harita", "Mesaj Gönder", "Müsait", form labels, "Otopark Arıyorum", "Adım", "Başlık", "Otopark Tipi", "Bütçe/Fiyat", "Geri", "İleri", "Paylaş", "Paylaşıldı!", "Hata".
+
+4. **NeighborHelp.tsx** (~5 strings): "Ne yapmak istiyorsun?", time ago strings ("az önce", "dk önce", etc.), price type labels. Most strings already use `t()`.
+
+5. **Classifieds.tsx** (~10 strings): "Ara...", "İlan Ver", "Tümü", "Mesaj", "Şikayet Et", "Henüz ilan yok. İlk ilanı sen ver!", subcategory names (Telefon, Bilgisayar, etc.).
+
+6. **AppSidebar.tsx** (~15 strings): Section labels "DISCOVER", "COMMUNITY", "SERVICES", nav items "Feed", "Venues", "Events", "Reels", "Groups", "Pets", "Families", "Lost & Found", "Rentals", "Parking", "Help", "Classifieds", "Jobs", "Log In".
+
+7. **MobileDrawer.tsx** (~15 strings): Same nav items as sidebar, "Giriş Yap", "Çıkış".
+
+8. **LostFound.tsx** (~25 strings): "Kayıp & Bulundu", "Kayıp Bildir", "Bulundu Bildir", form labels, "Başlık", "Kategori", "Açıklama", "Konum", "Son görülme tarihi", "Tarih seçin", "Telefon", "Fotoğraflar", "Fotoğraf Ekle", "Yükleniyor...", "Gönderiliyor...", "İletişim", "Çözüldü", empty state messages.
+
+### Translation inserts
+
+All new keys will be inserted as both TR and EN rows. Estimated ~120 new translation key pairs (~240 rows total).
+
+## Technical details
+
+- No routing, table structure, or query logic changes
+- LanguageProvider will use `supabase.auth.onAuthStateChange` directly (not useAuth) since it wraps AuthProvider
+- Navigation labels use `t('nav.feed', 'Feed')` pattern — sections array becomes a function using `t()`
+- Time-ago helper strings in Parking/Classifieds/LostFound will use `t()` for "az önce", "sa", "g" etc.
 
