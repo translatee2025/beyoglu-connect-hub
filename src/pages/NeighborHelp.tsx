@@ -48,6 +48,16 @@ const NeighborHelp = () => {
   const { user } = useAuth();
   const { getDistance } = useLocation();
 
+  const timeAgo = (date: string) => {
+    const diff = Date.now() - new Date(date).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return t("time.just_now", "just now");
+    if (mins < 60) return `${mins}${t("time.minutes_short", "m")}`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}${t("time.hours_short", "h")}`;
+    return `${Math.floor(hrs / 24)}${t("time.days_short", "d")}`;
+  };
+
   const handleContact = (userId: string) => {
     if (!user) { navigate("/auth"); return; }
     navigate(`/messages?to=${userId}`);

@@ -55,6 +55,20 @@ const Groups = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  const GROUP_TYPES = [
+    { key: "public", label: t("groups.type.public", "Public"), desc: t("groups.type.public_desc", "Anyone can join"), icon: GlobeIcon, color: "#16A34A" },
+    { key: "request", label: t("groups.type.request", "Request Required"), desc: t("groups.type.request_desc", "Admin approves"), icon: UserPlus, color: "#D97706" },
+    { key: "private", label: t("groups.type.private", "Private"), desc: t("groups.type.private_desc", "Invite only"), icon: Lock, color: "#1E3A5F" },
+  ];
+
+  const timeAgo = (date: string) => {
+    const diff = Date.now() - new Date(date).getTime();
+    const hrs = Math.floor(diff / 3600000);
+    if (hrs < 1) return t("time.just_now", "just now");
+    if (hrs < 24) return `${hrs}${t("time.hours_short", "h")}`;
+    return `${Math.floor(hrs / 24)}${t("time.days_short", "d")}`;
+  };
+
   const { data: groups = [], isLoading } = useQuery({
     queryKey: ["groups"],
     queryFn: async () => {
