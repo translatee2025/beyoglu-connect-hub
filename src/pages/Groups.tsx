@@ -316,7 +316,7 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
     const ext = file.name.split(".").pop();
     const path = `covers/${user.id}-${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("groups").upload(path, file, { upsert: true });
-    if (error) { toast({ title: "Yükleme başarısız", variant: "destructive" }); setUploading(false); return; }
+    if (error) { toast({ title: t("common.upload_failed", "Upload failed"), variant: "destructive" }); setUploading(false); return; }
     const { data: urlData } = supabase.storage.from("groups").getPublicUrl(path);
     setForm(f => ({ ...f, coverPhoto: urlData.publicUrl }));
     setUploading(false);
