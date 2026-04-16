@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { LikeButton } from "@/components/social/LikeButton";
 import { type EntityType } from "@/hooks/useLikes";
-import { MediaUpload } from "@/components/shared/MediaUpload";
+import { PhotoUploader } from "@/components/shared/PhotoUploader";
 import { MediaGrid } from "@/components/shared/MediaGrid";
 import { UserName } from "@/components/shared/UserName";
 import { CommentsSection } from "@/components/shared/CommentsSection";
@@ -293,7 +293,7 @@ const Wall = () => {
                   onChange={(e) => setNewPost(e.target.value)}
                 />
               </div>
-              <MediaUpload value={newPhotos} onChange={setNewPhotos} maxFiles={6} />
+              <PhotoUploader value={newPhotos} onChange={setNewPhotos} maxFiles={5} pathPrefix="wall_posts" />
               <div className="flex items-center justify-between">
                 <div className="flex gap-1.5">
                   {[
@@ -331,7 +331,7 @@ const Wall = () => {
               <DialogHeader><DialogTitle className="text-sm font-semibold">{t("wall.new_post", "New Post")}</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <Textarea placeholder={t("wall.whats_on_mind", "What's on your mind?")} className="resize-none text-sm" rows={4} value={dialogPost} onChange={(e) => setDialogPost(e.target.value)} />
-                <MediaUpload value={dialogPhotos} onChange={setDialogPhotos} maxFiles={6} />
+                <PhotoUploader value={dialogPhotos} onChange={setDialogPhotos} maxFiles={5} pathPrefix="wall_posts" />
                 <Button variant="cta" className="w-full text-xs" disabled={(!dialogPost.trim() && dialogPhotos.length === 0) || !user} onClick={() => { if (!user) navigate("/auth"); else postToWall.mutate({ content: dialogPost, photos: dialogPhotos }); }}>{t("wall.post_btn", "Post")}</Button>
               </div>
             </DialogContent>

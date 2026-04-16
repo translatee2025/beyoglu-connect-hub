@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Upload, X } from "lucide-react";
+import { PhotoUploader } from "@/components/shared/PhotoUploader";
 
 const CATEGORIES = ["Music", "Sports", "Food", "Art", "Networking", "Community", "Other"];
 
@@ -36,29 +36,13 @@ export default function CreateEventForm({ open, onOpenChange }: Props) {
   const [address, setAddress] = useState("");
   const [isFree, setIsFree] = useState(true);
   const [price, setPrice] = useState("");
-  const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [coverPreview, setCoverPreview] = useState<string | null>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setCoverFile(file);
-    setCoverPreview(URL.createObjectURL(file));
-  };
+  const [coverPhotos, setCoverPhotos] = useState<string[]>([]);
 
   const createEvent = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
 
-      let coverUrl: string | null = null;
-      if (coverFile) {
-        const ext = coverFile.name.split(".").pop();
-        const path = `${user.id}/${Date.now()}.${ext}`;
-        const { error: uploadError } = await supabase.storage.from("events").upload(path, coverFile);
-        if (uploadError) throw uploadError;
-        const { data: urlData } = supabase.storage.from("events").getPublicUrl(path);
-        coverUrl = urlData.publicUrl;
-      }
+      const coverUrl = coverPhotos.length > 0 ? coverPhotos[0] : null;
 
       const { error } = await supabase.from("events").insert({
         user_id: user.id,
@@ -90,7 +74,7 @@ export default function CreateEventForm({ open, onOpenChange }: Props) {
   const resetForm = () => {
     setTitle(""); setDescription(""); setCategory(""); setStartAt(""); setEndAt("");
     setVenueName(""); setAddress(""); setIsFree(true); setPrice("");
-    setCoverFile(null); setCoverPreview(null);
+    setCoverPhotos([]);
   };
 
   return (
@@ -155,21 +139,7 @@ export default function CreateEventForm({ open, onOpenChange }: Props) {
 
           <div>
             <Label>{t("events.field_cover", "Kapak Fotoğrafı")}</Label>
-            {coverPreview ? (
-              <div className="relative mt-2">
-                <img src={coverPreview} alt="Cover" className="w-full h-40 object-cover rounded-lg" />
-                <button type="button" onClick={() => { setCoverFile(null); setCoverPreview(null); }}
-                  className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <label className="mt-2 flex items-center justify-center gap-2 border-2 border-dashed border-border rounded-lg p-6 cursor-pointer hover:bg-muted/50 transition-colors">
-                <Upload className="w-5 h-5 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">{t("events.upload_cover", "Fotoğraf yükle")}</span>
-                <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-              </label>
-            )}
+            <PhotoUploader value={coverPhotos} onChange={setCoverPhotos} maxFiles={1} storageBucket="events" pathPrefix="covers" />
           </div>
 
           <Button type="submit" className="w-full" disabled={createEvent.isPending || !title || !startAt}>

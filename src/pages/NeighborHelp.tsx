@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Wrench, Search, Plus, User, ArrowLeft, ArrowRight, DollarSign, MapPin } from "lucide-react";
-import { MediaUpload } from "@/components/shared/MediaUpload";
+import { PhotoUploader } from "@/components/shared/PhotoUploader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -296,8 +296,8 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
       {step === 2 && (
         <div className="space-y-4">
           <div>
-            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.photos", "Fotoğraf / Video")}</Label>
-            <MediaUpload value={photos} onChange={setPhotos} maxFiles={5} />
+            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.photos", "Fotoğraflar")}</Label>
+            <PhotoUploader value={photos} onChange={setPhotos} maxFiles={5} pathPrefix="neighbor_help" />
           </div>
           <div>
             <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.neighborhood", "Semt")}</Label>
