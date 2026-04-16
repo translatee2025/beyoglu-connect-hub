@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { LikeButton } from "@/components/social/LikeButton";
 import { type EntityType } from "@/hooks/useLikes";
-import { MediaUpload } from "@/components/shared/MediaUpload";
+import { PhotoUploader } from "@/components/shared/PhotoUploader";
 import { MediaGrid } from "@/components/shared/MediaGrid";
 import { UserName } from "@/components/shared/UserName";
 import { CommentsSection } from "@/components/shared/CommentsSection";
