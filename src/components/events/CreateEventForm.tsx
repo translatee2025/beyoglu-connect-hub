@@ -62,12 +62,12 @@ export default function CreateEventForm({ open, onOpenChange }: Props) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
-      toast({ title: t("events.created", "Etkinlik oluşturuldu!") });
+      toast({ title: t("events.created", "Event created!") });
       onOpenChange(false);
       resetForm();
     },
     onError: (err: any) => {
-      toast({ title: t("common.error", "Hata"), description: err.message, variant: "destructive" });
+      toast({ title: t("common.error", "Error"), description: err.message, variant: "destructive" });
     },
   });
 
@@ -81,23 +81,23 @@ export default function CreateEventForm({ open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t("events.create", "Etkinlik Oluştur")}</DialogTitle>
+          <DialogTitle>{t("events.create", "Create Event")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={(e) => { e.preventDefault(); createEvent.mutate(); }} className="space-y-4">
           <div>
-            <Label>{t("events.field_title", "Başlık")} *</Label>
+            <Label>{t("events.field_title", "Title")} *</Label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} required />
           </div>
 
           <div>
-            <Label>{t("events.field_description", "Açıklama")}</Label>
+            <Label>{t("events.field_description", "Description")}</Label>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
           </div>
 
           <div>
-            <Label>{t("events.field_category", "Kategori")}</Label>
+            <Label>{t("events.field_category", "Category")}</Label>
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger><SelectValue placeholder={t("events.select_category", "Kategori seçin")} /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={t("events.select_category", "Select category")} /></SelectTrigger>
               <SelectContent>
                 {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
               </SelectContent>
@@ -106,44 +106,44 @@ export default function CreateEventForm({ open, onOpenChange }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>{t("events.field_start", "Başlangıç")} *</Label>
+              <Label>{t("events.field_start", "Start")} *</Label>
               <Input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} required />
             </div>
             <div>
-              <Label>{t("events.field_end", "Bitiş")}</Label>
+              <Label>{t("events.field_end", "End")}</Label>
               <Input type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)} />
             </div>
           </div>
 
           <div>
-            <Label>{t("events.field_venue", "Mekan Adı")}</Label>
+            <Label>{t("events.field_venue", "Venue Name")}</Label>
             <Input value={venueName} onChange={(e) => setVenueName(e.target.value)} />
           </div>
 
           <div>
-            <Label>{t("events.field_address", "Adres")}</Label>
+            <Label>{t("events.field_address", "Address")}</Label>
             <Input value={address} onChange={(e) => setAddress(e.target.value)} />
           </div>
 
           <div className="flex items-center justify-between">
-            <Label>{t("events.field_free", "Ücretsiz mi?")}</Label>
+            <Label>{t("events.field_free", "Is it free?")}</Label>
             <Switch checked={isFree} onCheckedChange={setIsFree} />
           </div>
 
           {!isFree && (
             <div>
-              <Label>{t("events.field_price", "Fiyat (TRY)")}</Label>
+              <Label>{t("events.field_price", "Price (TRY)")}</Label>
               <Input type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />
             </div>
           )}
 
           <div>
-            <Label>{t("events.field_cover", "Kapak Fotoğrafı")}</Label>
+            <Label>{t("events.field_cover", "Cover Photo")}</Label>
             <PhotoUploader value={coverPhotos} onChange={setCoverPhotos} maxFiles={1} storageBucket="events" pathPrefix="covers" />
           </div>
 
           <Button type="submit" className="w-full" disabled={createEvent.isPending || !title || !startAt}>
-            {createEvent.isPending ? t("common.saving", "Kaydediliyor...") : t("events.create", "Etkinlik Oluştur")}
+            {createEvent.isPending ? t("common.saving", "Saving...") : t("events.create", "Create Event")}
           </Button>
         </form>
       </DialogContent>

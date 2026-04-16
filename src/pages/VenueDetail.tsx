@@ -225,7 +225,7 @@ const VenueDetail = () => {
               style={{ border: "1px solid #1E3A5F", color: "#1E3A5F" }}
               onClick={() => navigator.share?.({ url: window.location.href, title: venue.name }).catch(() => {})}
             >
-              <Share2 className="w-3.5 h-3.5 inline mr-1" />Paylaş
+              <Share2 className="w-3.5 h-3.5 inline mr-1" />{t("common.share", "Share")}
             </button>
           </div>
 
