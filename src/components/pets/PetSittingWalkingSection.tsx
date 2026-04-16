@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { UserName } from "@/components/shared/UserName";
 import { useAuth } from "@/providers/AuthProvider";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/providers/LanguageProvider";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { SkeletonGrid } from "@/components/shared/SkeletonCard";
 
@@ -31,6 +32,7 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
   const [appliedMax, setAppliedMax] = useState<number | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ["pet-sitting-walking-posts"],
@@ -69,7 +71,6 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
       return true;
     });
 
-    // Price filter
     if (appliedMin !== null || appliedMax !== null) {
       list = list.filter((p: any) => {
         const num = parseFloat((p.price || "").replace(/[^\d.]/g, ""));
@@ -80,7 +81,6 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
       });
     }
 
-    // Sort
     if (sort === "newest") {
       list.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     } else if (sort === "price_asc" || sort === "price_desc") {
@@ -106,7 +106,7 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
             color: serviceType === "sitting" ? "white" : "#64748B",
           }}
         >
-          🐾 Pet Sitting
+          🐾 {t("pets.pet_sitting", "Pet Sitting")}
         </button>
         <button
           onClick={() => setServiceType("walking")}
@@ -116,16 +116,16 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
             color: serviceType === "walking" ? "white" : "#64748B",
           }}
         >
-          🦮 Pet Walking
+          🦮 {t("pets.pet_walking", "Pet Walking")}
         </button>
       </div>
 
       {/* Offer/Want filter */}
       <div className="flex gap-2">
         {([
-          { key: "all" as const, label: "Tümü" },
-          { key: "offer" as const, label: "Ben Yaparım" },
-          { key: "want" as const, label: "Arıyorum" },
+          { key: "all" as const, label: t("filter.all", "All") },
+          { key: "offer" as const, label: t("pets.i_offer", "I Offer") },
+          { key: "want" as const, label: t("pets.i_want", "I Want") },
         ]).map((f) => (
           <button
             key={f.key}
@@ -141,10 +141,10 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
       {/* Sort pills */}
       <div className="flex gap-2 flex-wrap">
         {([
-          { key: "newest" as const, label: "En Yeni" },
-          { key: "price_asc" as const, label: "Fiyat ↑" },
-          { key: "price_desc" as const, label: "Fiyat ↓" },
-          { key: "nearest" as const, label: "Yakınımda" },
+          { key: "newest" as const, label: t("sort.newest", "Newest") },
+          { key: "price_asc" as const, label: t("sort.price_asc", "Price ↑") },
+          { key: "price_desc" as const, label: t("sort.price_desc", "Price ↓") },
+          { key: "nearest" as const, label: t("sort.nearby", "Nearby") },
         ]).map((s) => (
           <button
             key={s.key}
@@ -164,17 +164,17 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
           className="flex items-center gap-1 text-xs font-medium"
           style={{ color: "#64748B" }}
         >
-          Fiyat Filtrele {priceOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          {t("filter.price", "Filter Price")} {priceOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           {(appliedMin !== null || appliedMax !== null) && (
             <Badge className="ml-1 text-[10px] px-1.5 py-0 h-4" style={{ backgroundColor: "#1E3A5F", color: "white" }}>✓</Badge>
           )}
         </button>
         {priceOpen && (
           <div className="flex items-center gap-2 mt-2">
-            <Input placeholder="Min ₺" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="w-24 h-8 text-xs" style={{ border: "1px solid #E2EBFC" }} />
-            <Input placeholder="Max ₺" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="w-24 h-8 text-xs" style={{ border: "1px solid #E2EBFC" }} />
-            <Button size="sm" className="h-8 text-xs px-3" style={{ backgroundColor: "#1E3A5F" }} onClick={applyPrice}>Uygula</Button>
-            <Button variant="ghost" size="sm" className="h-8 text-xs px-2" onClick={clearPrice}>Temizle</Button>
+            <Input placeholder={t("filter.min_price", "Min ₺")} value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="w-24 h-8 text-xs" style={{ border: "1px solid #E2EBFC" }} />
+            <Input placeholder={t("filter.max_price", "Max ₺")} value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="w-24 h-8 text-xs" style={{ border: "1px solid #E2EBFC" }} />
+            <Button size="sm" className="h-8 text-xs px-3" style={{ backgroundColor: "#1E3A5F" }} onClick={applyPrice}>{t("common.apply", "Apply")}</Button>
+            <Button variant="ghost" size="sm" className="h-8 text-xs px-2" onClick={clearPrice}>{t("common.clear", "Clear")}</Button>
           </div>
         )}
       </div>
@@ -186,10 +186,10 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
         <div className="text-center py-12">
           <div className="text-4xl mb-3">{serviceType === "sitting" ? "🏠" : "🦮"}</div>
           <p className="text-sm font-medium" style={{ color: "#1E3A5F" }}>
-            {serviceType === "sitting" ? "Henüz pet sitting ilanı yok" : "Henüz pet walking ilanı yok"}
+            {serviceType === "sitting" ? t("pets.no_sitting_posts", "No pet sitting listings yet") : t("pets.no_walking_posts", "No pet walking listings yet")}
           </p>
-          <p className="text-xs mt-1" style={{ color: "#94A3B8" }}>İlk ilanı siz oluşturun!</p>
-          <Button size="sm" className="mt-3" style={{ backgroundColor: "#E74C3C" }} onClick={onCreatePost}>+ İlan Oluştur</Button>
+          <p className="text-xs mt-1" style={{ color: "#94A3B8" }}>{t("pets.be_first", "Be the first to post!")}</p>
+          <Button size="sm" className="mt-3" style={{ backgroundColor: "#E74C3C" }} onClick={onCreatePost}>+ {t("pets.create_listing", "Create Listing")}</Button>
         </div>
       ) : (
         <div className="space-y-3">
@@ -210,14 +210,14 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
                     color: serviceType === "sitting" ? "#1E3A5F" : "#166534",
                     border: "none",
                   }}>
-                    {serviceType === "sitting" ? "Pet Sitting" : "Pet Walking"}
+                    {serviceType === "sitting" ? t("pets.pet_sitting", "Pet Sitting") : t("pets.pet_walking", "Pet Walking")}
                   </Badge>
                   <Badge className="text-[10px] px-1.5 py-0 h-4" style={{
                     backgroundColor: isOffer ? "#DCFCE7" : "#FEF3C7",
                     color: isOffer ? "#166534" : "#D97706",
                     border: "none",
                   }}>
-                    {isOffer ? "Ben Yaparım" : "Arıyorum"}
+                    {isOffer ? t("pets.i_offer", "I Offer") : t("pets.i_want", "I Want")}
                   </Badge>
                   {post.species && (
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">{post.species}</Badge>
@@ -230,7 +230,7 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
                 {post.price && (
                   <p className="text-[13px] font-bold mt-1" style={{ color: "#1E3A5F" }}>
                     {post.price}
-                    {post.price_type && <span className="font-normal text-[10px]" style={{ color: "#94A3B8" }}> / {post.price_type === "per_hour" ? "saat" : "seans"}</span>}
+                    {post.price_type && <span className="font-normal text-[10px]" style={{ color: "#94A3B8" }}> / {post.price_type === "per_hour" ? t("pets.per_hour", "Per Hour") : t("pets.per_session", "Per Session")}</span>}
                   </p>
                 )}
 
@@ -243,7 +243,7 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
                   className="w-full mt-2 py-1.5 rounded-lg text-xs font-semibold text-white"
                   style={{ backgroundColor: "#E74C3C" }}
                 >
-                  İletişim
+                  {t("common.contact", "Contact")}
                 </button>
               </div>
             );
