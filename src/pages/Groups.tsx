@@ -35,11 +35,7 @@ const CATEGORIES = [
   { key: "other", label: "Other", emoji: "🌟" },
 ];
 
-const GROUP_TYPES = [
-  { key: "public", label: "Herkese Açık", desc: "Herkes katılabilir", icon: GlobeIcon, color: "#16A34A" },
-  { key: "request", label: "İstek Gerekli", desc: "Yönetici onaylar", icon: UserPlus, color: "#D97706" },
-  { key: "private", label: "Gizli", desc: "Sadece davetle", icon: Lock, color: "#1E3A5F" },
-];
+// GROUP_TYPES moved inside component to access t()
 
 const legacyCategoryMap: Record<string, string> = {
   Community: "community", "Food & Dining": "food-dining", Education: "education",
@@ -47,13 +43,7 @@ const legacyCategoryMap: Record<string, string> = {
 };
 const normalizeCategory = (v: string) => legacyCategoryMap[v] || v;
 
-const timeAgo = (date: string) => {
-  const diff = Date.now() - new Date(date).getTime();
-  const hrs = Math.floor(diff / 3600000);
-  if (hrs < 1) return `${Math.max(1, Math.floor(diff / 60000))}dk önce`;
-  if (hrs < 24) return `${hrs} saat önce`;
-  return `${Math.floor(hrs / 24)} gün önce`;
-};
+// timeAgo moved inside component to access t()
 
 const Groups = () => {
   const [search, setSearch] = useState("");
@@ -64,6 +54,20 @@ const Groups = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const GROUP_TYPES = [
+    { key: "public", label: t("groups.type.public", "Public"), desc: t("groups.type.public_desc", "Anyone can join"), icon: GlobeIcon, color: "#16A34A" },
+    { key: "request", label: t("groups.type.request", "Request Required"), desc: t("groups.type.request_desc", "Admin approves"), icon: UserPlus, color: "#D97706" },
+    { key: "private", label: t("groups.type.private", "Private"), desc: t("groups.type.private_desc", "Invite only"), icon: Lock, color: "#1E3A5F" },
+  ];
+
+  const timeAgo = (date: string) => {
+    const diff = Date.now() - new Date(date).getTime();
+    const hrs = Math.floor(diff / 3600000);
+    if (hrs < 1) return t("time.just_now", "just now");
+    if (hrs < 24) return `${hrs}${t("time.hours_short", "h")}`;
+    return `${Math.floor(hrs / 24)}${t("time.days_short", "d")}`;
+  };
 
   const { data: groups = [], isLoading } = useQuery({
     queryKey: ["groups"],
@@ -295,6 +299,12 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
+  const GROUP_TYPES = [
+    { key: "public", label: t("groups.type.public", "Public"), desc: t("groups.type.public_desc", "Anyone can join"), icon: GlobeIcon, color: "#16A34A" },
+    { key: "request", label: t("groups.type.request", "Request Required"), desc: t("groups.type.request_desc", "Admin approves"), icon: UserPlus, color: "#D97706" },
+    { key: "private", label: t("groups.type.private", "Private"), desc: t("groups.type.private_desc", "Invite only"), icon: Lock, color: "#1E3A5F" },
+  ];
+
   const [form, setForm] = useState({
     name: "", description: "", category: "", groupType: "", coverPhoto: "",
   });
@@ -306,7 +316,7 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
     const ext = file.name.split(".").pop();
     const path = `covers/${user.id}-${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("groups").upload(path, file, { upsert: true });
-    if (error) { toast({ title: "Yükleme başarısız", variant: "destructive" }); setUploading(false); return; }
+    if (error) { toast({ title: t("common.upload_failed", "Upload failed"), variant: "destructive" }); setUploading(false); return; }
     const { data: urlData } = supabase.storage.from("groups").getPublicUrl(path);
     setForm(f => ({ ...f, coverPhoto: urlData.publicUrl }));
     setUploading(false);
@@ -370,20 +380,20 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
 
       {/* Name */}
       <div className="mb-4">
-        <Label style={{ fontSize: 12, color: "#64748B" }}>Grup Adı *</Label>
-        <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="örn. Beyoğlu Kitap Kulübü" style={{ fontSize: 13 }} />
+        <Label style={{ fontSize: 12, color: "#64748B" }}>{t("groups.form.name", "Group Name")} *</Label>
+        <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder={t("groups.form.name_placeholder", "e.g. Beyoğlu Book Club")} style={{ fontSize: 13 }} />
       </div>
 
       {/* Description */}
       <div className="mb-4">
-        <Label style={{ fontSize: 12, color: "#64748B" }}>Açıklama * <span style={{ color: "#94A3B8" }}>(min 20 karakter)</span></Label>
-        <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Grup ne hakkında?" rows={3} style={{ fontSize: 13 }} />
+        <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.description", "Description")} * <span style={{ color: "#94A3B8" }}>({t("groups.form.min_chars", "min 20 characters")})</span></Label>
+        <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder={t("groups.form.desc_placeholder", "What is the group about?")} rows={3} style={{ fontSize: 13 }} />
         <span style={{ fontSize: 11, color: form.description.length >= 20 ? "#16A34A" : "#94A3B8" }}>{form.description.length}/20</span>
       </div>
 
       {/* Category - tappable cards */}
       <div className="mb-4">
-        <Label style={{ fontSize: 12, color: "#64748B", marginBottom: 8, display: "block" }}>Kategori *</Label>
+        <Label style={{ fontSize: 12, color: "#64748B", marginBottom: 8, display: "block" }}>{t("common.category", "Category")} *</Label>
         <div className="grid grid-cols-4 gap-2">
           {CATEGORIES.map(c => (
             <button
@@ -405,7 +415,7 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
 
       {/* Type - tappable cards */}
       <div className="mb-5">
-        <Label style={{ fontSize: 12, color: "#64748B", marginBottom: 8, display: "block" }}>Grup Türü *</Label>
+        <Label style={{ fontSize: 12, color: "#64748B", marginBottom: 8, display: "block" }}>{t("groups.form.type", "Group Type")} *</Label>
         <div className="grid grid-cols-3 gap-2">
           {GROUP_TYPES.map(gt => {
             const Icon = gt.icon;

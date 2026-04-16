@@ -9,18 +9,9 @@ import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSpecies } from "@/hooks/useSpeciesBreeds";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface PetSittingFormProps { onSuccess: () => void; onBack: () => void; }
-
-const days = [
-  { key: "mon", label: "Pzt" },
-  { key: "tue", label: "Sal" },
-  { key: "wed", label: "Çar" },
-  { key: "thu", label: "Per" },
-  { key: "fri", label: "Cum" },
-  { key: "sat", label: "Cmt" },
-  { key: "sun", label: "Paz" },
-];
 
 const PetSittingForm = ({ onSuccess, onBack }: PetSittingFormProps) => {
   const [serviceType, setServiceType] = useState<"sitting" | "walking">("sitting");
@@ -30,7 +21,18 @@ const PetSittingForm = ({ onSuccess, onBack }: PetSittingFormProps) => {
   const [priceType, setPriceType] = useState<"per_session" | "per_hour">("per_session");
   const [form, setForm] = useState({ title: "", description: "", price: "", address: "" });
   const { toast } = useToast();
+  const { t } = useLanguage();
   const { speciesOptions, isLoading: speciesLoading } = useSpecies();
+
+  const days = [
+    { key: "mon", label: t("days.mon", "Mon") },
+    { key: "tue", label: t("days.tue", "Tue") },
+    { key: "wed", label: t("days.wed", "Wed") },
+    { key: "thu", label: t("days.thu", "Thu") },
+    { key: "fri", label: t("days.fri", "Fri") },
+    { key: "sat", label: t("days.sat", "Sat") },
+    { key: "sun", label: t("days.sun", "Sun") },
+  ];
 
   const toggleDay = (d: string) => {
     setSelectedDays((prev) => prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]);
@@ -39,7 +41,7 @@ const PetSittingForm = ({ onSuccess, onBack }: PetSittingFormProps) => {
   const mutation = useMutation({
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Giriş yapın");
+      if (!user) throw new Error(t("common.login_required", "Please log in"));
       const { error } = await supabase.from("pet_posts").insert({
         user_id: user.id,
         post_type: "pet_sitting" as any,
@@ -55,8 +57,8 @@ const PetSittingForm = ({ onSuccess, onBack }: PetSittingFormProps) => {
       } as any);
       if (error) throw error;
     },
-    onSuccess: () => { toast({ title: "İlan oluşturuldu! ✅" }); onSuccess(); },
-    onError: (e: any) => toast({ title: "Hata", description: e.message, variant: "destructive" }),
+    onSuccess: () => { toast({ title: t("pets.listing_created", "Listing created! ✅") }); onSuccess(); },
+    onError: (e: any) => toast({ title: t("common.error", "Error"), description: e.message, variant: "destructive" }),
   });
 
   const cardStyle = (active: boolean) => ({
@@ -70,42 +72,42 @@ const PetSittingForm = ({ onSuccess, onBack }: PetSittingFormProps) => {
       <DialogHeader>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={onBack}><ArrowLeft className="w-4 h-4" /></Button>
-          <DialogTitle>🐾 Pet Sitting / Walking</DialogTitle>
+          <DialogTitle>🐾 {t("pets.pet_sitting", "Pet Sitting")} / {t("pets.pet_walking", "Pet Walking")}</DialogTitle>
         </div>
       </DialogHeader>
 
       <div className="space-y-4">
         {/* Service type */}
         <div>
-          <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>Hizmet Türü</Label>
+          <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>{t("pets.service_type", "Service Type")}</Label>
           <div className="grid grid-cols-2 gap-2">
             <button onClick={() => setServiceType("sitting")} className="p-3 rounded-lg text-center text-sm font-semibold transition-all" style={cardStyle(serviceType === "sitting")}>
-              🐾 Pet Sitting
+              🐾 {t("pets.pet_sitting", "Pet Sitting")}
             </button>
             <button onClick={() => setServiceType("walking")} className="p-3 rounded-lg text-center text-sm font-semibold transition-all" style={cardStyle(serviceType === "walking")}>
-              🦮 Pet Walking
+              🦮 {t("pets.pet_walking", "Pet Walking")}
             </button>
           </div>
         </div>
 
         {/* Offer / Want */}
         <div>
-          <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>İlan Türü</Label>
+          <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>{t("pets.listing_type_label", "Listing Type")}</Label>
           <div className="grid grid-cols-2 gap-2">
             <button onClick={() => setIsOffering(true)} className="p-3 rounded-lg text-center text-sm font-semibold transition-all" style={cardStyle(isOffering)}>
-              ✅ Ben Yaparım
+              ✅ {t("pets.i_offer", "I Offer")}
             </button>
             <button onClick={() => setIsOffering(false)} className="p-3 rounded-lg text-center text-sm font-semibold transition-all" style={cardStyle(!isOffering)}>
-              🔍 Arıyorum
+              🔍 {t("pets.i_want", "I Want")}
             </button>
           </div>
         </div>
 
         {/* Species emoji cards */}
         <div>
-          <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>Hayvan Türü</Label>
+          <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>{t("pets.animal_type", "Animal Type")}</Label>
           {speciesLoading ? (
-            <p className="text-xs" style={{ color: "#94A3B8" }}>Yükleniyor...</p>
+            <p className="text-xs" style={{ color: "#94A3B8" }}>{t("common.loading", "Loading...")}</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {speciesOptions.map((s) => (
@@ -125,42 +127,42 @@ const PetSittingForm = ({ onSuccess, onBack }: PetSittingFormProps) => {
 
         {/* Title */}
         <div>
-          <Label className="text-xs" style={{ color: "#1E3A5F" }}>Başlık</Label>
+          <Label className="text-xs" style={{ color: "#1E3A5F" }}>{t("common.title", "Title")}</Label>
           <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} style={{ border: "1px solid #E2EBFC" }} />
         </div>
 
         {/* Price + type */}
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label className="text-xs" style={{ color: "#1E3A5F" }}>Ücret</Label>
+            <Label className="text-xs" style={{ color: "#1E3A5F" }}>{t("common.price", "Price")}</Label>
             <Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="₺200" style={{ border: "1px solid #E2EBFC" }} />
           </div>
           <div>
-            <Label className="text-xs" style={{ color: "#1E3A5F" }}>Birim</Label>
+            <Label className="text-xs" style={{ color: "#1E3A5F" }}>{t("common.unit", "Unit")}</Label>
             <div className="flex gap-1 mt-1">
               <button onClick={() => setPriceType("per_session")} className="flex-1 py-1.5 rounded text-xs font-medium" style={{
                 backgroundColor: priceType === "per_session" ? "#1E3A5F" : "white",
                 color: priceType === "per_session" ? "white" : "#64748B",
                 border: "1px solid #E2EBFC",
-              }}>Seans</button>
+              }}>{t("pets.per_session", "Per Session")}</button>
               <button onClick={() => setPriceType("per_hour")} className="flex-1 py-1.5 rounded text-xs font-medium" style={{
                 backgroundColor: priceType === "per_hour" ? "#1E3A5F" : "white",
                 color: priceType === "per_hour" ? "white" : "#64748B",
                 border: "1px solid #E2EBFC",
-              }}>Saat</button>
+              }}>{t("pets.per_hour", "Per Hour")}</button>
             </div>
           </div>
         </div>
 
         {/* Description */}
         <div>
-          <Label className="text-xs" style={{ color: "#1E3A5F" }}>Açıklama</Label>
+          <Label className="text-xs" style={{ color: "#1E3A5F" }}>{t("common.description", "Description")}</Label>
           <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} style={{ border: "1px solid #E2EBFC" }} />
         </div>
 
         {/* Available days */}
         <div>
-          <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>Müsait Günler</Label>
+          <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>{t("pets.available_days", "Available Days")}</Label>
           <div className="flex flex-wrap gap-1.5">
             {days.map((d) => (
               <button
@@ -181,7 +183,7 @@ const PetSittingForm = ({ onSuccess, onBack }: PetSittingFormProps) => {
 
         {/* Neighborhood */}
         <div>
-          <Label className="text-xs" style={{ color: "#1E3A5F" }}>Mahalle</Label>
+          <Label className="text-xs" style={{ color: "#1E3A5F" }}>{t("common.neighborhood", "Neighborhood")}</Label>
           <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Cihangir, Beyoğlu" style={{ border: "1px solid #E2EBFC" }} />
         </div>
 
@@ -191,7 +193,7 @@ const PetSittingForm = ({ onSuccess, onBack }: PetSittingFormProps) => {
           onClick={() => mutation.mutate()}
           disabled={!form.title || mutation.isPending}
         >
-          {mutation.isPending ? "Gönderiliyor..." : "İlanı Yayınla"}
+          {mutation.isPending ? t("common.sending", "Sending...") : t("common.post", "Post")}
         </Button>
       </div>
     </div>

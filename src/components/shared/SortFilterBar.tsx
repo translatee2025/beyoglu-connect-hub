@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 type SortOption = "newest" | "price_asc" | "price_desc";
 
@@ -22,11 +23,12 @@ const SortFilterBar = ({
   onApplyFilter, onClearFilter, filterActive,
 }: SortFilterBarProps) => {
   const [filterOpen, setFilterOpen] = useState(false);
+  const { t } = useLanguage();
 
   const pills: { key: SortOption; label: string }[] = [
-    { key: "newest", label: "En Yeni" },
-    { key: "price_asc", label: "Fiyat ↑" },
-    { key: "price_desc", label: "Fiyat ↓" },
+    { key: "newest", label: t("sort.newest", "Newest") },
+    { key: "price_asc", label: t("sort.price_asc", "Price ↑") },
+    { key: "price_desc", label: t("sort.price_desc", "Price ↓") },
   ];
 
   return (
@@ -66,7 +68,7 @@ const SortFilterBar = ({
             gap: 4,
           }}
         >
-          Fiyat Filtresi
+          {t("filter.price", "Filter Price")}
           {filterOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         </button>
       </div>
@@ -75,14 +77,14 @@ const SortFilterBar = ({
         <div className="flex items-center gap-2 flex-wrap">
           <Input
             type="number"
-            placeholder="Min ₺"
+            placeholder={t("filter.min_price", "Min ₺")}
             value={priceMin}
             onChange={(e) => onPriceMinChange(e.target.value)}
             className="w-28 h-8 text-xs"
           />
           <Input
             type="number"
-            placeholder="Max ₺"
+            placeholder={t("filter.max_price", "Max ₺")}
             value={priceMax}
             onChange={(e) => onPriceMaxChange(e.target.value)}
             className="w-28 h-8 text-xs"
@@ -99,14 +101,14 @@ const SortFilterBar = ({
               backgroundColor: "white",
             }}
           >
-            Uygula
+            {t("common.apply", "Apply")}
           </button>
           {filterActive && (
             <button
               onClick={onClearFilter}
               style={{ fontSize: 11, color: "#94A3B8", display: "flex", alignItems: "center", gap: 2 }}
             >
-              <X className="w-3 h-3" /> Filtreyi Temizle
+              <X className="w-3 h-3" /> {t("common.clear", "Clear")}
             </button>
           )}
         </div>
