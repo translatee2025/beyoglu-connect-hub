@@ -32,11 +32,7 @@ const getPlaceholder = (category?: string | null) => {
   return CATEGORY_PLACEHOLDERS[key] || { bg: "#EFF4FF", emoji: "📅" };
 };
 
-const formatEventDate = (dateStr: string) => {
-  const d = new Date(dateStr);
-  return d.toLocaleDateString("tr-TR", { weekday: "long", day: "numeric", month: "long" }) +
-    " · " + d.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
-};
+// formatEventDate moved inside component to access language
 
 const Events = () => {
   const [activeTab, setActiveTab] = useState("list");
@@ -44,7 +40,13 @@ const Events = () => {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [freeOnly, setFreeOnly] = useState(false);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const locale = language === "tr" ? "tr-TR" : "en-US";
+  const formatEventDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" }) +
+      " · " + d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+  };
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -158,11 +160,11 @@ const Events = () => {
         <div className="max-w-app mx-auto">
           {/* Header */}
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-[15px] font-semibold text-foreground">{t("events.title", "Etkinlikler")}</h1>
+            <h1 className="text-[15px] font-semibold text-foreground">{t("events.title", "Events")}</h1>
             <div className="flex items-center gap-2">
               {user && (
                 <Button size="sm" variant="cta" className="gap-1 text-xs" onClick={() => setShowCreate(true)}>
-                  <Plus className="w-3.5 h-3.5" /> {t("events.create", "Oluştur")}
+                  <Plus className="w-3.5 h-3.5" /> {t("events.create", "Create")}
                 </Button>
               )}
             </div>
@@ -171,25 +173,25 @@ const Events = () => {
           {/* View toggle */}
           <div className="flex gap-1.5 mb-3">
             <Button variant={activeTab === "list" ? "default" : "outline"} size="sm" onClick={() => setActiveTab("list")} className="gap-1 text-xs">
-              <List className="w-3.5 h-3.5" /> Liste
+              <List className="w-3.5 h-3.5" /> {t("common.list", "List")}
             </Button>
             <Button variant={activeTab === "map" ? "default" : "outline"} size="sm" onClick={() => setActiveTab("map")} className="gap-1 text-xs">
-              <MapIcon className="w-3.5 h-3.5" /> Harita
+              <MapIcon className="w-3.5 h-3.5" /> {t("common.map", "Map")}
             </Button>
           </div>
 
           {/* Date range filter */}
           <div className="flex items-center gap-2 mb-3 flex-wrap">
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px]" style={{ color: "#64748B" }}>Başlangıç</span>
+              <span className="text-[11px]" style={{ color: "#64748B" }}>{t("events.from", "From")}</span>
               <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="text-xs h-8 w-[130px]" />
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px]" style={{ color: "#64748B" }}>Bitiş</span>
+              <span className="text-[11px]" style={{ color: "#64748B" }}>{t("events.to", "To")}</span>
               <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="text-xs h-8 w-[130px]" />
             </div>
             {(dateFrom || dateTo) && (
-              <button onClick={() => { setDateFrom(""); setDateTo(""); }} className="text-[11px] underline" style={{ color: "#E74C3C" }}>Temizle</button>
+              <button onClick={() => { setDateFrom(""); setDateTo(""); }} className="text-[11px] underline" style={{ color: "#E74C3C" }}>{t("common.clear", "Clear")}</button>
             )}
             {/* Free toggle */}
             <button
@@ -205,7 +207,7 @@ const Events = () => {
               }}
             >
               {freeOnly && <span className="inline-block w-1.5 h-1.5 rounded-full bg-white mr-1.5" style={{ verticalAlign: "middle" }} />}
-              Sadece Ücretsiz
+              {t("events.free_only", "Free Only")}
             </button>
           </div>
 
@@ -213,7 +215,7 @@ const Events = () => {
             isLoading ? (
               <SkeletonGrid count={3} hasPhoto photoHeight={160} />
             ) : filteredEvents.length === 0 ? (
-              <EmptyState emoji="📅" message={t("empty.events", "Yakında etkinlik yok. Bir etkinlik oluştur!")} actionLabel={t("events.create_event", "Etkinlik Oluştur")} onAction={() => setShowCreate(true)} />
+              <EmptyState emoji="📅" message={t("empty.events", "No upcoming events. Create one!")} actionLabel={t("events.create_event", "Create Event")} onAction={() => setShowCreate(true)} />
             ) : (
               <div className="grid sm:grid-cols-2 gap-3">
                 {filteredEvents.map((event) => {
@@ -252,7 +254,7 @@ const Events = () => {
                               : { backgroundColor: "#FEF3C7", color: "#92400E" }),
                           }}
                         >
-                          {event.is_free ? "Ücretsiz" : `${event.price || 0} TRY`}
+                          {event.is_free ? t("events.free", "Free") : `${event.price || 0} TRY`}
                         </span>
                       </div>
                       {/* Card body */}
@@ -289,7 +291,7 @@ const Events = () => {
                           }
                           onClick={(e) => { e.stopPropagation(); toggleRsvp.mutate(event.id); }}
                         >
-                          {isRsvped ? "✓ Katılıyorum" : event.is_free ? "Katıl" : "Bilet Al"}
+                          {isRsvped ? t("events.attending", "✓ Attending") : event.is_free ? t("events.join", "Join") : t("events.buy_ticket", "Buy Ticket")}
                         </button>
                       </div>
                     </div>

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { MapPin, X } from "lucide-react";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface LocationContextValue {
   lat: number | null;
@@ -29,6 +30,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
   const [lng, setLng] = useState<number | null>(null);
   const [granted, setGranted] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const stored = localStorage.getItem("location_permission");
@@ -69,8 +71,8 @@ export function LocationProvider({ children }: { children: ReactNode }) {
   const getDistance = (targetLat: number | null, targetLng: number | null): string | null => {
     if (!granted || lat === null || lng === null || targetLat === null || targetLng === null) return null;
     const km = haversine(lat, lng, targetLat, targetLng);
-    if (km < 1) return `${Math.round(km * 1000)} m uzakta`;
-    return `${km.toFixed(1)} km uzakta`;
+    if (km < 1) return t("location.meters_away", `${Math.round(km * 1000)} m away`).replace("{n}", String(Math.round(km * 1000)));
+    return t("location.km_away", `${km.toFixed(1)} km away`).replace("{n}", km.toFixed(1));
   };
 
   return (
@@ -82,17 +84,17 @@ export function LocationProvider({ children }: { children: ReactNode }) {
               <MapPin className="w-6 h-6" style={{ color: "#1E3A5F" }} />
             </div>
             <h3 className="text-center mb-2" style={{ fontSize: 15, fontWeight: 600, color: "#1E3A5F" }}>
-              Konum İzni
+              {t("location.permission_title", "Location Permission")}
             </h3>
             <p className="text-center mb-5" style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5 }}>
-              Yakınındakileri görmek için konumuna erişmemize izin ver.
+              {t("location.permission_desc", "Allow location access to see what's nearby.")}
             </p>
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={handleSkip} style={{ fontSize: 13 }}>
-                Geç
+                {t("common.skip", "Skip")}
               </Button>
               <Button className="flex-1" onClick={handleAllow} style={{ background: "#1E3A5F", color: "#fff", fontSize: 13 }}>
-                İzin Ver
+                {t("location.allow", "Allow")}
               </Button>
             </div>
           </div>
