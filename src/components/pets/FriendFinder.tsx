@@ -47,6 +47,7 @@ const defaultFilters: Filters = {
 
 const FriendFinder = () => {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"swipe" | "list">("swipe");
