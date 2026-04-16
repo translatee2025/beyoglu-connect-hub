@@ -38,9 +38,8 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
     queryKey: ["pet-sitting-walking-posts"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("pet_posts")
+        .from("pet_sitting_posts")
         .select("*")
-        .eq("post_type", "pet_sitting")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
