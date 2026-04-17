@@ -286,6 +286,8 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { options: groupCats } = useAppOptions("group_categories");
+  const CATEGORIES = useMemo(() => groupCats.map((o) => ({ key: o.value, label: o.label, emoji: o.emoji || "🌟" })), [groupCats]);
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
