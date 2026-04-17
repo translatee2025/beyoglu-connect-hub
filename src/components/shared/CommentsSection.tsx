@@ -86,13 +86,19 @@ export function CommentsSection({ entityType, entityId }: CommentsProps) {
   const { data: commentCount = 0 } = useQuery({
     queryKey: ["comment-count", entityType, entityId],
     queryFn: async () => {
-      const { count } = await supabase
-        .from("comments")
-        .select("*", { count: "exact", head: true })
-        .eq("entity_type", entityType)
-        .eq("entity_id", entityId);
-      return count || 0;
+      try {
+        const { count, error } = await supabase
+          .from("comments")
+          .select("*", { count: "exact", head: true })
+          .eq("entity_type", entityType)
+          .eq("entity_id", entityId);
+        if (error) return 0;
+        return count || 0;
+      } catch {
+        return 0;
+      }
     },
+    retry: false,
   });
 
   const addComment = useMutation({
