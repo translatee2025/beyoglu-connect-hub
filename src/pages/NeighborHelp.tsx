@@ -29,7 +29,7 @@ const NeighborHelp = () => {
   const [category, setCategory] = useState("All");
   const [postOpen, setPostOpen] = useState(false);
   const queryClient = useQueryClient();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { getDistance } = useLocation();
@@ -39,14 +39,17 @@ const NeighborHelp = () => {
     ...helpCats.map((o) => ({ key: o.value, label: o.label })),
   ], [helpCats, t]);
 
+  const getCategoryLabel = (key: string) => helpCats.find((o) => o.value === key)?.label || key;
+
   const timeAgo = (date: string) => {
     const diff = Date.now() - new Date(date).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 1) return t("time.just_now", "just now");
-    if (mins < 60) return `${mins}${t("time.minutes_short", "m")}`;
+    if (mins < 1) return language === "tr" ? "şimdi" : "now";
+    if (mins < 60) return language === "tr" ? `${mins}dk` : `${mins}m`;
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}${t("time.hours_short", "h")}`;
-    return `${Math.floor(hrs / 24)}${t("time.days_short", "d")}`;
+    if (hrs < 24) return language === "tr" ? `${hrs}s` : `${hrs}h`;
+    const days = Math.floor(hrs / 24);
+    return language === "tr" ? `${days}g` : `${days}d`;
   };
 
   const handleContact = (userId: string) => {
@@ -130,7 +133,7 @@ const NeighborHelp = () => {
                     {isOffer ? t("help.i_can_help", "I Can Help") : t("help.i_need_help", "I Need Help")}
                   </span>
                   <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 12, border: "1px solid #E2E8F0", color: "#64748B" }}>
-                    {post.category}
+                    {getCategoryLabel(post.category)}
                   </span>
                   <span style={{ fontSize: 11, color: "#94A3B8", marginLeft: "auto" }}>{timeAgo(post.created_at)}</span>
                 </div>
@@ -148,7 +151,7 @@ const NeighborHelp = () => {
                 {/* Price */}
                 {post.price && (
                   <p className="flex items-center gap-1 mb-2" style={{ fontSize: 13, fontWeight: 700, color: "#1E3A5F" }}>
-                    ₺{post.price} {post.price_type === "per_hour" ? "/ saat" : post.price_type === "per_day" ? "/ gün" : post.price_type === "negotiable" ? "(Pazarlık)" : "(Sabit)"}
+                    ₺{post.price} {post.price_type === "per_hour" ? `(${t("help.price_hourly", "Hourly")})` : post.price_type === "per_day" ? `/ ${language === "tr" ? "gün" : "day"}` : post.price_type === "negotiable" ? `(${t("common.negotiable", "Negotiable")})` : `(${t("help.price_fixed", "Fixed")})`}
                   </p>
                 )}
 
@@ -218,7 +221,7 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
         <div className="space-y-4">
           {/* Help type — tappable cards */}
           <div>
-            <Label style={{ fontSize: 12, color: "#64748B", marginBottom: 8, display: "block" }}>Ne yapmak istiyorsun?</Label>
+            <Label style={{ fontSize: 12, color: "#64748B", marginBottom: 8, display: "block" }}>{t("help.what_to_do", "What would you like to do?")}</Label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setForm({ ...form, helpType: "offer" })}
