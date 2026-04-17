@@ -66,11 +66,11 @@ const EditProfile = () => {
     const ext = file.name.split(".").pop();
     const path = `avatars/${user.id}.${ext}`;
     const { error } = await supabase.storage.from("user-media").upload(path, file, { upsert: true });
-    if (error) { toast({ title: t("profile.edit.upload_failed", "Yükleme başarısız"), variant: "destructive" }); setUploading(false); return; }
+    if (error) { toast({ title: t("profile.edit.upload_failed", "Upload failed"), variant: "destructive" }); setUploading(false); return; }
     const { data: urlData } = supabase.storage.from("user-media").getPublicUrl(path);
     await supabase.from("profiles").update({ avatar_url: urlData.publicUrl }).eq("user_id", user.id);
     queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
-    toast({ title: t("profile.edit.photo_updated", "Fotoğraf güncellendi") });
+    toast({ title: t("profile.edit.photo_updated", "Photo updated") });
     setUploading(false);
   };
 
@@ -84,10 +84,10 @@ const EditProfile = () => {
     };
     const { error } = await supabase.from("profiles").update(updateData).eq("user_id", user.id);
     if (error) {
-      toast({ title: t("profile.edit.save_failed", "Kayıt başarısız"), variant: "destructive" });
+      toast({ title: t("profile.edit.save_failed", "Save failed"), variant: "destructive" });
     } else {
       queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
-      toast({ title: t("profile.edit.saved", "Profil güncellendi") });
+      toast({ title: t("profile.edit.saved", "Profile updated") });
       navigate(`/profile/${user.id}`);
     }
     setSaving(false);
@@ -102,7 +102,7 @@ const EditProfile = () => {
           <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-muted/50">
             <ArrowLeft className="w-5 h-5" style={{ color: "#1E3A5F" }} />
           </button>
-          <h1 style={{ fontSize: 18, fontWeight: 700, color: "#1E3A5F" }}>{t("profile.edit.title", "Profili Düzenle")}</h1>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: "#1E3A5F" }}>{t("profile.edit.title", "Edit Profile")}</h1>
         </div>
 
         <div className="flex flex-col items-center mb-6">
@@ -116,61 +116,61 @@ const EditProfile = () => {
               <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploading} />
             </label>
           </div>
-          <span style={{ fontSize: 12, color: "#94A3B8", marginTop: 8 }}>{t("profile.edit.change_photo", "Fotoğraf Değiştir")}</span>
+          <span style={{ fontSize: 12, color: "#94A3B8", marginTop: 8 }}>{t("profile.edit.change_photo", "Change Photo")}</span>
         </div>
 
         <div className="space-y-4">
           <div>
-            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("profile.edit.display_name", "Görünen Ad")}</Label>
-            <Input value={form.display_name} onChange={e => setForm({ ...form, display_name: e.target.value })} placeholder={t("profile.edit.display_name", "Görünen Ad")} />
+            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("profile.edit.display_name", "Display Name")}</Label>
+            <Input value={form.display_name} onChange={e => setForm({ ...form, display_name: e.target.value })} placeholder={t("profile.edit.display_name", "Display Name")} />
           </div>
           <div>
-            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("profile.edit.bio", "Hakkında")}</Label>
-            <Textarea value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} placeholder={t("profile.edit.bio", "Hakkında")} rows={3} />
+            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("profile.edit.bio", "About")}</Label>
+            <Textarea value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} placeholder={t("profile.edit.bio", "About")} rows={3} />
           </div>
           <div>
-            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("profile.edit.district", "İlçe")}</Label>
+            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("profile.edit.district", "District")}</Label>
             <Select value={form.district_id} onValueChange={v => setForm({ ...form, district_id: v })}>
-              <SelectTrigger><SelectValue placeholder={t("profile.edit.select_district", "İlçe seçin")} /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={t("profile.edit.select_district", "Select district")} /></SelectTrigger>
               <SelectContent>
                 {districts.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
           <div>
-            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("profile.edit.gender", "Cinsiyet")}</Label>
+            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("profile.edit.gender", "Gender")}</Label>
             <Select value={form.gender} onValueChange={v => setForm({ ...form, gender: v })}>
-              <SelectTrigger><SelectValue placeholder={t("profile.edit.gender_unspecified", "Belirtmek istemiyorum")} /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={t("profile.edit.gender_unspecified", "Prefer not to say")} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="male">{t("profile.edit.gender_male", "Erkek")}</SelectItem>
-                <SelectItem value="female">{t("profile.edit.gender_female", "Kadın")}</SelectItem>
-                <SelectItem value="unspecified">{t("profile.edit.gender_unspecified", "Belirtmek istemiyorum")}</SelectItem>
+                <SelectItem value="male">{t("profile.edit.gender_male", "Male")}</SelectItem>
+                <SelectItem value="female">{t("profile.edit.gender_female", "Female")}</SelectItem>
+                <SelectItem value="unspecified">{t("profile.edit.gender_unspecified", "Prefer not to say")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
-            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("profile.edit.age", "Yaş")}</Label>
-            <Input type="number" value={form.age} onChange={e => setForm({ ...form, age: e.target.value })} placeholder={t("profile.edit.age_optional", "Opsiyonel")} min={13} max={120} />
+            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("profile.edit.age", "Age")}</Label>
+            <Input type="number" value={form.age} onChange={e => setForm({ ...form, age: e.target.value })} placeholder={t("profile.edit.age_optional", "Optional")} min={13} max={120} />
           </div>
 
           <div className="space-y-3 pt-2" style={{ borderTop: "1px solid #E2E8F0" }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "#1E3A5F" }}>{t("profile.edit.privacy", "Gizlilik")}</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "#1E3A5F" }}>{t("profile.edit.privacy", "Privacy")}</p>
             <div className="flex items-center justify-between">
-              <span style={{ fontSize: 13, color: "#64748B" }}>{t("profile.edit.photo_visible", "Fotoğrafım herkese görünsün")}</span>
+              <span style={{ fontSize: 13, color: "#64748B" }}>{t("profile.edit.photo_visible", "Show my photo publicly")}</span>
               <Switch checked={form.photo_public} onCheckedChange={v => setForm({ ...form, photo_public: v })} />
             </div>
             <div className="flex items-center justify-between">
-              <span style={{ fontSize: 13, color: "#64748B" }}>{t("profile.edit.messages_open", "Bana herkes mesaj atabilsin")}</span>
+              <span style={{ fontSize: 13, color: "#64748B" }}>{t("profile.edit.messages_open", "Allow anyone to message me")}</span>
               <Switch checked={form.messages_public} onCheckedChange={v => setForm({ ...form, messages_public: v })} />
             </div>
             <div className="flex items-center justify-between">
-              <span style={{ fontSize: 13, color: "#64748B" }}>{t("profile.edit.age_visible", "Yaşım görünsün")}</span>
+              <span style={{ fontSize: 13, color: "#64748B" }}>{t("profile.edit.age_visible", "Show my age")}</span>
               <Switch checked={form.age_public} onCheckedChange={v => setForm({ ...form, age_public: v })} />
             </div>
           </div>
 
           <Button className="w-full mt-4" onClick={handleSave} disabled={saving} style={{ background: "#1E3A5F", color: "#fff" }}>
-            <Save className="w-4 h-4 mr-1" /> {saving ? t("profile.edit.saving", "Kaydediliyor...") : t("common.save", "Kaydet")}
+            <Save className="w-4 h-4 mr-1" /> {saving ? t("profile.edit.saving", "Saving...") : t("common.save", "Save")}
           </Button>
         </div>
       </div>

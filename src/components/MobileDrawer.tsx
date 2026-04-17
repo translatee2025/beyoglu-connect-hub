@@ -45,7 +45,7 @@ const MobileDrawer = ({ open, onClose }: { open: boolean; onClose: () => void })
         { to: "/parking", icon: Car, label: t("nav.parking", "Parking") },
         { to: "/help", icon: Wrench, label: t("nav.help", "Help") },
         { to: "/classifieds", icon: ShoppingBag, label: t("nav.classifieds", "Classifieds") },
-        { to: "#", icon: Briefcase, label: t("nav.jobs", "Jobs") },
+        { to: "/jobs", icon: Briefcase, label: t("nav.jobs", "Jobs") },
       ],
     },
   ], [t]);

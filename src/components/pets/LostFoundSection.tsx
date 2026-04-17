@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { UserName } from "@/components/shared/UserName";
 import { useSpecies } from "@/hooks/useSpeciesBreeds";
+import { useLanguage } from "@/providers/LanguageProvider";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -26,6 +27,7 @@ interface LostFoundSectionProps {
 const LostFoundSection = ({ onReport }: LostFoundSectionProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [typeFilter, setTypeFilter] = useState<"lost" | "found">("lost");
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [sort, setSort] = useState<"newest" | "nearest">("newest");
@@ -204,8 +206,8 @@ const LostFoundSection = ({ onReport }: LostFoundSectionProps) => {
           {/* Sort pills */}
           <div className="flex gap-2">
             {[
-              { key: "newest" as const, label: "En Yeni" },
-              { key: "nearest" as const, label: "Yakınımda" },
+              { key: "newest" as const, label: t("sort.newest", "Newest") },
+              { key: "nearest" as const, label: t("sort.nearby", "Nearby") },
             ].map((s) => (
               <button
                 key={s.key}

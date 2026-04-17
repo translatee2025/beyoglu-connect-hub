@@ -136,7 +136,7 @@ const NeighborHelp = () => {
                     background: isOffer ? "#DCFCE7" : "#FEF3C7",
                     color: isOffer ? "#16A34A" : "#D97706",
                   }}>
-                    {isOffer ? t("help.i_can_help", "Yardım Edebilirim") : t("help.i_need_help", "Yardıma İhtiyacım Var")}
+                    {isOffer ? t("help.i_can_help", "I Can Help") : t("help.i_need_help", "I Need Help")}
                   </span>
                   <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 12, border: "1px solid #E2E8F0", color: "#64748B" }}>
                     {post.category}
@@ -181,7 +181,7 @@ const NeighborHelp = () => {
                   style={{ background: "#E74C3C", fontSize: 12 }}
                   onClick={() => post.user_id && handleContact(post.user_id)}
                 >
-                  {t("common.contact", "İletişim")}
+                  {t("common.contact", "Contact")}
                 </button>
               </div>
             );
@@ -239,7 +239,7 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
               >
                 <Wrench className="w-7 h-7" style={{ color: "#16A34A" }} />
                 <span style={{ fontSize: 12, fontWeight: form.helpType === "offer" ? 600 : 400, color: "#1E3A5F" }}>
-                  {t("help.i_can_help", "Yardım Edebilirim")}
+                  {t("help.i_can_help", "I Can Help")}
                 </span>
               </button>
               <button
@@ -253,7 +253,7 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
               >
                 <User className="w-7 h-7" style={{ color: "#D97706" }} />
                 <span style={{ fontSize: 12, fontWeight: form.helpType === "want" ? 600 : 400, color: "#1E3A5F" }}>
-                  {t("help.i_need_help", "Yardıma İhtiyacım Var")}
+                  {t("help.i_need_help", "I Need Help")}
                 </span>
               </button>
             </div>
