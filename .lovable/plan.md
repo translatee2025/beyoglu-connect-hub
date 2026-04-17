@@ -1,79 +1,42 @@
 
-# Plan — 3-part refactor: bug fixes, options table, admin content manager
+# Plan — Comprehensive i18n + UX fixes (13 fixes)
 
-## Part 1 — Bug fixes (verification needed)
-
-**FIX 1 — PetSittingWalkingSection** ⚠️ DO NOT APPLY. Verified earlier in this conversation: the actual DB rows use `offering`/`looking`. Reversing this would break the page. Skipping per prior decision unless you confirm DB has changed.
-
-**FIX 2 — Jobs route** in `AppSidebar.tsx` + `MobileDrawer.tsx`: change `to: "#"` → `to: "/jobs"`.
-
-**FIX 3 — VenueDetail "Mesaj Gönder" button**: locate the button without onClick, wire it to `navigate(\`/messages?to=${venue.created_by_user_id}\`)`, swap label to `t("common.send_message", "Send Message")`.
-
-**FIX 4 — Turkish fallbacks → English** in:
-- `NeighborHelp.tsx` (3 strings)
-- `Families.tsx` (2 strings)
-- `EditProfile.tsx` (15 strings)
-- `Pets.tsx` sort pills (2 strings)
-- `LostFoundSection.tsx` (1 string)
-- `ShopsVetsSection.tsx` (1 string)
-
-Rule: only the fallback (2nd arg of `t()`) changes. Translation keys preserved. Real Turkish UI continues to come from the `translations` table.
-
-## Part 2 — `app_options` table + `useAppOptions` hook
-
-**DB migration** (schema only):
-- Create `public.app_options` table with columns per spec.
-- Enable RLS, add public-read + admin-manage policies.
-
-**Data seed** (via insert tool, not migration):
-- ~85 rows across groups: `rental_types`, `parking_types`, `help_categories`, `event_categories`, `group_categories`, `neighborhoods`, and 6 `classified_sub_*` groups.
-
-**New hook**: `src/hooks/useAppOptions.ts` — fetches by `group_key`, returns localized `{ value, label, emoji, metadata }[]`, 10-min staleTime.
-
-**Refactor consumers** to use the hook:
-| File | Group key |
-|---|---|
-| `Rentals.tsx` | `rental_types` |
-| `Parking.tsx` | `parking_types` |
-| `NeighborHelp.tsx` | `help_categories` |
-| `components/events/CreateEventForm.tsx` | `event_categories` |
-| `Groups.tsx` | `group_categories` |
-| `components/pets/ReportLostPetForm.tsx` | `neighborhoods` (use `metadata.lat/lng`) |
-| `Classifieds.tsx` | `classified_sub_<cat>` per parent category |
-
-Keep "All" pseudo-option hardcoded where filter UIs need it. Preserve existing query/filter logic — only the source of the option list changes.
-
-## Part 3 — Admin Content Manager
-
-**New page** `src/pages/admin/AdminContent.tsx` with two tabs:
-
-**Tab 1 — Options Manager**
-- Left: scrollable list of distinct `group_key` pills (queried from `app_options`).
-- Right: table for selected group — columns: Sort | Emoji | EN Label | TR Label | Value Key | Active | Delete.
-- Inline edit on cell click (debounced save to `app_options`).
-- "Add Option" opens inline form (value_key, label_en, label_tr, emoji, sort_order).
-- All mutations via supabase client; React Query invalidation on success.
-
-**Tab 2 — Translations Manager**
-- Filters: language pills (TR/EN/All) + search box on `translation_key`.
-- Table: Key | TR Value | EN Value | Edit action.
-- Edit opens Drawer with both TR and EN value fields → upserts both rows.
-- "Add Translation" form: key + en_value + tr_value → inserts 2 rows.
-
-**Routing & nav**:
-- Register `/admin/content` route (find the admin route block; based on `AdminLayout.tsx` it lives in `App.tsx` under `<Route path="/admin" element={<AdminLayout />}>`).
-- Add nav entry to `AdminLayout.tsx` `adminNav` array: `{ to: '/admin/content', label: 'Content', icon: FileText }`.
-
-## What I am NOT doing
-- Not touching `PetSittingWalkingSection.tsx` (would break page — confirmed earlier).
-- Not modifying any existing admin page.
-- Not touching `translations` rows beyond what the new admin UI does at runtime.
-- Not changing translation keys — only English fallback strings.
+## Approach
+Apply all 13 fixes as a single coordinated pass. Translation keys go in via SQL migration first so newly-wrapped `t()` calls render properly. Files are edited surgically — only the targeted strings/logic change.
 
 ## Order of execution
-1. DB migration (create `app_options` + RLS).
-2. Seed data via insert tool.
-3. Create `useAppOptions` hook.
-4. Apply Part 1 bug fixes (parallel file edits).
-5. Refactor consumer pages to use the hook.
-6. Build `AdminContent.tsx` + register route + nav link.
+1. **SQL migration** — insert ~50 translation key pairs (Fix 13). Uses `ON CONFLICT` upsert; safe to re-run. Requires unique constraint on `(language_code, translation_key)` — will verify and add if missing.
+2. **Read all target files** in parallel before editing.
+3. **Edit pass** — apply Fixes 1–12 (parallel where files are independent).
+
+## Fixes summary
+
+| # | File(s) | Change |
+|---|---|---|
+| 1 | NeighborHelp, LostFound, Groups, Classifieds, Rentals, Parking, Wall | Replace `timeAgo` with language-aware inline strings (`şimdi/now`, `dk/m`, `s/h`, `g/d`). Ensure `language` is destructured from `useLanguage`. |
+| 2 | Wall (ListingCard, SocialCard), Venues, Rentals, Parking, Pets PostCard, UserName | Add `onError` handler to user-content `<img>` tags — hides broken img, sets parent bg `#EFF4FF`. |
+| 3 | Pets.tsx | Wrap tab labels, "Create Post", "Tümü 🐾", EmptyState button, "İletişim" in `t()`. Verify species pills use `s.label`. |
+| 4 | Groups.tsx, GroupDetail.tsx | Wrap title, create button, group-type labels, admin badge, post-to-group, public badge, feed tab in `t()`. |
+| 5 | NeighborHelp.tsx + post form | Add `getCategoryLabel` helper using `helpCats` lookup; wrap price-type, offer/request badges, share, contact, form labels. |
+| 6 | Venues.tsx, VenueDetail.tsx | Wrap title, add-venue, send-message, list/map, save, added-by, reviews, no-reviews, hours. Map weekday keys → `weekday.<day>` translation. |
+| 7 | Events.tsx, EventDetail.tsx | Wrap title, list/map, free-only, ends, attendees, free, location. Use `MONTHS_EN` when `language==="en"`. Fix UTC time bug → `toLocaleTimeString` with explicit local timezone. Add "+ Create Event" button with auth guard. |
+| 8 | LostFound.tsx | Wrap title, report-lost/found buttons, lost/found tabs, contact button. Apply Fix 1 timeAgo. |
+| 9 | Classifieds.tsx, SortFilterBar.tsx | Wrap post-ad, message buttons. SortFilterBar already i18n'd (verified). Category badge → lookup from DB `categories` array. |
+| 10 | AdoptionForm.tsx | Replace age inputs with Select dropdowns (years 0–15 + Unknown, months 0–11 conditional). Gender → `grid-cols-2` always. Breed pills → `flex-wrap` + "Mixed" first option. Submit button → English fallback. |
+| 11 | FriendFinder.tsx / AddPetForm.tsx | Find personality/looking-for/lifestyle pill buttons; replace `text-muted-foreground` (unselected state) with `text-foreground` or `#374151`. |
+| 12 | Profile.tsx | "Member since" date → `toLocaleDateString` with `language === 'tr' ? 'tr-TR' : 'en-US'`. |
+| 13 | SQL migration | Upsert ~50 translation key pairs. |
+
+## What I am NOT doing
+- Not changing any database schema beyond the translation upserts.
+- Not touching working `t()` calls — only adding new ones / fixing fallbacks.
+- Not modifying logic in queries, RLS, or server-side code.
+- Not changing the species/breed data sources (hooks already correct).
+- Not removing the Turkish month constants — keeping them for TR mode.
+
+## Verification after apply
+- Toggle EN/TR on Wall, Pets, Venues, Events, Groups, Classifieds, LostFound, Help, Profile pages.
+- Confirm time labels show `5m`/`5dk`, `2h`/`2s`, etc.
+- Confirm event times match local clock (not UTC offset).
+- Confirm broken images don't render — show muted background instead.
+- Confirm AdoptionForm has dropdowns + wrapping breed pills + visible Mixed option.
