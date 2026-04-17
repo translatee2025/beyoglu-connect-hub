@@ -402,7 +402,7 @@ const ListingCard = ({ item, badge, timeAgo, user, setReportTarget, t }: any) =>
       </div>
       {/* CTA */}
       <button className="w-full mt-2.5 py-2 rounded-lg text-white text-xs font-medium" style={{ backgroundColor: '#E74C3C' }}>
-        {t("wall.message", "Mesaj Gönder")}
+        {t("common.send_message", "Send Message")}
       </button>
     </div>
   </div>
