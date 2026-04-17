@@ -9,10 +9,9 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useSpecies, useBreeds } from "@/hooks/useSpeciesBreeds";
+import { useAppOptions } from "@/hooks/useAppOptions";
 
 interface ReportLostPetFormProps { onSuccess: () => void; }
-
-const neighborhoods = ["Cihangir", "Galata", "Tophane", "Çukurcuma", "Firuzağa", "Asmalımescit", "İstiklal", "Taksim", "Tepebaşı", "Nişantaşı", "Beyoğlu (other)"];
 
 const ReportLostPetForm = ({ onSuccess }: ReportLostPetFormProps) => {
   const { toast } = useToast();
@@ -22,6 +21,7 @@ const ReportLostPetForm = ({ onSuccess }: ReportLostPetFormProps) => {
   const [form, setForm] = useState({ name: "", species: "dog", breed: "", gender: "", photo_url: "", lost_location: "", lost_details: "", contact_info: "" });
 
   const { speciesOptions } = useSpecies();
+  const { options: neighborhoodOptions } = useAppOptions("neighborhoods");
   const { breedOptions } = useBreeds(form.species);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,7 +31,11 @@ const ReportLostPetForm = ({ onSuccess }: ReportLostPetFormProps) => {
     if (!user) { toast({ title: t("common.login_required", "Please log in"), variant: "destructive" }); return; }
     setLoading(true);
     try {
-      const coords = getNeighborhoodCoords(form.lost_location);
+      const selected = neighborhoodOptions.find(n => n.label === form.lost_location || n.value === form.lost_location);
+      const meta = selected?.metadata as { lat?: number; lng?: number } | undefined;
+      const baseLat = meta?.lat ?? 41.0325;
+      const baseLng = meta?.lng ?? 28.9800;
+      const coords: [number, number] = [baseLat + (Math.random() - 0.5) * 0.002, baseLng + (Math.random() - 0.5) * 0.002];
       const { error } = await supabase.from("lost_found_posts").insert({
         user_id: user.id,
         type: mode === "my_pet" ? "lost" : "found",
@@ -93,7 +97,7 @@ const ReportLostPetForm = ({ onSuccess }: ReportLostPetFormProps) => {
         <div><Label>{t("pets.last_seen", "Last Seen Location *")}</Label>
           <Select value={form.lost_location} onValueChange={(v) => setForm({ ...form, lost_location: v })}>
             <SelectTrigger><SelectValue placeholder={t("pets.select_neighborhood", "Select neighborhood...")} /></SelectTrigger>
-            <SelectContent>{neighborhoods.map((n) => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
+            <SelectContent>{neighborhoodOptions.map((n) => <SelectItem key={n.value} value={n.label}>{n.label}</SelectItem>)}</SelectContent>
           </Select>
         </div>
       </div>
@@ -107,11 +111,5 @@ const ReportLostPetForm = ({ onSuccess }: ReportLostPetFormProps) => {
     </form>
   );
 };
-
-function getNeighborhoodCoords(neighborhood: string): [number, number] {
-  const coords: Record<string, [number, number]> = { "Cihangir": [41.0325, 28.9835], "Galata": [41.0256, 28.9742], "Tophane": [41.0270, 28.9810], "Çukurcuma": [41.0315, 28.9790], "Firuzağa": [41.0335, 28.9805], "Asmalımescit": [41.0305, 28.9760], "İstiklal": [41.0340, 28.9775], "Taksim": [41.0370, 28.9850], "Tepebaşı": [41.0295, 28.9755], "Nişantaşı": [41.0480, 28.9935], "Beyoğlu (other)": [41.0340, 28.9780] };
-  const base = coords[neighborhood] || [41.0325, 28.9800];
-  return [base[0] + (Math.random() - 0.5) * 0.002, base[1] + (Math.random() - 0.5) * 0.002];
-}
 
 export default ReportLostPetForm;

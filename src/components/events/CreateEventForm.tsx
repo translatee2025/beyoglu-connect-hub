@@ -13,8 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { PhotoUploader } from "@/components/shared/PhotoUploader";
-
-const CATEGORIES = ["Music", "Sports", "Food", "Art", "Networking", "Community", "Other"];
+import { useAppOptions } from "@/hooks/useAppOptions";
 
 interface Props {
   open: boolean;
@@ -26,6 +25,7 @@ export default function CreateEventForm({ open, onOpenChange }: Props) {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { options: eventCats } = useAppOptions("event_categories");
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -99,7 +99,7 @@ export default function CreateEventForm({ open, onOpenChange }: Props) {
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger><SelectValue placeholder={t("events.select_category", "Select category")} /></SelectTrigger>
               <SelectContent>
-                {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                {eventCats.map((c) => <SelectItem key={c.value} value={c.value}>{c.emoji ? `${c.emoji} ${c.label}` : c.label}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

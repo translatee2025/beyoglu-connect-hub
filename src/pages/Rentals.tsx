@@ -23,18 +23,7 @@ import { EmptyState as EmptyStateComponent } from "@/components/shared/EmptyStat
 import { DistanceLabel } from "@/components/shared/DistanceLabel";
 import SortFilterBar, { type SortOption } from "@/components/shared/SortFilterBar";
 import { parsePhotos } from "@/lib/parsePhotos";
-
-const aptCategoryKeys = [
-  { key: "All", tKey: "filter.all", fallback: "All" },
-  { key: "1+0 Studio", tKey: "rental.type.studio", fallback: "1+0 Studio" },
-  { key: "1+1", tKey: "rental.type.1_1", fallback: "1+1" },
-  { key: "2+1", tKey: "rental.type.2_1", fallback: "2+1" },
-  { key: "3+1", tKey: "rental.type.3_1", fallback: "3+1" },
-  { key: "4+1", tKey: "rental.type.4_1", fallback: "4+1" },
-  { key: "Villa", tKey: "rental.type.villa", fallback: "Villa" },
-  { key: "Shared Room", tKey: "rental.type.shared_room", fallback: "Shared Room" },
-  { key: "Office", tKey: "rental.type.office", fallback: "Office" },
-];
+import { useAppOptions } from "@/hooks/useAppOptions";
 
 const parsePrice = (p: string | null) => {
   if (!p) return 0;
@@ -57,6 +46,11 @@ const Rentals = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { options: rentalTypes } = useAppOptions("rental_types");
+  const aptCategoryKeys = useMemo(() => [
+    { key: "All", label: t("filter.all", "All") },
+    ...rentalTypes.map((o) => ({ key: o.value, label: o.label })),
+  ], [rentalTypes, t]);
 
   const handleContact = (userId: string) => {
     if (!user) { navigate("/auth"); return; }
@@ -207,7 +201,7 @@ const Rentals = () => {
                 </Dialog>
               </div>
               <div className="flex flex-wrap gap-2 mb-4">
-                {aptCategoryKeys.map((cat) => <Button key={cat.key} variant={category === cat.key ? "default" : "outline"} size="sm" onClick={() => setCategory(cat.key)}>{t(cat.tKey, cat.fallback)}</Button>)}
+                {aptCategoryKeys.map((cat) => <Button key={cat.key} variant={category === cat.key ? "default" : "outline"} size="sm" onClick={() => setCategory(cat.key)}>{cat.label}</Button>)}
               </div>
               <SortFilterBar
                 sort={sort} onSortChange={setSort}
@@ -241,7 +235,7 @@ const Rentals = () => {
                 </Dialog>
               </div>
               <div className="flex flex-wrap gap-2 mb-4">
-                {aptCategoryKeys.map((cat) => <Button key={cat.key} variant={category === cat.key ? "default" : "outline"} size="sm" onClick={() => setCategory(cat.key)}>{t(cat.tKey, cat.fallback)}</Button>)}
+                {aptCategoryKeys.map((cat) => <Button key={cat.key} variant={category === cat.key ? "default" : "outline"} size="sm" onClick={() => setCategory(cat.key)}>{cat.label}</Button>)}
               </div>
               <SortFilterBar
                 sort={sort} onSortChange={setSort}
@@ -275,6 +269,7 @@ const RentalPostForm = ({ mode, onSuccess }: { mode: "looking" | "offer"; onSucc
   const [photos, setPhotos] = useState<string[]>([]);
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { options: rentalTypes } = useAppOptions("rental_types");
   const mutation = useMutation({
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -310,7 +305,7 @@ const RentalPostForm = ({ mode, onSuccess }: { mode: "looking" | "offer"; onSucc
           <div><Label>{t("common.category", "Category")}</Label>
             <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
               <SelectTrigger><SelectValue placeholder={t("common.select_type", "Select type")} /></SelectTrigger>
-              <SelectContent>{aptCategoryKeys.filter(c => c.key !== "All").map(c => <SelectItem key={c.key} value={c.key}>{t(c.tKey, c.fallback)}</SelectItem>)}</SelectContent>
+              <SelectContent>{rentalTypes.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div><Label>{mode === "looking" ? t("rentals.budget", "Budget (₺)") : t("rentals.price", "Price (₺)")}</Label><Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="15.000" /></div>

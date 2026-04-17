@@ -216,8 +216,15 @@ const VenueDetail = () => {
 
           {/* Action buttons */}
           <div className="flex gap-2 mb-3">
-            <button className="flex-1 py-2 rounded-lg text-white text-xs font-medium" style={{ backgroundColor: "#E74C3C" }}>
-              Mesaj Gönder
+            <button
+              className="flex-1 py-2 rounded-lg text-white text-xs font-medium"
+              style={{ backgroundColor: "#E74C3C" }}
+              onClick={() => {
+                if (!user) { navigate("/auth"); return; }
+                if (venue?.created_by_user_id) navigate(`/messages?to=${venue.created_by_user_id}`);
+              }}
+            >
+              {t("common.send_message", "Send Message")}
             </button>
             <button className="py-2 px-4 rounded-lg text-xs font-medium" style={{ border: "1px solid #1E3A5F", color: "#1E3A5F" }}>
               <Bookmark className="w-3.5 h-3.5 inline mr-1" />Kaydet

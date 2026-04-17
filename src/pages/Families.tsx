@@ -16,7 +16,7 @@ const Families = () => {
         className="text-2xl font-bold mb-3"
         style={{ color: "#1E3A5F" }}
       >
-        {t("families.title", "Aileler")}
+        {t("families.title", "Families")}
       </h1>
       <p
         className="text-sm mb-8"
@@ -24,7 +24,7 @@ const Families = () => {
       >
         {t(
           "families.coming_soon",
-          "Aileler bölümü çok yakında. Mahalledeki aileleri bul, çocuk aktiviteleri organize et."
+          "Families section coming soon. Find families in your neighborhood, organize activities for kids."
         )}
       </p>
       <button

@@ -148,8 +148,8 @@ const Pets = () => {
               {/* Sort pills */}
               <div className="flex gap-2 mb-4">
                 {([
-                  { key: "newest" as const, label: "En Yeni" },
-                  { key: "nearest" as const, label: "Yakınımda" },
+                  { key: "newest" as const, label: t("sort.newest", "Newest") },
+                  { key: "nearest" as const, label: t("sort.nearby", "Nearby") },
                 ]).map((s) => (
                   <button key={s.key} onClick={() => setAdoptionSort(s.key)} className="px-3 py-1 rounded-full text-xs font-medium transition-colors" style={pillStyle(adoptionSort === s.key)}>
                     {s.label}

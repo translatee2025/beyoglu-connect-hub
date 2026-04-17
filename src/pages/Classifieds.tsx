@@ -18,6 +18,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { DistanceLabel } from "@/components/shared/DistanceLabel";
 import SortFilterBar, { type SortOption } from "@/components/shared/SortFilterBar";
 import { parsePhotos } from "@/lib/parsePhotos";
+import { useAppOptions } from "@/hooks/useAppOptions";
 
 const categoryMeta: Record<string, { bg: string; emoji: string }> = {
   Electronics: { bg: "#EFF4FF", emoji: "📱" },
@@ -27,15 +28,6 @@ const categoryMeta: Record<string, { bg: string; emoji: string }> = {
   Vehicles: { bg: "#F1F5F9", emoji: "🚗" },
   Services: { bg: "#E0F2FE", emoji: "🛠️" },
   Other: { bg: "#F9FAFB", emoji: "📦" },
-};
-
-const subCategories: Record<string, string[]> = {
-  Electronics: ["Telefon", "Bilgisayar", "Tablet", "TV", "Kamera", "Oyun", "Diğer"],
-  Furniture: ["Koltuk", "Masa", "Yatak", "Dolap", "Raf", "Diğer"],
-  Clothing: ["Kadın", "Erkek", "Çocuk", "Ayakkabı", "Çanta", "Diğer"],
-  Books: ["Roman", "Ders Kitabı", "Dergi", "Çizgi Roman", "Diğer"],
-  Vehicles: ["Araba", "Motosiklet", "Bisiklet", "Yedek Parça", "Diğer"],
-  Services: ["Temizlik", "Taşıma", "Kurulum", "Diğer"],
 };
 
 const parsePrice = (p: string | null) => {
@@ -133,7 +125,9 @@ const Classifieds = () => {
     setSubCategory(null);
   };
 
-  const currentSubCats = category !== "All" && category !== "Other" ? subCategories[category] || [] : [];
+  const subGroupKey = category !== "All" && category !== "Other" ? `classified_sub_${category.toLowerCase()}` : "";
+  const { options: subOptions } = useAppOptions(subGroupKey);
+  const currentSubCats = category !== "All" && category !== "Other" ? subOptions.map(o => o.label) : [];
 
   const getMeta = (cat: string | null) => categoryMeta[cat || "Other"] || categoryMeta.Other;
 

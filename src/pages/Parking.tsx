@@ -23,15 +23,8 @@ import { EmptyState as EmptyStateComponent } from "@/components/shared/EmptyStat
 import { DistanceLabel } from "@/components/shared/DistanceLabel";
 import SortFilterBar, { type SortOption } from "@/components/shared/SortFilterBar";
 import { parsePhotos } from "@/lib/parsePhotos";
-
-const parkingTypeKeys = [
-  { key: "All", tKey: "filter.all", fallback: "All" },
-  { key: "Garage", tKey: "parking.type.garage", fallback: "Garage" },
-  { key: "Open Air", tKey: "parking.type.open_air", fallback: "Open Air" },
-  { key: "Street", tKey: "parking.type.street", fallback: "Street" },
-  { key: "Underground", tKey: "parking.type.underground", fallback: "Underground" },
-  { key: "Valet", tKey: "parking.type.valet", fallback: "Valet" },
-];
+import { useAppOptions } from "@/hooks/useAppOptions";
+import { useMemo } from "react";
 
 const parsePrice = (p: string | null) => {
   if (!p) return 0;
@@ -53,6 +46,11 @@ const Parking = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { options: parkingTypes } = useAppOptions("parking_types");
+  const parkingTypeKeys = useMemo(() => [
+    { key: "All", label: t("filter.all", "All") },
+    ...parkingTypes.map((o) => ({ key: o.value, label: o.label })),
+  ], [parkingTypes, t]);
 
   const handleContact = (userId: string) => {
     if (!user) { navigate("/auth"); return; }
@@ -202,7 +200,7 @@ const Parking = () => {
                 </Dialog>
               </div>
               <div className="flex flex-wrap gap-2 mb-4">
-                {parkingTypeKeys.map((cat) => <Button key={cat.key} variant={category === cat.key ? "default" : "outline"} size="sm" onClick={() => setCategory(cat.key)}>{t(cat.tKey, cat.fallback)}</Button>)}
+                {parkingTypeKeys.map((cat) => <Button key={cat.key} variant={category === cat.key ? "default" : "outline"} size="sm" onClick={() => setCategory(cat.key)}>{cat.label}</Button>)}
               </div>
               <SortFilterBar
                 sort={sort} onSortChange={setSort}
@@ -230,7 +228,7 @@ const Parking = () => {
                 </Dialog>
               </div>
               <div className="flex flex-wrap gap-2 mb-4">
-                {parkingTypeKeys.map((cat) => <Button key={cat.key} variant={category === cat.key ? "default" : "outline"} size="sm" onClick={() => setCategory(cat.key)}>{t(cat.tKey, cat.fallback)}</Button>)}
+                {parkingTypeKeys.map((cat) => <Button key={cat.key} variant={category === cat.key ? "default" : "outline"} size="sm" onClick={() => setCategory(cat.key)}>{cat.label}</Button>)}
               </div>
               <SortFilterBar
                 sort={sort} onSortChange={setSort}
@@ -264,6 +262,7 @@ const ParkingPostForm = ({ mode, onSuccess }: { mode: "looking" | "offer"; onSuc
   const [photos, setPhotos] = useState<string[]>([]);
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { options: parkingTypes } = useAppOptions("parking_types");
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -292,7 +291,7 @@ const ParkingPostForm = ({ mode, onSuccess }: { mode: "looking" | "offer"; onSuc
           <div><Label>{t("parking.type_label", "Parking Type")}</Label>
             <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
               <SelectTrigger><SelectValue placeholder={t("common.select_type", "Select type")} /></SelectTrigger>
-              <SelectContent>{parkingTypeKeys.filter(c => c.key !== "All").map(c => <SelectItem key={c.key} value={c.key}>{t(c.tKey, c.fallback)}</SelectItem>)}</SelectContent>
+              <SelectContent>{parkingTypes.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div><Label>{mode === "looking" ? t("common.budget_monthly", "Budget (₺/mo)") : t("common.price_monthly", "Price (₺/mo)")}</Label><Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="2.000" /></div>

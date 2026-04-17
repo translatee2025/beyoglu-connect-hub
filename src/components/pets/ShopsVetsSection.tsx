@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { useLocation as useLocationCtx } from "@/providers/LocationProvider";
+import { useLanguage } from "@/providers/LanguageProvider";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -40,6 +41,7 @@ const hardcodedVenues: ShopVetItem[] = [
 ];
 
 const ShopsVetsSection = () => {
+  const { t } = useLanguage();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"newest" | "nearest" | "popular">("newest");
   const [view, setView] = useState<"list" | "map">("list");
@@ -128,9 +130,9 @@ const ShopsVetsSection = () => {
       {/* Sort + view toggle */}
       <div className="flex items-center gap-2 flex-wrap">
         {([
-          { key: "newest" as const, label: "En Yeni" },
-          { key: "nearest" as const, label: "Yakınımda" },
-          { key: "popular" as const, label: "En Popüler" },
+          { key: "newest" as const, label: t("sort.newest", "Newest") },
+          { key: "nearest" as const, label: t("sort.nearby", "Nearby") },
+          { key: "popular" as const, label: t("sort.popular", "Popular") },
         ]).map((s) => (
           <button
             key={s.key}

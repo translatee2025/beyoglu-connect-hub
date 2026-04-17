@@ -15,25 +15,12 @@ import { useNavigate } from "react-router-dom";
 import { SkeletonGrid } from "@/components/shared/SkeletonCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 
-const CATEGORY_EMOJI: Record<string, string> = {
-  community: "🏘️", "food-dining": "🍽️", sports: "⚽", pets: "🐾",
-  "arts-culture": "🎨", education: "📚", business: "💼", family: "👨‍👩‍👧", other: "🌟",
-};
+import { useAppOptions } from "@/hooks/useAppOptions";
+
 const CATEGORY_COLORS: Record<string, string> = {
   community: "#E0F2FE", "food-dining": "#FEF3C7", sports: "#DCFCE7", pets: "#FCE7F3",
   "arts-culture": "#EDE9FE", education: "#DBEAFE", business: "#F1F5F9", family: "#FFF7ED", other: "#EFF4FF",
 };
-
-const CATEGORIES = [
-  { key: "community", label: "Community", emoji: "🏘️" },
-  { key: "food-dining", label: "Food & Dining", emoji: "🍽️" },
-  { key: "sports", label: "Sports", emoji: "⚽" },
-  { key: "pets", label: "Pets", emoji: "🐾" },
-  { key: "arts-culture", label: "Arts & Culture", emoji: "🎨" },
-  { key: "education", label: "Education", emoji: "📚" },
-  { key: "business", label: "Business", emoji: "💼" },
-  { key: "other", label: "Other", emoji: "🌟" },
-];
 
 // GROUP_TYPES moved inside component to access t()
 
@@ -54,6 +41,9 @@ const Groups = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { options: groupCats } = useAppOptions("group_categories");
+  const CATEGORIES = useMemo(() => groupCats.map((o) => ({ key: o.value, label: o.label, emoji: o.emoji || "🌟" })), [groupCats]);
+  const CATEGORY_EMOJI: Record<string, string> = useMemo(() => Object.fromEntries(groupCats.map((o) => [o.value, o.emoji || "🌟"])), [groupCats]);
 
   const GROUP_TYPES = [
     { key: "public", label: t("groups.type.public", "Public"), desc: t("groups.type.public_desc", "Anyone can join"), icon: GlobeIcon, color: "#16A34A" },
@@ -296,6 +286,8 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { options: groupCats } = useAppOptions("group_categories");
+  const CATEGORIES = useMemo(() => groupCats.map((o) => ({ key: o.value, label: o.label, emoji: o.emoji || "🌟" })), [groupCats]);
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 

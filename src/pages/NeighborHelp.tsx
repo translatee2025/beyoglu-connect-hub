@@ -19,22 +19,8 @@ import { useLocation } from "@/providers/LocationProvider";
 import { SkeletonList } from "@/components/shared/SkeletonCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 
-const helpCategoryKeys = [
-  { key: "All", tKey: "filter.all", fallback: "All" },
-  { key: "Plumbing & Bathroom", tKey: "help.category.plumbing", fallback: "Plumbing & Bathroom" },
-  { key: "Painting", tKey: "help.category.painting", fallback: "Painting" },
-  { key: "Electrical", tKey: "help.category.electrical", fallback: "Electrical" },
-  { key: "Assembly & Hanging", tKey: "help.category.assembly", fallback: "Assembly & Hanging" },
-  { key: "Cleaning", tKey: "help.category.cleaning", fallback: "Cleaning" },
-  { key: "Moving", tKey: "help.category.moving", fallback: "Moving" },
-  { key: "Computer Repair", tKey: "help.category.computer", fallback: "Computer Repair" },
-  { key: "Drilling & Mounting", tKey: "help.category.drilling", fallback: "Drilling & Mounting" },
-  { key: "Car Wash", tKey: "help.category.carwash", fallback: "Car Wash" },
-  { key: "Ironing", tKey: "help.category.ironing", fallback: "Ironing" },
-  { key: "Babysitting", tKey: "help.category.babysitting", fallback: "Babysitting" },
-  { key: "Gardening", tKey: "help.category.gardening", fallback: "Gardening" },
-  { key: "Mixed / Other", tKey: "help.category.other", fallback: "Mixed / Other" },
-];
+import { useAppOptions } from "@/hooks/useAppOptions";
+import { useMemo } from "react";
 
 // timeAgo is defined inside the component to access t()
 
@@ -47,6 +33,11 @@ const NeighborHelp = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { getDistance } = useLocation();
+  const { options: helpCats } = useAppOptions("help_categories");
+  const helpCategoryKeys = useMemo(() => [
+    { key: "All", label: t("filter.all", "All") },
+    ...helpCats.map((o) => ({ key: o.value, label: o.label })),
+  ], [helpCats, t]);
 
   const timeAgo = (date: string) => {
     const diff = Date.now() - new Date(date).getTime();
@@ -112,7 +103,7 @@ const NeighborHelp = () => {
               border: category === cat.key ? "none" : "1px solid #E2E8F0",
             }}
           >
-            {t(cat.tKey, cat.fallback)}
+            {cat.label}
           </button>
         ))}
       </div>
@@ -136,7 +127,7 @@ const NeighborHelp = () => {
                     background: isOffer ? "#DCFCE7" : "#FEF3C7",
                     color: isOffer ? "#16A34A" : "#D97706",
                   }}>
-                    {isOffer ? t("help.i_can_help", "Yardım Edebilirim") : t("help.i_need_help", "Yardıma İhtiyacım Var")}
+                    {isOffer ? t("help.i_can_help", "I Can Help") : t("help.i_need_help", "I Need Help")}
                   </span>
                   <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 12, border: "1px solid #E2E8F0", color: "#64748B" }}>
                     {post.category}
@@ -181,7 +172,7 @@ const NeighborHelp = () => {
                   style={{ background: "#E74C3C", fontSize: 12 }}
                   onClick={() => post.user_id && handleContact(post.user_id)}
                 >
-                  {t("common.contact", "İletişim")}
+                  {t("common.contact", "Contact")}
                 </button>
               </div>
             );
@@ -195,10 +186,11 @@ const NeighborHelp = () => {
 // ─── Help Post Form ───
 const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({ title: "", description: "", category: "Mixed / Other", helpType: "offer", neighborhood: "", phone: "", whatsapp: "", price: "", priceType: "fixed" });
+  const [form, setForm] = useState({ title: "", description: "", category: "other", helpType: "offer", neighborhood: "", phone: "", whatsapp: "", price: "", priceType: "fixed" });
   const [photos, setPhotos] = useState<string[]>([]);
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { options: helpCats } = useAppOptions("help_categories");
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -239,7 +231,7 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
               >
                 <Wrench className="w-7 h-7" style={{ color: "#16A34A" }} />
                 <span style={{ fontSize: 12, fontWeight: form.helpType === "offer" ? 600 : 400, color: "#1E3A5F" }}>
-                  {t("help.i_can_help", "Yardım Edebilirim")}
+                  {t("help.i_can_help", "I Can Help")}
                 </span>
               </button>
               <button
@@ -253,7 +245,7 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
               >
                 <User className="w-7 h-7" style={{ color: "#D97706" }} />
                 <span style={{ fontSize: 12, fontWeight: form.helpType === "want" ? 600 : 400, color: "#1E3A5F" }}>
-                  {t("help.i_need_help", "Yardıma İhtiyacım Var")}
+                  {t("help.i_need_help", "I Need Help")}
                 </span>
               </button>
             </div>
@@ -263,7 +255,7 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
             <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.category", "Category")}</Label>
             <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
               <SelectTrigger style={{ fontSize: 13 }}><SelectValue /></SelectTrigger>
-              <SelectContent>{helpCategoryKeys.filter(c => c.key !== "All").map(c => <SelectItem key={c.key} value={c.key}>{t(c.tKey, c.fallback)}</SelectItem>)}</SelectContent>
+              <SelectContent>{helpCats.map(c => <SelectItem key={c.value} value={c.value}>{c.emoji ? `${c.emoji} ${c.label}` : c.label}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div>
