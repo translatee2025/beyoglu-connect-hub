@@ -1,34 +1,27 @@
 
+## Findings
 
-# Plan — fix language toggle gaps + verify "feed empty" claim
+From the schema dump above, `comments` table **already exists** with correct RLS:
+- `Anyone can view comments` (SELECT, public, USING true) ✓
+- `Auth users can create comments` (INSERT) ✓
+- `Users can delete own comments` (DELETE) ✓
 
-## Root cause analysis
+So the 503 is **not** an RLS or missing-table issue. No SQL changes needed.
 
-**Language toggle**: works correctly — DB has `en` + `tr` translations for the filter chips (`Rentals/Kiralık`, `Events/Etkinlikler`, `Community/Topluluk`) and the photo button (`Add Photos / Fotoğraf Ekle`). The UI labels DO swap. What does NOT swap:
-1. **Composer action chips** in `Wall.tsx` lines 299–307 — `📸 Photo / 📍 Location / 🏠 Rental` are **hardcoded English**, no `t()` call.
-2. The `+ Fotoğraf Ekle` label — already wrapped in `t()` and has both translations. It will toggle correctly. The screenshot just shows TR because TR is the active language (toggle button shows "TR", which is the *current* state).
-
-**"Posts not visible"**: Verified DB-side — wall_posts (30 in Beyoğlu), classifieds (20), venues (18 with valid joins), events (5 upcoming). RLS allows public read on all four. The skeletons in your screenshots are normal loading state. Most likely you captured the screenshot during initial load. **There is no real "missing posts" bug I can reproduce from the code or DB.** If posts are *truly* never appearing for you after waiting, it's a runtime/network issue I'd need console logs to diagnose.
+The defensive code change in `CommentsSection.tsx` is still worth doing — it will prevent any transient comments query failure from freezing feed cards.
 
 ## Changes (one file)
 
-**`src/pages/Wall.tsx`** — wrap the three hardcoded composer chips with `t()`:
-- `📸 Photo` → `t("wall.composer.chip_photo", "Photo")`
-- `📍 Location` → `t("wall.composer.chip_location", "Location")`
-- `🏠 Rental` → `t("wall.composer.chip_rental", "Rental")`
+**`src/components/shared/CommentsSection.tsx`** — add try/catch + error handling to both `queryFn`s:
 
-## DB migration
+1. `comments` query (line ~40): wrap in try/catch, return `[]` on error/exception.
+2. `comment-count` query (line ~80): wrap in try/catch, return `0` on error/exception.
 
-Insert 6 translation rows (3 keys × 2 languages):
-```
-wall.composer.chip_photo    → en: "Photo"     tr: "Fotoğraf"
-wall.composer.chip_location → en: "Location"  tr: "Konum"
-wall.composer.chip_rental   → en: "Rental"    tr: "Kiralık"
-```
+Both queries currently throw on error which propagates into React Query's error state. With graceful fallback the cards render normally even if comments are temporarily unreachable.
 
-## What I am NOT doing
-- Not touching the language toggle itself — it works.
-- Not changing `PhotoUploader` — already i18n'd correctly.
-- Not changing the filter bar — already i18n'd correctly.
-- Not "fixing" the empty feed — feed queries are healthy. If you still see no posts after the page fully loads, send me a console log (F12 → Console tab, copy any red errors) and I'll diagnose from there.
+## Not doing
+- No SQL migration. Table + policies are already correct per the schema dump.
+- No changes to any other file.
 
+## Note to user
+The 503 you're seeing is most likely a transient Supabase issue or a network blip, not a schema problem. The code hardening below makes the feed resilient to it. If 503s persist after this change, share a console log entry showing the exact failing request URL so I can dig further.
