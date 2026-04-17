@@ -17,6 +17,7 @@ import { SkeletonGrid } from "@/components/shared/SkeletonCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DistanceLabel } from "@/components/shared/DistanceLabel";
 import SortFilterBar, { type SortOption } from "@/components/shared/SortFilterBar";
+import { parsePhotos } from "@/lib/parsePhotos";
 
 const categoryMeta: Record<string, { bg: string; emoji: string }> = {
   Electronics: { bg: "#EFF4FF", emoji: "📱" },
@@ -137,7 +138,7 @@ const Classifieds = () => {
   const getMeta = (cat: string | null) => categoryMeta[cat || "Other"] || categoryMeta.Other;
 
   const ClassifiedCard = ({ item }: { item: any }) => {
-    const photo = item.photos && item.photos.length > 0 ? item.photos[0] : null;
+    const photo = parsePhotos(item.photos)[0] || null;
     const meta = getMeta(item.category);
 
     return (

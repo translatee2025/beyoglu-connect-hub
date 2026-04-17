@@ -22,6 +22,7 @@ import { SkeletonGrid } from "@/components/shared/SkeletonCard";
 import { EmptyState as EmptyStateComponent } from "@/components/shared/EmptyState";
 import { DistanceLabel } from "@/components/shared/DistanceLabel";
 import SortFilterBar, { type SortOption } from "@/components/shared/SortFilterBar";
+import { parsePhotos } from "@/lib/parsePhotos";
 
 const parkingTypeKeys = [
   { key: "All", tKey: "filter.all", fallback: "All" },
@@ -115,7 +116,7 @@ const Parking = () => {
   const mapPins = (items: any[]) => items.filter((i) => i.lat && i.lng).map((i) => ({ lat: i.lat, lng: i.lng, title: i.title, badge: i.category, extra: i.price ? `₺${i.price}/ay` : undefined }));
 
   const ParkingCard = ({ item }: { item: any }) => {
-    const photo = Array.isArray(item.photos) && item.photos.length > 0 ? item.photos[0] : null;
+    const photo = parsePhotos(item.photos)[0] || null;
     const [imgError, setImgError] = useState(false);
     return (
     <div style={{ borderRadius: 12, overflow: "hidden", backgroundColor: "white", border: "1px solid #E2EBFC" }}>

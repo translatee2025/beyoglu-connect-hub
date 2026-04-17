@@ -22,6 +22,7 @@ import { SkeletonGrid } from "@/components/shared/SkeletonCard";
 import { EmptyState as EmptyStateComponent } from "@/components/shared/EmptyState";
 import { DistanceLabel } from "@/components/shared/DistanceLabel";
 import SortFilterBar, { type SortOption } from "@/components/shared/SortFilterBar";
+import { parsePhotos } from "@/lib/parsePhotos";
 
 const aptCategoryKeys = [
   { key: "All", tKey: "filter.all", fallback: "All" },
@@ -119,7 +120,7 @@ const Rentals = () => {
   const mapPins = (items: any[]) => items.filter((i) => i.lat && i.lng).map((i) => ({ lat: i.lat, lng: i.lng, title: i.title, badge: i.category, extra: i.price ? `${i.currency || "₺"}${i.price}` : undefined }));
 
   const RentalCard = ({ item }: { item: any }) => {
-    const photo = Array.isArray(item.photos) && item.photos.length > 0 ? item.photos[0] : null;
+    const photo = parsePhotos(item.photos)[0] || null;
     const [imgError, setImgError] = useState(false);
     const price = item.price;
     return (
