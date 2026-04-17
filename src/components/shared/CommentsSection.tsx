@@ -36,31 +36,36 @@ export function CommentsSection({ entityType, entityId }: CommentsProps) {
   const { data: comments = [], refetch } = useQuery({
     queryKey: ["comments", entityType, entityId],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("comments")
-        .select("id, content, created_at, user_id")
-        .eq("entity_type", entityType)
-        .eq("entity_id", entityId)
-        .order("created_at", { ascending: true })
-        .limit(100);
+      try {
+        const { data, error } = await supabase
+          .from("comments")
+          .select("id, content, created_at, user_id")
+          .eq("entity_type", entityType)
+          .eq("entity_id", entityId)
+          .order("created_at", { ascending: true })
+          .limit(100);
 
-      if (!data) return [];
+        if (error || !data) return [];
 
-      // Hydrate profiles
-      const userIds = [...new Set(data.map((c) => c.user_id))];
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, display_name, avatar_url")
-        .in("user_id", userIds);
+        // Hydrate profiles
+        const userIds = [...new Set(data.map((c) => c.user_id))];
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, display_name, avatar_url")
+          .in("user_id", userIds);
 
-      const profileMap = new Map((profiles || []).map((p) => [p.user_id, p]));
+        const profileMap = new Map((profiles || []).map((p) => [p.user_id, p]));
 
-      return data.map((c) => ({
-        ...c,
-        profile: profileMap.get(c.user_id) || null,
-      })) as Comment[];
+        return data.map((c) => ({
+          ...c,
+          profile: profileMap.get(c.user_id) || null,
+        })) as Comment[];
+      } catch {
+        return [];
+      }
     },
     enabled: showComments,
+    retry: false,
   });
 
   // Realtime subscription
@@ -81,13 +86,19 @@ export function CommentsSection({ entityType, entityId }: CommentsProps) {
   const { data: commentCount = 0 } = useQuery({
     queryKey: ["comment-count", entityType, entityId],
     queryFn: async () => {
-      const { count } = await supabase
-        .from("comments")
-        .select("*", { count: "exact", head: true })
-        .eq("entity_type", entityType)
-        .eq("entity_id", entityId);
-      return count || 0;
+      try {
+        const { count, error } = await supabase
+          .from("comments")
+          .select("*", { count: "exact", head: true })
+          .eq("entity_type", entityType)
+          .eq("entity_id", entityId);
+        if (error) return 0;
+        return count || 0;
+      } catch {
+        return 0;
+      }
     },
+    retry: false,
   });
 
   const addComment = useMutation({
