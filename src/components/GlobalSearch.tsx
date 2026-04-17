@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, X, Store, Calendar, MessageSquare, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface SearchResult {
   type: "venue" | "event" | "post" | "person";
@@ -13,9 +14,19 @@ interface SearchResult {
 }
 
 const ICONS: Record<string, any> = { venue: Store, event: Calendar, post: MessageSquare, person: User };
-const LABELS: Record<string, string> = { venue: "Mekanlar", event: "Etkinlikler", post: "Gönderiler", person: "Kişiler" };
+
+const LABEL_MAP: Record<string, { en: string; tr: string }> = {
+  venue: { en: "Venues", tr: "Mekanlar" },
+  event: { en: "Events", tr: "Etkinlikler" },
+  post: { en: "Posts", tr: "Gönderiler" },
+  person: { en: "People", tr: "Kişiler" },
+};
+const makeGetLabel = (language: string) => (type: string) =>
+  language === "tr" ? (LABEL_MAP[type]?.tr || type) : (LABEL_MAP[type]?.en || type);
 
 export function GlobalSearchDesktop() {
+  const { language } = useLanguage();
+  const getLabel = makeGetLabel(language);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [open, setOpen] = useState(false);
@@ -94,7 +105,7 @@ export function GlobalSearchDesktop() {
               return (
                 <div key={type}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8", padding: "8px 12px 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                    {LABELS[type]}
+                    {getLabel(type)}
                   </div>
                   {items.map(item => (
                     <button
@@ -120,6 +131,8 @@ export function GlobalSearchDesktop() {
 }
 
 export function GlobalSearchMobile() {
+  const { language } = useLanguage();
+  const getLabel = makeGetLabel(language);
   const [expanded, setExpanded] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -197,7 +210,7 @@ export function GlobalSearchMobile() {
             return (
               <div key={type}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8", padding: "12px 16px 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  {LABELS[type]}
+                  {getLabel(type)}
                 </div>
                 {items.map(item => (
                   <button

@@ -134,7 +134,7 @@ const Rentals = () => {
               backgroundColor: "white", color: "#1E3A5F", fontWeight: 700, fontSize: 13,
               borderRadius: "4px 0 12px 0", padding: "4px 10px",
             }}>
-              {price} ₺/ay
+              {price} {language === "tr" ? "₺/ay" : "₺/mo"}
             </div>
           )}
         </div>

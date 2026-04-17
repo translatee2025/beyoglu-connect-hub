@@ -444,7 +444,7 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
         onClick={() => { if (!user) { navigate("/auth"); return; } mutation.mutate(); }}
         style={{ background: "#1E3A5F", color: "#fff", border: "none" }}
       >
-        {mutation.isPending ? "Oluşturuluyor..." : "Grup Oluştur"}
+        {mutation.isPending ? t("common.creating", "Creating...") : t("groups.create", "Create Group")}
       </Button>
     </div>
   );

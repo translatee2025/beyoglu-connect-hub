@@ -138,7 +138,7 @@ const Parking = () => {
 
       {item.price && (
         <div style={{ fontSize: 16, fontWeight: 700, color: "#1E3A5F", marginBottom: 6 }}>
-          {item.price} ₺/{t("common.month_short", "mo")}
+          {item.price} {language === "tr" ? "₺/ay" : "₺/mo"}
         </div>
       )}
 
