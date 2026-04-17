@@ -58,13 +58,26 @@ const Pets = () => {
   const lostPets = pets.filter((p: any) => p.is_lost);
   const lostFoundPosts = petPosts.filter((p: any) => p.post_type === "lost" || p.post_type === "found");
 
+  // Adoption listings come from pet_profiles. Map fields so PostCard renders correctly.
   const adoptionPosts = useMemo(() => {
-    let list = petPosts.filter((p: any) => p.post_type === "adoption");
-    if (speciesFilter !== "all") list = list.filter((p: any) => p.species === speciesFilter);
-    if (breedFilter !== "all") list = list.filter((p: any) => p.breed === breedFilter);
-    if (adoptionSort === "newest") list.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    let list: any[] = (pets as any[]).map((p: any) => ({
+      ...p,
+      title: p.name,
+      description: p.bio,
+      address: p.neighborhood,
+      user_id: p.owner_id,
+    }));
+    if (speciesFilter !== "all") {
+      list = list.filter((p: any) => p.species === speciesFilter || p.species_id === speciesFilter);
+    }
+    if (breedFilter !== "all") {
+      list = list.filter((p: any) => p.breed === breedFilter);
+    }
+    if (adoptionSort === "newest") {
+      list.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }
     return list;
-  }, [petPosts, speciesFilter, breedFilter, adoptionSort]);
+  }, [pets, speciesFilter, breedFilter, adoptionSort]);
 
   const handleRefresh = () => { refetchPets(); refetchPosts(); };
 

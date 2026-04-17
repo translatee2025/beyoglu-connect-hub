@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft } from "lucide-react";
 import { PhotoUploader } from "@/components/shared/PhotoUploader";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSpecies, useBreeds } from "@/hooks/useSpeciesBreeds";
@@ -24,6 +24,7 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
   const [photos, setPhotos] = useState<string[]>([]);
   const { toast } = useToast();
   const { t } = useLanguage();
+  const queryClient = useQueryClient();
   const { speciesOptions, isLoading: speciesLoading } = useSpecies();
   const { breedOptions, isLoading: breedsLoading } = useBreeds(form.species);
 
@@ -33,29 +34,34 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error(t("pets.login_required", "Please log in"));
-      const { error } = await supabase.from("pet_posts").insert({
-        user_id: user.id,
-        post_type: "adoption" as any,
-        title: form.title,
-        species: form.species,
-        breed: form.breed,
-        age_text: form.age_years ? `${form.age_years}y ${form.age_months || 0}m` : undefined,
+      const cleanPhotos = photos.filter(Boolean);
+      // species column on pet_profiles is an enum (e.g. "dog"); form.species may be a UUID id from speciesOptions.
+      // Pass through as-is — DB will accept enum values; UUID values would error, but speciesOptions in this form uses enum strings.
+      const insertPayload: any = {
+        owner_id: user.id,
+        name: form.title,
+        breed: form.breed || null,
         age_years: form.age_years ? parseInt(form.age_years) : null,
         age_months: form.age_months ? parseInt(form.age_months) : null,
-        gender: form.gender,
-        size: form.size,
-        energy_level: form.energy_level,
-        description: form.description,
-        address: form.address,
-        photos: photos.filter(Boolean),
-        is_vaccinated: form.is_vaccinated,
+        gender: form.gender || null,
+        size: form.size || null,
+        energy_level: form.energy_level || null,
+        bio: form.description || null,
+        neighborhood: form.address || null,
+        photos: cleanPhotos,
+        photo_url: cleanPhotos[0] || null,
         is_neutered: form.is_neutered,
-        good_with_children: form.good_with_children,
-        good_with_pets: form.good_with_pets,
-      } as any);
+        is_lost: false,
+      };
+      if (form.species) insertPayload.species = form.species;
+      const { error } = await supabase.from("pet_profiles").insert(insertPayload);
       if (error) throw error;
     },
-    onSuccess: () => { toast({ title: t("pets.adoption_success", "Adoption listing created! ✅") }); onSuccess(); },
+    onSuccess: () => {
+      toast({ title: t("pets.adoption_success", "Adoption listing created! ✅") });
+      queryClient.invalidateQueries({ queryKey: ["pet-profiles"] });
+      onSuccess();
+    },
     onError: (e: any) => toast({ title: t("common.error", "Error"), description: e.message, variant: "destructive" }),
   });
 
