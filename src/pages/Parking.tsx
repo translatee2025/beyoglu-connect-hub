@@ -23,15 +23,8 @@ import { EmptyState as EmptyStateComponent } from "@/components/shared/EmptyStat
 import { DistanceLabel } from "@/components/shared/DistanceLabel";
 import SortFilterBar, { type SortOption } from "@/components/shared/SortFilterBar";
 import { parsePhotos } from "@/lib/parsePhotos";
-
-const parkingTypeKeys = [
-  { key: "All", tKey: "filter.all", fallback: "All" },
-  { key: "Garage", tKey: "parking.type.garage", fallback: "Garage" },
-  { key: "Open Air", tKey: "parking.type.open_air", fallback: "Open Air" },
-  { key: "Street", tKey: "parking.type.street", fallback: "Street" },
-  { key: "Underground", tKey: "parking.type.underground", fallback: "Underground" },
-  { key: "Valet", tKey: "parking.type.valet", fallback: "Valet" },
-];
+import { useAppOptions } from "@/hooks/useAppOptions";
+import { useMemo } from "react";
 
 const parsePrice = (p: string | null) => {
   if (!p) return 0;
@@ -53,6 +46,11 @@ const Parking = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { options: parkingTypes } = useAppOptions("parking_types");
+  const parkingTypeKeys = useMemo(() => [
+    { key: "All", label: t("filter.all", "All") },
+    ...parkingTypes.map((o) => ({ key: o.value, label: o.label })),
+  ], [parkingTypes, t]);
 
   const handleContact = (userId: string) => {
     if (!user) { navigate("/auth"); return; }
