@@ -85,23 +85,8 @@ export function CommentsSection({ entityType, entityId }: CommentsProps) {
     return () => { supabase.removeChannel(channel); };
   }, [showComments, entityType, entityId, refetch]);
 
-  const { data: commentCount = 0 } = useQuery({
-    queryKey: ["comment-count", entityType, entityId],
-    queryFn: async () => {
-      try {
-        const { count, error } = await supabase
-          .from("comments")
-          .select("*", { count: "exact", head: true })
-          .eq("entity_type", entityType)
-          .eq("entity_id", entityId);
-        if (error) return 0;
-        return count || 0;
-      } catch {
-        return 0;
-      }
-    },
-    retry: false,
-  });
+  // Comment count is derived from fetched comments (avoids HEAD requests that 503 on free tier)
+
 
   const addComment = useMutation({
     mutationFn: async () => {
