@@ -297,9 +297,9 @@ const Wall = () => {
               <div className="flex items-center justify-between">
                 <div className="flex gap-1.5">
                   {[
-                    { label: '📸 Photo', key: 'photo' },
-                    { label: '📍 Location', key: 'location' },
-                    { label: '🏠 Rental', key: 'rental' },
+                    { label: `📸 ${t("wall.composer.chip_photo", "Photo")}`, key: 'photo' },
+                    { label: `📍 ${t("wall.composer.chip_location", "Location")}`, key: 'location' },
+                    { label: `🏠 ${t("wall.composer.chip_rental", "Rental")}`, key: 'rental' },
                   ].map((btn) => (
                     <span key={btn.key} className="text-xxs px-2 py-0.5 rounded-md cursor-pointer transition-colors" style={{ border: '0.5px solid #C7D7F7', color: '#64748B' }}>
                       {btn.label}
