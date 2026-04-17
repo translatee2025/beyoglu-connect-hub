@@ -141,7 +141,7 @@ export function CommentsSection({ entityType, entityId }: CommentsProps) {
         onClick={() => setShowComments(!showComments)}
       >
         <MessageCircle className="w-4 h-4" />
-        {commentCount > 0 ? commentCount : "Comment"}
+        {showComments ? (comments.length > 0 ? comments.length : t("common.comment", "Comment")) : t("common.comment", "Comment")}
       </Button>
 
       {showComments && (
