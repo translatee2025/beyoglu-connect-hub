@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_options: {
+        Row: {
+          created_at: string
+          emoji: string | null
+          group_key: string
+          id: string
+          is_active: boolean
+          label_en: string
+          label_tr: string
+          metadata: Json | null
+          sort_order: number
+          value_key: string
+        }
+        Insert: {
+          created_at?: string
+          emoji?: string | null
+          group_key: string
+          id?: string
+          is_active?: boolean
+          label_en: string
+          label_tr: string
+          metadata?: Json | null
+          sort_order?: number
+          value_key: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string | null
+          group_key?: string
+          id?: string
+          is_active?: boolean
+          label_en?: string
+          label_tr?: string
+          metadata?: Json | null
+          sort_order?: number
+          value_key?: string
+        }
+        Relationships: []
+      }
       audit_log: {
         Row: {
           action: string
