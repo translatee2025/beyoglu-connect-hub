@@ -149,7 +149,7 @@ const VenueDetail = () => {
       {/* Photo header */}
       <div className="relative w-full h-[240px] overflow-hidden">
         {venue.cover_photo || (venue.photos as string[])?.[0] ? (
-          <img src={venue.cover_photo || (venue.photos as string[])[0]} alt={venue.name} className="w-full h-full object-cover" />
+          <img src={venue.cover_photo || (venue.photos as string[])[0]} alt={venue.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; const p = (e.target as HTMLImageElement).parentElement; if (p) p.style.background = '#EFF4FF'; }} />
         ) : (
           <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: ph.bg }}>
             <span className="text-[48px]">{ph.emoji}</span>

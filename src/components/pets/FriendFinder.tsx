@@ -292,16 +292,16 @@ const FriendFinder = () => {
           </div>
         )}
 
-        <span className="text-xs text-muted-foreground">{filteredPets.length} pets</span>
+        <span className="text-xs" style={{ color: "#64748B" }}>{filteredPets.length} pets</span>
       </div>
 
       {isLoading ? (
-        <div className="text-center py-12 text-muted-foreground">Finding pets near you...</div>
+        <div className="text-center py-12" style={{ color: "#64748B" }}>Finding pets near you...</div>
       ) : filteredPets.length === 0 ? (
         <div className="text-center py-12">
-          <Dog className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+          <Dog className="w-16 h-16 mx-auto mb-4" style={{ color: "#94A3B8" }} />
           <h3 className="text-lg font-semibold text-foreground mb-2">No matches found</h3>
-          <p className="text-muted-foreground mb-4">Try adjusting your filters.</p>
+          <p className="mb-4" style={{ color: "#64748B" }}>Try adjusting your filters.</p>
           <Button variant="outline" onClick={() => setFilters(defaultFilters)}>Clear Filters</Button>
         </div>
       ) : viewMode === "swipe" ? (

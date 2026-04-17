@@ -160,13 +160,11 @@ const Events = () => {
         <div className="max-w-app mx-auto">
           {/* Header */}
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-[15px] font-semibold text-foreground">{t("events.title", "Events")}</h1>
+            <h1 className="text-[15px] font-semibold text-foreground">{t("events.title", "Local Events")}</h1>
             <div className="flex items-center gap-2">
-              {user && (
-                <Button size="sm" variant="cta" className="gap-1 text-xs" onClick={() => setShowCreate(true)}>
-                  <Plus className="w-3.5 h-3.5" /> {t("events.create", "Create")}
-                </Button>
-              )}
+              <Button size="sm" variant="cta" className="gap-1 text-xs" onClick={() => { if (!user) { navigate("/auth"); return; } setShowCreate(true); }}>
+                <Plus className="w-3.5 h-3.5" /> {t("events.create", "Create")}
+              </Button>
             </div>
           </div>
 

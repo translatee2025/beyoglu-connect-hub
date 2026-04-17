@@ -273,7 +273,7 @@ const LostFoundSection = ({ onReport }: LostFoundSectionProps) => {
                           border: "none",
                         }}
                       >
-                        {item.type === "lost" ? "Kayıp" : "Bulundu"}
+                        {item.type === "lost" ? t("lost_found.lost_tab", "Lost") : t("lost_found.found_tab", "Found")}
                       </Badge>
                     </div>
 

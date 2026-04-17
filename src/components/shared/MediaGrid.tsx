@@ -17,7 +17,7 @@ export function MediaGrid({ urls, className = "" }: MediaGridProps) {
         {isVideo(url) ? (
           <video src={url} controls className="w-full max-h-80 object-cover" />
         ) : (
-          <img src={url} alt="" className="w-full max-h-80 object-cover" loading="lazy" />
+          <img src={url} alt="" className="w-full max-h-80 object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
         )}
       </div>
     );
@@ -35,7 +35,7 @@ export function MediaGrid({ urls, className = "" }: MediaGridProps) {
               </div>
             </>
           ) : (
-            <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+            <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           )}
         </div>
       ))}
