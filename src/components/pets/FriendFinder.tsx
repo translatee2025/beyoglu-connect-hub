@@ -210,7 +210,7 @@ const FriendFinder = () => {
                         border: `1px solid ${filters.breed === "all" ? "#1E3A5F" : "#E2EBFC"}`,
                       }}
                     >
-                      Tüm Cinsler
+                      {t("pets.all_breeds", "All Breeds")}
                     </button>
                     {breedOptions.map(b => (
                       <button

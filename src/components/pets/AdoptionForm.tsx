@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -118,12 +119,23 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
             {breedsLoading ? (
               <p className="text-xs" style={{ color: "#94A3B8" }}>{t("loading", "Loading...")}</p>
             ) : (
-              <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  onClick={() => setForm({ ...form, breed: "mixed" })}
+                  className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors"
+                  style={{
+                    backgroundColor: form.breed === "mixed" ? "#1E3A5F" : "white",
+                    color: form.breed === "mixed" ? "white" : "#64748B",
+                    border: `1px solid ${form.breed === "mixed" ? "#1E3A5F" : "#E2EBFC"}`,
+                  }}
+                >
+                  {t("pets.breed_mixed", "Mixed")}
+                </button>
                 {breedOptions.map((b) => (
                   <button
                     key={b.value}
                     onClick={() => setForm({ ...form, breed: b.value })}
-                    className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0"
+                    className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors"
                     style={{
                       backgroundColor: form.breed === b.value ? "#1E3A5F" : "white",
                       color: form.breed === b.value ? "white" : "#64748B",
@@ -141,12 +153,29 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
         <div className="grid grid-cols-2 gap-2">
           <div>
             <Label className="text-xs" style={{ color: "#1E3A5F" }}>{t("pets.age_years", "Age (Years)")}</Label>
-            <Input type="number" min={0} value={form.age_years} onChange={(e) => setForm({ ...form, age_years: e.target.value })} style={{ border: "1px solid #E2EBFC" }} />
+            <Select value={form.age_years} onValueChange={(v) => setForm({ ...form, age_years: v })}>
+              <SelectTrigger style={{ border: "1px solid #E2EBFC" }}><SelectValue placeholder={t("pets.select", "Select")} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Unknown</SelectItem>
+                {Array.from({ length: 16 }, (_, i) => (
+                  <SelectItem key={i} value={String(i)}>{i}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <div>
-            <Label className="text-xs" style={{ color: "#1E3A5F" }}>{t("pets.age_months", "Age (Months)")}</Label>
-            <Input type="number" min={0} max={11} value={form.age_months} onChange={(e) => setForm({ ...form, age_months: e.target.value })} style={{ border: "1px solid #E2EBFC" }} />
-          </div>
+          {(!form.age_years || form.age_years === "0") && (
+            <div>
+              <Label className="text-xs" style={{ color: "#1E3A5F" }}>{t("pets.age_months", "Age (Months)")}</Label>
+              <Select value={form.age_months} onValueChange={(v) => setForm({ ...form, age_months: v })}>
+                <SelectTrigger style={{ border: "1px solid #E2EBFC" }}><SelectValue placeholder={t("pets.select", "Select")} /></SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <SelectItem key={i} value={String(i)}>{i}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
 
         <div>

@@ -58,6 +58,7 @@ const VenueDetail = () => {
   const DAY_LABELS = language === "tr" ? DAY_LABELS_TR : DAY_LABELS_EN;
   const [reviewText, setReviewText] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
+  const [reportOpen, setReportOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 

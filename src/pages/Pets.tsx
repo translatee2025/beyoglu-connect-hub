@@ -193,7 +193,9 @@ const Pets = () => {
   );
 };
 
-const PostCard = ({ post, badgeLabel, isUrgent, onContact, speciesEmojiMap }: { post: any; badgeLabel: string; isUrgent?: boolean; onContact: (userId: string) => void; speciesEmojiMap?: Record<string, string> }) => (
+const PostCard = ({ post, badgeLabel, isUrgent, onContact, speciesEmojiMap }: { post: any; badgeLabel: string; isUrgent?: boolean; onContact: (userId: string) => void; speciesEmojiMap?: Record<string, string> }) => {
+  const { t } = useLanguage();
+  return (
   <Card className="hover:shadow-md transition-shadow overflow-hidden" style={{ border: `1px solid ${isUrgent ? "#FECACA" : "#E2EBFC"}` }}>
     {/* Photo */}
     {post.photos?.[0] ? (
@@ -231,15 +233,19 @@ const PostCard = ({ post, badgeLabel, isUrgent, onContact, speciesEmojiMap }: { 
       </button>
     </CardContent>
   </Card>
-);
+  );
+};
 
-const EmptyState = ({ emoji, title, subtitle, onAction }: { emoji: string; title: string; subtitle: string; onAction: () => void }) => (
-  <div className="text-center py-12">
-    <span className="text-5xl block mb-4">{emoji}</span>
-    <h3 className="text-lg font-semibold mb-2" style={{ color: "#1E3A5F" }}>{title}</h3>
-    <p className="mb-4" style={{ color: "#94A3B8" }}>{subtitle}</p>
-    <Button style={{ backgroundColor: "#1E3A5F" }} onClick={onAction}><Plus className="w-4 h-4 mr-2" /> {t("pets.create_post", "Create Post")}</Button>
-  </div>
-);
+const EmptyState = ({ emoji, title, subtitle, onAction }: { emoji: string; title: string; subtitle: string; onAction: () => void }) => {
+  const { t } = useLanguage();
+  return (
+    <div className="text-center py-12">
+      <span className="text-5xl block mb-4">{emoji}</span>
+      <h3 className="text-lg font-semibold mb-2" style={{ color: "#1E3A5F" }}>{title}</h3>
+      <p className="mb-4" style={{ color: "#94A3B8" }}>{subtitle}</p>
+      <Button style={{ backgroundColor: "#1E3A5F" }} onClick={onAction}><Plus className="w-4 h-4 mr-2" /> {t("pets.create_post", "Create Post")}</Button>
+    </div>
+  );
+};
 
 export default Pets;
