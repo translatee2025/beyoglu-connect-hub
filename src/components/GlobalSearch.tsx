@@ -105,7 +105,7 @@ export function GlobalSearchDesktop() {
               return (
                 <div key={type}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8", padding: "8px 12px 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                    {LABELS[type]}
+                    {getLabel(type)}
                   </div>
                   {items.map(item => (
                     <button
@@ -210,7 +210,7 @@ export function GlobalSearchMobile() {
             return (
               <div key={type}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8", padding: "12px 16px 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  {LABELS[type]}
+                  {getLabel(type)}
                 </div>
                 {items.map(item => (
                   <button
