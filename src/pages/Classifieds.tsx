@@ -17,6 +17,7 @@ import { SkeletonGrid } from "@/components/shared/SkeletonCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DistanceLabel } from "@/components/shared/DistanceLabel";
 import SortFilterBar, { type SortOption } from "@/components/shared/SortFilterBar";
+import { parsePhotos } from "@/lib/parsePhotos";
 
 const categoryMeta: Record<string, { bg: string; emoji: string }> = {
   Electronics: { bg: "#EFF4FF", emoji: "📱" },

@@ -22,6 +22,7 @@ import { SkeletonGrid } from "@/components/shared/SkeletonCard";
 import { EmptyState as EmptyStateComponent } from "@/components/shared/EmptyState";
 import { DistanceLabel } from "@/components/shared/DistanceLabel";
 import SortFilterBar, { type SortOption } from "@/components/shared/SortFilterBar";
+import { parsePhotos } from "@/lib/parsePhotos";
 
 const aptCategoryKeys = [
   { key: "All", tKey: "filter.all", fallback: "All" },
