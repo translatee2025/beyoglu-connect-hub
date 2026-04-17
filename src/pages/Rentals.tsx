@@ -119,7 +119,7 @@ const Rentals = () => {
   const mapPins = (items: any[]) => items.filter((i) => i.lat && i.lng).map((i) => ({ lat: i.lat, lng: i.lng, title: i.title, badge: i.category, extra: i.price ? `${i.currency || "₺"}${i.price}` : undefined }));
 
   const RentalCard = ({ item }: { item: any }) => {
-    const photo = Array.isArray(item.photos) && item.photos.length > 0 ? item.photos[0] : null;
+    const photo = parsePhotos(item.photos)[0] || null;
     const [imgError, setImgError] = useState(false);
     const price = item.price;
     return (

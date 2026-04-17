@@ -137,7 +137,7 @@ const Classifieds = () => {
   const getMeta = (cat: string | null) => categoryMeta[cat || "Other"] || categoryMeta.Other;
 
   const ClassifiedCard = ({ item }: { item: any }) => {
-    const photo = item.photos && item.photos.length > 0 ? item.photos[0] : null;
+    const photo = parsePhotos(item.photos)[0] || null;
     const meta = getMeta(item.category);
 
     return (
