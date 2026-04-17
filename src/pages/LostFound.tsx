@@ -171,7 +171,7 @@ function ReportForm({ type, onSuccess }: { type: "lost" | "found"; onSuccess: ()
 
 // ─── Post Card ───
 function PostCard({ post, isOwner }: { post: any; isOwner: boolean }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -180,12 +180,12 @@ function PostCard({ post, isOwner }: { post: any; isOwner: boolean }) {
   const timeAgo = (date: string) => {
     const diff = Date.now() - new Date(date).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 1) return t("time.just_now", "just now");
-    if (mins < 60) return `${mins}${t("time.min_ago", "m").replace("{n}", "")}`;
+    if (mins < 1) return language === "tr" ? "şimdi" : "now";
+    if (mins < 60) return language === "tr" ? `${mins}dk` : `${mins}m`;
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}${t("time.hours_short", "h").replace("{n}", "")}`;
+    if (hrs < 24) return language === "tr" ? `${hrs}s` : `${hrs}h`;
     const days = Math.floor(hrs / 24);
-    return `${days}${t("time.days_short", "d").replace("{n}", "")}`;
+    return language === "tr" ? `${days}g` : `${days}d`;
   };
 
   const resolvePost = useMutation({
@@ -220,14 +220,19 @@ function PostCard({ post, isOwner }: { post: any; isOwner: boolean }) {
     <Card className="overflow-hidden" style={{ borderRadius: 12 }}>
       <div style={{ height: 140, position: "relative" }} className="bg-muted">
         {photo ? (
-          <img src={photo} alt={post.title} className="w-full h-full object-cover" />
+          <img
+            src={photo}
+            alt={post.title}
+            className="w-full h-full object-cover"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; const p = (e.target as HTMLImageElement).parentElement; if (p) p.style.background = '#EFF4FF'; }}
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center" style={{ background: "#EFF4FF" }}>
             <span style={{ fontSize: 32 }}>{emoji}</span>
           </div>
         )}
         <div style={{ position: "absolute", top: 8, left: 8, background: "#1E3A5F", color: "#fff", fontSize: 10, fontWeight: 500, padding: "3px 8px", borderRadius: "0 0 6px 0" }}>
-          {post.type === "lost" ? t("lost_found.lost_label", "🔴 Lost") : t("lost_found.found_label", "🟢 Found")}
+          {post.type === "lost" ? `🔴 ${t("lost_found.lost_tab", "Lost")}` : `🟢 ${t("lost_found.found_tab", "Found")}`}
         </div>
       </div>
       <CardContent className="p-3 space-y-1.5">
@@ -243,7 +248,7 @@ function PostCard({ post, isOwner }: { post: any; isOwner: boolean }) {
         <div style={{ fontSize: 11, color: "#94A3B8" }}>{timeAgo(post.created_at)}</div>
         <div className="flex gap-2 pt-1">
           <Button size="sm" className="flex-1 gap-1" onClick={handleContact} style={{ background: "#E74C3C", color: "#fff", border: "none", fontSize: 12, borderRadius: 6 }}>
-            <MessageCircle className="w-3.5 h-3.5" /> {t("lost_found.contact", "Contact")}
+            <MessageCircle className="w-3.5 h-3.5" /> {t("common.contact", "Contact")}
           </Button>
           {isOwner && (
             <Button size="sm" variant="outline" className="gap-1" onClick={() => resolvePost.mutate()} disabled={resolvePost.isPending} style={{ fontSize: 12, borderRadius: 6 }}>
@@ -354,23 +359,23 @@ const LostFound = () => {
           </div>
           <Dialog open={showLostForm} onOpenChange={setShowLostForm}>
             <DialogTrigger asChild>
-              <Button size="sm" style={{ background: "#E74C3C", color: "#fff", fontSize: 12 }}><Plus className="w-4 h-4 mr-1" /> {t("lost_found.report_lost", "Report Lost")}</Button>
+              <Button size="sm" style={{ background: "#E74C3C", color: "#fff", fontSize: 12 }}><Plus className="w-4 h-4 mr-1" /> {t("lost_found.report_lost_btn", "Report Lost")}</Button>
             </DialogTrigger>
-            <DialogContent><DialogHeader><DialogTitle>{t("lost_found.report_lost", "Report Lost")}</DialogTitle></DialogHeader><ReportForm type="lost" onSuccess={() => setShowLostForm(false)} /></DialogContent>
+            <DialogContent><DialogHeader><DialogTitle>{t("lost_found.report_lost_btn", "Report Lost")}</DialogTitle></DialogHeader><ReportForm type="lost" onSuccess={() => setShowLostForm(false)} /></DialogContent>
           </Dialog>
           <Dialog open={showFoundForm} onOpenChange={setShowFoundForm}>
             <DialogTrigger asChild>
-              <Button size="sm" variant="outline" style={{ fontSize: 12, borderColor: "#1E3A5F", color: "#1E3A5F" }}><Plus className="w-4 h-4 mr-1" /> {t("lost_found.report_found", "Report Found")}</Button>
+              <Button size="sm" variant="outline" style={{ fontSize: 12, borderColor: "#1E3A5F", color: "#1E3A5F" }}><Plus className="w-4 h-4 mr-1" /> {t("lost_found.report_found_btn", "Report Found")}</Button>
             </DialogTrigger>
-            <DialogContent><DialogHeader><DialogTitle>{t("lost_found.report_found", "Report Found")}</DialogTitle></DialogHeader><ReportForm type="found" onSuccess={() => setShowFoundForm(false)} /></DialogContent>
+            <DialogContent><DialogHeader><DialogTitle>{t("lost_found.report_found_btn", "Report Found")}</DialogTitle></DialogHeader><ReportForm type="found" onSuccess={() => setShowFoundForm(false)} /></DialogContent>
           </Dialog>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="w-full grid grid-cols-2 mb-4">
-          <TabsTrigger value="lost" style={{ fontSize: 13 }}>{t("lost_found.lost_tab", "🔴 Lost")}</TabsTrigger>
-          <TabsTrigger value="found" style={{ fontSize: 13 }}>{t("lost_found.found_tab", "🟢 Found")}</TabsTrigger>
+          <TabsTrigger value="lost" style={{ fontSize: 13 }}>🔴 {t("lost_found.lost_tab", "Lost")}</TabsTrigger>
+          <TabsTrigger value="found" style={{ fontSize: 13 }}>🟢 {t("lost_found.found_tab", "Found")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab}>

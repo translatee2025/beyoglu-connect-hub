@@ -182,7 +182,7 @@ const EventDetail = () => {
                   ? { backgroundColor: "#DCFCE7", color: "#166534" }
                   : { backgroundColor: "#FEF3C7", color: "#92400E" }}
               >
-                {event.is_free ? "Ücretsiz" : `${event.price || 0} TRY`}
+                {event.is_free ? t("events.free", "Free") : `${event.price || 0} TRY`}
               </span>
             </div>
           </div>
@@ -194,7 +194,7 @@ const EventDetail = () => {
             </p>
             {event.end_at && (
               <p className="text-[12px] flex items-center gap-1.5" style={{ color: "#94A3B8" }}>
-                🕐 Bitiş: {formatEventDate(event.end_at)}
+                🕐 {t("events.ends", "Ends:")} {formatEventDate(event.end_at)}
               </p>
             )}
             {(event.venue_name || event.address) && (
@@ -203,7 +203,7 @@ const EventDetail = () => {
               </p>
             )}
             <p className="text-[12px] flex items-center gap-1.5" style={{ color: "#64748B" }}>
-              👥 {attendeeCount} katılımcı
+              👥 {attendeeCount} {t("events.attendees", "attendees")}
             </p>
           </div>
 
@@ -265,7 +265,7 @@ const EventDetail = () => {
         {attendees.length > 0 && (
           <div className="mt-3 bg-card rounded-xl p-4" style={{ border: "1px solid #E2EBFC" }}>
             <h2 className="text-sm font-semibold mb-2" style={{ color: "#1E3A5F" }}>
-              Katılımcılar ({attendeeCount})
+              {t("events.attendees", "attendees")} ({attendeeCount})
             </h2>
             <div className="flex flex-wrap gap-2">
               {attendees.map((a: any) => (
@@ -280,7 +280,7 @@ const EventDetail = () => {
         {/* Map */}
         {event.lat && event.lng && (
           <div className="mt-3 mb-6 bg-card rounded-xl p-4" style={{ border: "1px solid #E2EBFC" }}>
-            <h2 className="text-sm font-semibold mb-2" style={{ color: "#1E3A5F" }}>Konum</h2>
+            <h2 className="text-sm font-semibold mb-2" style={{ color: "#1E3A5F" }}>{t("events.location", "Location")}</h2>
             <EventMap lat={Number(event.lat)} lng={Number(event.lng)} />
           </div>
         )}

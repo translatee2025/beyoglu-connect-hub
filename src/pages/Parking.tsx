@@ -43,7 +43,7 @@ const Parking = () => {
   const [appliedMin, setAppliedMin] = useState<number | null>(null);
   const [appliedMax, setAppliedMax] = useState<number | null>(null);
   const queryClient = useQueryClient();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { options: parkingTypes } = useAppOptions("parking_types");
@@ -59,10 +59,13 @@ const Parking = () => {
 
   const formatTimeAgo = (d: string) => {
     const diff = Date.now() - new Date(d).getTime();
-    const h = Math.floor(diff / 3600000);
-    if (h < 1) return t("time.just_now", "just now");
-    if (h < 24) return `${h}${t("time.hours_short", "h").replace("{n}", "")}`;
-    return `${Math.floor(h / 24)}${t("time.days_short", "d").replace("{n}", "")}`;
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return language === "tr" ? "şimdi" : "now";
+    if (mins < 60) return language === "tr" ? `${mins}dk` : `${mins}m`;
+    const h = Math.floor(mins / 60);
+    if (h < 24) return language === "tr" ? `${h}s` : `${h}h`;
+    const days = Math.floor(h / 24);
+    return language === "tr" ? `${days}g` : `${days}d`;
   };
 
   const { data: lookingListings = [], isLoading: lookingLoading } = useQuery({

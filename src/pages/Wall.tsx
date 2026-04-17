@@ -199,11 +199,12 @@ const Wall = () => {
     const d = new Date(date);
     const diff = Date.now() - d.getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins}m`;
+    if (mins < 1) return language === "tr" ? "şimdi" : "now";
+    if (mins < 60) return language === "tr" ? `${mins}dk` : `${mins}m`;
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h`;
+    if (hrs < 24) return language === "tr" ? `${hrs}s` : `${hrs}h`;
     const days = Math.floor(hrs / 24);
-    if (days < 7) return `${days}d`;
+    if (days < 7) return language === "tr" ? `${days}g` : `${days}d`;
     const months = language === "tr" ? MONTHS_TR : MONTHS_EN;
     return `${d.getDate()} ${months[d.getMonth()]}`;
   };
@@ -374,7 +375,7 @@ const ListingCard = ({ item, badge, timeAgo, user, setReportTarget, t }: any) =>
     {/* Photo area */}
     <div className="relative h-[200px] overflow-hidden" style={{ backgroundColor: '#EFF4FF' }}>
       {item.photos && item.photos.length > 0 ? (
-        <img src={item.photos[0]} alt={item.title} className="w-full h-full object-cover" />
+        <img src={item.photos[0]} alt={item.title} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; const p = (e.target as HTMLImageElement).parentElement; if (p) p.style.background = '#EFF4FF'; }} />
       ) : (
         <div className="w-full h-full flex items-center justify-center">
           <item.icon className="w-10 h-10 text-[#94A3B8] opacity-40" />

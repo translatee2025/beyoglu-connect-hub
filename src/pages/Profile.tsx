@@ -18,7 +18,7 @@ const Profile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const isOwn = user?.id === userId;
   const [followersModal, setFollowersModal] = useState(false);
   const [followingModal, setFollowingModal] = useState(false);
@@ -155,7 +155,7 @@ const Profile = () => {
   };
 
   const initials = (profile?.display_name || "U").slice(0, 2).toUpperCase();
-  const memberSince = profile?.created_at ? new Date(profile.created_at).toLocaleDateString(t === undefined ? "tr-TR" : "tr-TR", { month: "long", year: "numeric" }) : "";
+  const memberSince = profile?.created_at ? new Date(profile.created_at).toLocaleDateString(language === "tr" ? "tr-TR" : "en-US", { month: "long", year: "numeric" }) : "";
 
   if (isLoading) return <div className="flex justify-center py-20" style={{ color: "#94A3B8" }}>{t("common.loading", "Yükleniyor...")}</div>;
   if (!profile) return <div className="flex justify-center py-20" style={{ color: "#94A3B8" }}>{t("profile.user_not_found", "Kullanıcı bulunamadı")}</div>;

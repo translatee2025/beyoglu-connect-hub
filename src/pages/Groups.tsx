@@ -37,7 +37,7 @@ const Groups = () => {
   const [category, setCategory] = useState("all");
   const [postOpen, setPostOpen] = useState(false);
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -53,10 +53,13 @@ const Groups = () => {
 
   const timeAgo = (date: string) => {
     const diff = Date.now() - new Date(date).getTime();
-    const hrs = Math.floor(diff / 3600000);
-    if (hrs < 1) return t("time.just_now", "just now");
-    if (hrs < 24) return `${hrs}${t("time.hours_short", "h")}`;
-    return `${Math.floor(hrs / 24)}${t("time.days_short", "d")}`;
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return language === "tr" ? "şimdi" : "now";
+    if (mins < 60) return language === "tr" ? `${mins}dk` : `${mins}m`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return language === "tr" ? `${hrs}s` : `${hrs}h`;
+    const days = Math.floor(hrs / 24);
+    return language === "tr" ? `${days}g` : `${days}d`;
   };
 
   const { data: groups = [], isLoading } = useQuery({
@@ -161,11 +164,11 @@ const Groups = () => {
   return (
     <div className="mx-auto px-4 py-6" style={{ maxWidth: 700 }}>
       <div className="flex items-center justify-between mb-4">
-        <h1 style={{ fontSize: 18, fontWeight: 700, color: "#1E3A5F" }}>{t("groups.title", "Gruplar")}</h1>
+        <h1 style={{ fontSize: 18, fontWeight: 700, color: "#1E3A5F" }}>{t("groups.title", "Community Groups")}</h1>
         <Dialog open={postOpen} onOpenChange={setPostOpen}>
           <DialogTrigger asChild>
             <Button size="sm" style={{ background: "#E74C3C", color: "#fff", border: "none", fontSize: 12 }}>
-              <Plus className="w-4 h-4 mr-1" /> {t("groups.create_button", "Create Group")}
+              <Plus className="w-4 h-4 mr-1" /> {t("groups.create", "Create Group")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto p-0">
@@ -229,7 +232,12 @@ const Groups = () => {
                 {/* Cover */}
                 <div style={{ height: 120, position: "relative" }}>
                   {group.cover_photo ? (
-                    <img src={group.cover_photo} alt={group.name} className="w-full h-full object-cover" />
+                    <img
+                      src={group.cover_photo}
+                      alt={group.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; const p = (e.target as HTMLImageElement).parentElement; if (p) p.style.background = bgColor; }}
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center" style={{ background: bgColor }}>
                       <span style={{ fontSize: 32 }}>{emoji}</span>
@@ -251,7 +259,7 @@ const Groups = () => {
 
                   <div className="flex items-center gap-3 mb-2" style={{ fontSize: 12, color: "#94A3B8" }}>
                     <span>👥 {group.member_count}</span>
-                    {lastPostDate && <span>Son gönderi: {timeAgo(lastPostDate)}</span>}
+                    {lastPostDate && <span>{language === "tr" ? "Son gönderi" : "Last post"}: {timeAgo(lastPostDate)}</span>}
                   </div>
 
                   {group.description && (
