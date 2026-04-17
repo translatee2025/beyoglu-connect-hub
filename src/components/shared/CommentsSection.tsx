@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
+import { useLanguage } from "@/providers/LanguageProvider";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,7 @@ export function CommentsSection({ entityType, entityId }: CommentsProps) {
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
   const { user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -83,23 +85,8 @@ export function CommentsSection({ entityType, entityId }: CommentsProps) {
     return () => { supabase.removeChannel(channel); };
   }, [showComments, entityType, entityId, refetch]);
 
-  const { data: commentCount = 0 } = useQuery({
-    queryKey: ["comment-count", entityType, entityId],
-    queryFn: async () => {
-      try {
-        const { count, error } = await supabase
-          .from("comments")
-          .select("*", { count: "exact", head: true })
-          .eq("entity_type", entityType)
-          .eq("entity_id", entityId);
-        if (error) return 0;
-        return count || 0;
-      } catch {
-        return 0;
-      }
-    },
-    retry: false,
-  });
+  // Comment count is derived from fetched comments (avoids HEAD requests that 503 on free tier)
+
 
   const addComment = useMutation({
     mutationFn: async () => {
@@ -154,7 +141,7 @@ export function CommentsSection({ entityType, entityId }: CommentsProps) {
         onClick={() => setShowComments(!showComments)}
       >
         <MessageCircle className="w-4 h-4" />
-        {commentCount > 0 ? commentCount : "Comment"}
+        {showComments ? (comments.length > 0 ? comments.length : t("common.comment", "Comment")) : t("common.comment", "Comment")}
       </Button>
 
       {showComments && (
