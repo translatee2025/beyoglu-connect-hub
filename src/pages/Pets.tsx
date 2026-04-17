@@ -106,7 +106,7 @@ const Pets = () => {
           <Tabs defaultValue="adoption" className="w-full">
             <TabsList className="mb-6 flex-wrap h-auto gap-1 bg-white border border-[#E2EBFC]">
               <TabsTrigger value="adoption" className="flex items-center gap-2 text-[#374151] data-[state=active]:text-[#1E3A5F] data-[state=active]:bg-[#EFF4FF]"><Dog className="w-4 h-4" /> {t("pets.adoption", "Adoption")}</TabsTrigger>
-              <TabsTrigger value="sitting" className="flex items-center gap-2 text-[#374151] data-[state=active]:text-[#1E3A5F] data-[state=active]:bg-[#EFF4FF]"><Home className="w-4 h-4" /> {t("pets.sitting", "Bakım & Gezdirme")}</TabsTrigger>
+              <TabsTrigger value="sitting" className="flex items-center gap-2 text-[#374151] data-[state=active]:text-[#1E3A5F] data-[state=active]:bg-[#EFF4FF]"><Home className="w-4 h-4" /> {t("pets.sitting", "Pet Care")}</TabsTrigger>
               <TabsTrigger value="friends" className="flex items-center gap-2 text-[#374151] data-[state=active]:text-[#1E3A5F] data-[state=active]:bg-[#EFF4FF]"><Heart className="w-4 h-4" /> {t("pets.friends", "Friends")}</TabsTrigger>
               <TabsTrigger value="lost" className="flex items-center gap-2 text-[#374151] data-[state=active]:text-[#1E3A5F] data-[state=active]:bg-[#EFF4FF]">
                 <AlertTriangle className="w-4 h-4" /> {t("pets.lost_found", "Lost & Found")}
@@ -122,7 +122,7 @@ const Pets = () => {
               {/* Species filter pills */}
               <div className="flex flex-wrap gap-1.5 mb-3">
                 <button onClick={() => { setSpeciesFilter("all"); setBreedFilter("all"); }} className="px-3 py-1.5 rounded-full text-xs font-medium transition-colors" style={pillStyle(speciesFilter === "all")}>
-                  Tümü 🐾
+                  {t("filter.all", "All")} 🐾
                 </button>
                 {speciesOptions.map((s) => (
                   <button key={s.value} onClick={() => { setSpeciesFilter(s.value); setBreedFilter("all"); }} className="px-3 py-1.5 rounded-full text-xs font-medium transition-colors" style={pillStyle(speciesFilter === s.value)}>
@@ -135,7 +135,7 @@ const Pets = () => {
               {speciesFilter !== "all" && breedOptions.length > 0 && (
                 <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: "none" }}>
                   <button onClick={() => setBreedFilter("all")} className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 transition-colors" style={pillStyle(breedFilter === "all")}>
-                    Tüm Cinsler
+                    {t("pets.all_breeds", "All Breeds")}
                   </button>
                   {breedOptions.map((b) => (
                     <button key={b.value} onClick={() => setBreedFilter(b.value)} className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 transition-colors" style={pillStyle(breedFilter === b.value)}>
@@ -198,7 +198,7 @@ const PostCard = ({ post, badgeLabel, isUrgent, onContact, speciesEmojiMap }: { 
     {/* Photo */}
     {post.photos?.[0] ? (
       <div className="h-[140px] overflow-hidden">
-        <img src={post.photos[0]} alt={post.title} className="w-full h-full object-cover" />
+        <img src={post.photos[0]} alt={post.title} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; const p = (e.target as HTMLImageElement).parentElement; if (p) p.style.background = '#EFF4FF'; }} />
       </div>
     ) : (
       <div className="h-[140px] flex items-center justify-center" style={{ backgroundColor: "#EFF4FF" }}>
@@ -227,7 +227,7 @@ const PostCard = ({ post, badgeLabel, isUrgent, onContact, speciesEmojiMap }: { 
         className="w-full py-1.5 rounded-lg text-xs font-semibold text-white"
         style={{ backgroundColor: "#E74C3C" }}
       >
-        İletişim
+        {t("common.contact", "Contact")}
       </button>
     </CardContent>
   </Card>
@@ -238,7 +238,7 @@ const EmptyState = ({ emoji, title, subtitle, onAction }: { emoji: string; title
     <span className="text-5xl block mb-4">{emoji}</span>
     <h3 className="text-lg font-semibold mb-2" style={{ color: "#1E3A5F" }}>{title}</h3>
     <p className="mb-4" style={{ color: "#94A3B8" }}>{subtitle}</p>
-    <Button style={{ backgroundColor: "#1E3A5F" }} onClick={onAction}><Plus className="w-4 h-4 mr-2" /> İlan Oluştur</Button>
+    <Button style={{ backgroundColor: "#1E3A5F" }} onClick={onAction}><Plus className="w-4 h-4 mr-2" /> {t("pets.create_post", "Create Post")}</Button>
   </div>
 );
 

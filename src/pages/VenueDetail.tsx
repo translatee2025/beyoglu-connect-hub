@@ -37,7 +37,8 @@ const getPlaceholder = (typeName?: string) => {
 };
 
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-const DAY_LABELS: Record<string, string> = { mon: "Pazartesi", tue: "Salı", wed: "Çarşamba", thu: "Perşembe", fri: "Cuma", sat: "Cumartesi", sun: "Pazar" };
+const DAY_LABELS_TR: Record<string, string> = { mon: "Pazartesi", tue: "Salı", wed: "Çarşamba", thu: "Perşembe", fri: "Cuma", sat: "Cumartesi", sun: "Pazar" };
+const DAY_LABELS_EN: Record<string, string> = { mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday", fri: "Friday", sat: "Saturday", sun: "Sunday" };
 
 const isVenueOpen = (hours: Record<string, { open: string; close: string }> | null): boolean | null => {
   if (!hours || Object.keys(hours).length === 0) return null;
@@ -53,8 +54,8 @@ const VenueDetail = () => {
   const { venueId } = useParams<{ venueId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { t } = useLanguage();
-  const [reportOpen, setReportOpen] = useState(false);
+  const { t, language } = useLanguage();
+  const DAY_LABELS = language === "tr" ? DAY_LABELS_TR : DAY_LABELS_EN;
   const [reviewText, setReviewText] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const queryClient = useQueryClient();
@@ -227,7 +228,7 @@ const VenueDetail = () => {
               {t("common.send_message", "Send Message")}
             </button>
             <button className="py-2 px-4 rounded-lg text-xs font-medium" style={{ border: "1px solid #1E3A5F", color: "#1E3A5F" }}>
-              <Bookmark className="w-3.5 h-3.5 inline mr-1" />Kaydet
+              <Bookmark className="w-3.5 h-3.5 inline mr-1" />{t("common.save", "Save")}
             </button>
             <button
               className="py-2 px-4 rounded-lg text-xs font-medium"
@@ -242,7 +243,7 @@ const VenueDetail = () => {
           {venue.created_by_user_id && (
             <div className="flex items-center gap-1.5 text-[11px] mb-1" style={{ color: "#94A3B8" }}>
               <UserName userId={venue.created_by_user_id} showAvatar avatarSize="w-4 h-4" className="text-[11px]" />
-              <span>ekledi</span>
+              <span>{t("venues.added_by", "added")}</span>
             </div>
           )}
         </div>
@@ -258,10 +259,10 @@ const VenueDetail = () => {
         <div className="mt-3 bg-card rounded-xl p-4" style={{ border: "1px solid #E2EBFC" }}>
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-sm font-semibold" style={{ color: "#1E3A5F" }}>Yorumlar</h2>
+            <h2 className="text-sm font-semibold" style={{ color: "#1E3A5F" }}>{t("venues.reviews", "Reviews")}</h2>
               {reviews.length > 0 && (
                 <p className="text-[11px] mt-0.5" style={{ color: "#94A3B8" }}>
-                  ⭐ {avgRating.toFixed(1)} · {reviews.length} yorum
+                  ⭐ {avgRating.toFixed(1)} · {reviews.length} {language === "tr" ? "yorum" : "reviews"}
                 </p>
               )}
             </div>
@@ -269,7 +270,7 @@ const VenueDetail = () => {
 
           {reviews.length === 0 ? (
             <div className="text-center py-6">
-              <p className="text-sm mb-2" style={{ color: "#94A3B8" }}>Henüz yorum yok. İlk yorumu sen yap!</p>
+              <p className="text-sm mb-2" style={{ color: "#94A3B8" }}>{t("venues.no_reviews", "No reviews yet. Be the first!")}</p>
             </div>
           ) : (
             <div className="space-y-3 mb-4">
@@ -285,7 +286,7 @@ const VenueDetail = () => {
                   </div>
                   {review.body && <p className="text-[12px] mt-1" style={{ color: "#374151", lineHeight: "1.5" }}>{review.body}</p>}
                   <p className="text-[10px] mt-1" style={{ color: "#94A3B8" }}>
-                    {new Date(review.created_at).toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" })}
+                    {new Date(review.created_at).toLocaleDateString(language === "tr" ? "tr-TR" : "en-US", { day: "numeric", month: "short", year: "numeric" })}
                   </p>
                   {review.reply_body && (
                     <div className="mt-2 pl-3" style={{ borderLeft: "2px solid #E2EBFC" }}>
@@ -301,7 +302,7 @@ const VenueDetail = () => {
           {/* Write review */}
           {user && (
             <div className="pt-3" style={{ borderTop: reviews.length > 0 ? "none" : "1px solid #E2EBFC" }}>
-              <p className="text-xs font-medium mb-2" style={{ color: "#1E3A5F" }}>Yorum Yaz</p>
+              <p className="text-xs font-medium mb-2" style={{ color: "#1E3A5F" }}>{language === "tr" ? "Yorum Yaz" : "Write a Review"}</p>
               <div className="flex gap-1 mb-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button key={star} onClick={() => setReviewRating(star)} className="text-lg">
@@ -310,7 +311,7 @@ const VenueDetail = () => {
                 ))}
               </div>
               <Textarea
-                placeholder="Deneyiminizi paylaşın..."
+                placeholder={language === "tr" ? "Deneyiminizi paylaşın..." : "Share your experience..."}
                 value={reviewText}
                 onChange={(e) => setReviewText(e.target.value)}
                 rows={2}
@@ -323,7 +324,7 @@ const VenueDetail = () => {
                 disabled={submitReview.isPending}
                 onClick={() => submitReview.mutate()}
               >
-                {submitReview.isPending ? "Gönderiliyor..." : "Yorum Gönder"}
+                {submitReview.isPending ? (language === "tr" ? "Gönderiliyor..." : "Sending...") : (language === "tr" ? "Yorum Gönder" : "Submit Review")}
               </Button>
             </div>
           )}
@@ -332,7 +333,7 @@ const VenueDetail = () => {
         {/* Hours */}
         {hours && Object.keys(hours).length > 0 && (
           <div className="mt-3 mb-6 bg-card rounded-xl p-4" style={{ border: "1px solid #E2EBFC" }}>
-            <h2 className="text-sm font-semibold mb-2" style={{ color: "#1E3A5F" }}>Çalışma Saatleri</h2>
+            <h2 className="text-sm font-semibold mb-2" style={{ color: "#1E3A5F" }}>{t("venues.hours", "Business Hours")}</h2>
             <div className="space-y-1">
               {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map((day) => {
                 const h = hours[day];

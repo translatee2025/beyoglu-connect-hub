@@ -179,7 +179,7 @@ const Venues = () => {
                       {/* Photo area */}
                       <div className="h-[140px] relative overflow-hidden" style={{ borderRadius: "12px 12px 0 0" }}>
                         {venue.photos?.[0] || venue.cover_photo ? (
-                          <img src={venue.photos?.[0] || venue.cover_photo} alt={venue.name} className="w-full h-full object-cover" />
+                          <img src={venue.photos?.[0] || venue.cover_photo} alt={venue.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; const p = (e.target as HTMLImageElement).parentElement; if (p) p.style.background = '#EFF4FF'; }} />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: ph.bg }}>
                             <span className="text-[32px]">{ph.emoji}</span>
@@ -230,7 +230,7 @@ const Venues = () => {
                           style={{ backgroundColor: "#E74C3C" }}
                           onClick={(e) => { e.stopPropagation(); }}
                         >
-                          Mesaj Gönder
+                          {t("common.send_message", "Send Message")}
                         </button>
                       </div>
                     </div>

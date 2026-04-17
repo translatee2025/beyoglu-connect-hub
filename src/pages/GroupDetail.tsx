@@ -19,22 +19,26 @@ import { MediaUpload } from "@/components/shared/MediaUpload";
 import { MediaGrid } from "@/components/shared/MediaGrid";
 import { UserName } from "@/components/shared/UserName";
 
-const timeAgo = (date: string) => {
-  const diff = Date.now() - new Date(date).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}dk`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}sa`;
-  return `${Math.floor(hrs / 24)}g`;
-};
+// timeAgo is defined inside the component below
 
 const GroupDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const timeAgo = (date: string) => {
+    const diff = Date.now() - new Date(date).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return language === "tr" ? "şimdi" : "now";
+    if (mins < 60) return language === "tr" ? `${mins}dk` : `${mins}m`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return language === "tr" ? `${hrs}s` : `${hrs}h`;
+    const days = Math.floor(hrs / 24);
+    return language === "tr" ? `${days}g` : `${days}d`;
+  };
   const [postOpen, setPostOpen] = useState(false);
   const [postContent, setPostContent] = useState("");
   const [postPhotos, setPostPhotos] = useState<string[]>([]);
@@ -200,10 +204,10 @@ const GroupDetail = () => {
   if (!group) return <div className="min-h-screen bg-background flex items-center justify-center" style={{ color: "#94A3B8" }}>Yükleniyor...</div>;
 
   const typeBadge = group.group_type === "public"
-    ? { label: "Herkese Açık", bg: "#DCFCE7", color: "#16A34A" }
+    ? { label: t("groups.public_short", "Public"), bg: "#DCFCE7", color: "#16A34A" }
     : group.group_type === "request"
-      ? { label: "İstek Gerekli", bg: "#FEF3C7", color: "#D97706" }
-      : { label: "Gizli", bg: "#E0F2FE", color: "#1E3A5F" };
+      ? { label: t("groups.request_label", "Request"), bg: "#FEF3C7", color: "#D97706" }
+      : { label: t("groups.private_label", "Private"), bg: "#E0F2FE", color: "#1E3A5F" };
 
   return (
     <div className="mx-auto px-4 py-6" style={{ maxWidth: 680 }}>
@@ -223,7 +227,7 @@ const GroupDetail = () => {
 
           <div className="flex flex-wrap items-center gap-2 mb-4">
             <span style={{ fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 12, background: typeBadge.bg, color: typeBadge.color }}>{typeBadge.label}</span>
-            <span style={{ fontSize: 12, color: "#94A3B8" }}>👥 {group.member_count} üye</span>
+            <span style={{ fontSize: 12, color: "#94A3B8" }}>👥 {group.member_count} {language === "tr" ? "üye" : "members"}</span>
           </div>
 
           {/* Action buttons */}
@@ -232,7 +236,7 @@ const GroupDetail = () => {
           ) : isMember ? (
             <div className="flex gap-2">
               {isOwner ? (
-                <Button variant="secondary" className="flex-1" disabled style={{ fontSize: 12 }}>👑 Yönetici</Button>
+                <Button variant="secondary" className="flex-1" disabled style={{ fontSize: 12 }}>👑 {t("groups.admin", "Admin")}</Button>
               ) : (
                 <Button variant="outline" className="flex-1 gap-1" onClick={() => leaveMutation.mutate()} disabled={leaveMutation.isPending} style={{ fontSize: 12, borderColor: "#E74C3C", color: "#E74C3C" }}>
                   <LogOut className="w-3.5 h-3.5" /> Gruptan Ayrıl
@@ -284,8 +288,8 @@ const GroupDetail = () => {
       {/* Tabs */}
       <Tabs defaultValue="feed">
         <TabsList className="w-full grid grid-cols-2 mb-4">
-          <TabsTrigger value="feed" style={{ fontSize: 13 }}>{t("groups.tab.feed", "Gönderi")}</TabsTrigger>
-          <TabsTrigger value="members" style={{ fontSize: 13 }}>{t("groups.tab.members", "Üyeler")} ({activeMembers.length})</TabsTrigger>
+          <TabsTrigger value="feed" style={{ fontSize: 13 }}>{t("groups.feed_tab", "Feed")}</TabsTrigger>
+          <TabsTrigger value="members" style={{ fontSize: 13 }}>{t("groups.tab.members", "Members")} ({activeMembers.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="feed">
@@ -293,7 +297,7 @@ const GroupDetail = () => {
             <Dialog open={postOpen} onOpenChange={setPostOpen}>
               <DialogTrigger asChild>
                 <Button className="w-full mb-4 gap-2" style={{ background: "#1E3A5F", color: "#fff", fontSize: 13 }}>
-                  <Plus className="w-4 h-4" /> Gruba Paylaş
+                  <Plus className="w-4 h-4" /> {t("groups.post_to_group", "Post to Group")}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -357,7 +361,7 @@ const GroupDetail = () => {
                 </div>
                 {(member.role === "owner" || member.role === "admin") && (
                   <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 10, background: "#EFF4FF", color: "#1E3A5F" }}>
-                    {member.role === "owner" ? "👑 Yönetici" : "Mod"}
+                    {member.role === "owner" ? `👑 ${t("groups.admin", "Admin")}` : "Mod"}
                   </span>
                 )}
                 {user && member.user_id !== user.id && (
