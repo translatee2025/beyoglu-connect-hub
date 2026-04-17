@@ -435,7 +435,7 @@ const SocialCard = ({ item, badge, timeAgo, user, setReportTarget, t }: any) => 
     <div className="flex items-center gap-3.5 mt-2.5 pt-2" style={{ borderTop: '1px solid #E2EBFC' }}>
       <LikeButton entityType={item.entityType} entityId={item.id} />
       <CommentsSection entityType={item.entityType} entityId={item.id} />
-      <button className="text-[11px] font-medium ml-auto" style={{ color: '#94A3B8' }}>{t("wall.message", "Message")}</button>
+      <button className="text-[11px] font-medium ml-auto" style={{ color: '#94A3B8' }}>{t("common.send_message", "Send Message")}</button>
     </div>
   </div>
 );
