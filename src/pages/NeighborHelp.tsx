@@ -19,22 +19,8 @@ import { useLocation } from "@/providers/LocationProvider";
 import { SkeletonList } from "@/components/shared/SkeletonCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 
-const helpCategoryKeys = [
-  { key: "All", tKey: "filter.all", fallback: "All" },
-  { key: "Plumbing & Bathroom", tKey: "help.category.plumbing", fallback: "Plumbing & Bathroom" },
-  { key: "Painting", tKey: "help.category.painting", fallback: "Painting" },
-  { key: "Electrical", tKey: "help.category.electrical", fallback: "Electrical" },
-  { key: "Assembly & Hanging", tKey: "help.category.assembly", fallback: "Assembly & Hanging" },
-  { key: "Cleaning", tKey: "help.category.cleaning", fallback: "Cleaning" },
-  { key: "Moving", tKey: "help.category.moving", fallback: "Moving" },
-  { key: "Computer Repair", tKey: "help.category.computer", fallback: "Computer Repair" },
-  { key: "Drilling & Mounting", tKey: "help.category.drilling", fallback: "Drilling & Mounting" },
-  { key: "Car Wash", tKey: "help.category.carwash", fallback: "Car Wash" },
-  { key: "Ironing", tKey: "help.category.ironing", fallback: "Ironing" },
-  { key: "Babysitting", tKey: "help.category.babysitting", fallback: "Babysitting" },
-  { key: "Gardening", tKey: "help.category.gardening", fallback: "Gardening" },
-  { key: "Mixed / Other", tKey: "help.category.other", fallback: "Mixed / Other" },
-];
+import { useAppOptions } from "@/hooks/useAppOptions";
+import { useMemo } from "react";
 
 // timeAgo is defined inside the component to access t()
 
