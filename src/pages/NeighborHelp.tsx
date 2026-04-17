@@ -33,6 +33,11 @@ const NeighborHelp = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { getDistance } = useLocation();
+  const { options: helpCats } = useAppOptions("help_categories");
+  const helpCategoryKeys = useMemo(() => [
+    { key: "All", label: t("filter.all", "All") },
+    ...helpCats.map((o) => ({ key: o.value, label: o.label })),
+  ], [helpCats, t]);
 
   const timeAgo = (date: string) => {
     const diff = Date.now() - new Date(date).getTime();
@@ -98,7 +103,7 @@ const NeighborHelp = () => {
               border: category === cat.key ? "none" : "1px solid #E2E8F0",
             }}
           >
-            {t(cat.tKey, cat.fallback)}
+            {cat.label}
           </button>
         ))}
       </div>
@@ -181,10 +186,11 @@ const NeighborHelp = () => {
 // ─── Help Post Form ───
 const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({ title: "", description: "", category: "Mixed / Other", helpType: "offer", neighborhood: "", phone: "", whatsapp: "", price: "", priceType: "fixed" });
+  const [form, setForm] = useState({ title: "", description: "", category: "other", helpType: "offer", neighborhood: "", phone: "", whatsapp: "", price: "", priceType: "fixed" });
   const [photos, setPhotos] = useState<string[]>([]);
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { options: helpCats } = useAppOptions("help_categories");
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -249,7 +255,7 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
             <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.category", "Category")}</Label>
             <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
               <SelectTrigger style={{ fontSize: 13 }}><SelectValue /></SelectTrigger>
-              <SelectContent>{helpCategoryKeys.filter(c => c.key !== "All").map(c => <SelectItem key={c.key} value={c.key}>{t(c.tKey, c.fallback)}</SelectItem>)}</SelectContent>
+              <SelectContent>{helpCats.map(c => <SelectItem key={c.value} value={c.value}>{c.emoji ? `${c.emoji} ${c.label}` : c.label}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div>
