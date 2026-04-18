@@ -163,7 +163,7 @@ const Venues = () => {
           {viewMode === "list" ? (
             isLoading ? <SkeletonGrid count={3} hasPhoto photoHeight={140} cols={3} />
             : filtered.length === 0 ? (
-              <EmptyState emoji="📍" message={t("empty.venues", "Bu bölgede henüz mekan eklenmemiş. Favorin nerede?")} actionLabel={t("venues.add_venue", "Mekan Ekle")} onAction={() => {}} />
+              <EmptyState emoji="📍" message={t("empty.venues", "No venues yet in this area. Where's your favorite?")} actionLabel={t("venues.add_venue", "Add Venue")} onAction={() => {}} />
             ) : (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {filtered.map((venue: any) => {
