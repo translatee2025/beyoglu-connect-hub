@@ -1,59 +1,65 @@
 
 
-## Plan — Final i18n cleanup pass
+## Plan — 10 fixes across DB, sidebar, groups, pets
 
-Most translation keys already exist in DB. Code mostly uses `t()` correctly. The remaining hardcoded strings live in a handful of components, plus a few DB inserts to add missing keys and the classifieds category lookup.
+### DB migrations (one batch, user-approved)
+1. Add `name_tr` to `venue_types`, wipe + reseed 8 canonical types with TR labels.
+2. Replace `app_options` rows for `rental_types` (apartment sizes), `parking_types`, `help_categories` (incl. babysitting/tutoring/pet care), `classified_categories`.
+3. Wipe + reseed `classified_categories` table with 12 EN entries (slug-based).
+
+Note: existing `wall_posts.category`, `classifieds.category`, `neighbor_help_posts.category` rows may reference old values — content stays but category filtering may not match. Acceptable since user requested replacement.
 
 ### Code edits
 
-**1. `src/components/shared/PhotoUploader.tsx`** (lines 226-227)
-- Replace fallback `"+ Fotoğraf Ekle"` → use `t("common.add_photo", "Add Photo")` (key already in DB).
-- Same for "max photos reached" — change Turkish fallback to English.
+**`src/pages/Venues.tsx`**
+- Update `venueTypes` query to select `name_tr`.
+- Update `CATEGORY_EMOJI` map to new 8-type list.
+- Render `language === "tr" ? (vt.name_tr || vt.name) : vt.name`.
 
-**2. `src/components/pets/ShopsVetsSection.tsx`** (lines 262, 290)
-- Map popup: replace hardcoded `typeLabel = "Pet Shop"/"Veteriner"` with localized strings via `t("pets.shop", ...)` / `t("pets.vet", ...)`.
-- Map popup "Detay" button → `t("common.details", ...)`.
+**`src/pages/Rentals.tsx` & `src/pages/Parking.tsx`**
+- Add empty-state fallback when `mapPins(...)` is empty (`t("common.no_map_data", ...)`).
 
-**3. `src/components/GlobalSearch.tsx`**
-- Add `t()` from `useLanguage` in both `GlobalSearchDesktop` and `GlobalSearchMobile`.
-- Replace placeholder `"Ara..."` → `t("common.search", "Search...")`.
-- Replace `"Aranıyor..."` → `t("common.searching", "Searching...")`.
-- Replace `"Sonuç bulunamadı..."` → `t("common.no_results", "No results found.")`.
-- Mobile: placeholder `"Mekan, etkinlik, kişi ara..."` → `t("search.placeholder_mobile", ...)`, "İptal" → `t("common.cancel", "Cancel")`.
+**`src/pages/Classifieds.tsx`**
+- Already uses `useAppOptions("classified_categories")`. Update so:
+  - `categoryNames` derives from `classifiedCats` labels.
+  - Filter pills render from `classifiedCats`.
+  - `ClassifiedPostForm` receives `classifiedCats.map(c => c.label)`.
 
-**4. `src/pages/Classifieds.tsx`**
-- Add `useAppOptions("classified_categories")` hook.
-- Update `getCatLabel` to first look up from app_options (localized), then fall back to DB category name.
+**`src/components/AppSidebar.tsx`**
+- Remove Families + Lost & Found nav items.
+- Replace top brand row with brand + inline TR/EN toggle (uses existing `language`/`setLanguage` from `useLanguage()`).
+- Remove the old bottom-of-sidebar language toggle.
 
-**5. `src/pages/Groups.tsx`** — verify CreateGroupForm submit button at the bottom of the form uses `t("common.creating",...)` / `t("groups.create",...)`. Will need to view lines 373-453 to confirm and patch if needed.
+**`src/components/MobileDrawer.tsx`**
+- Remove Families + Lost & Found nav items.
 
-**6. `src/pages/LostFound.tsx`** — already correctly uses `t()` for all top-level strings. No changes needed.
+**`src/pages/GroupDetail.tsx`**
+- Replace Dialog-wrapped post composer with inline composer (Textarea + PhotoUploader + Post button) above posts list, only when `user` truthy and on Feed tab.
+- Drop the unused Dialog imports if no longer used.
+- Update `activeMembers` filter to require `m.profile?.display_name` (removes orphan "Kullanıcı" rows).
+- Add translation key `groups.whats_on_mind` and `groups.post_btn` via insert (also do via DB batch).
 
-**7. `src/pages/Parking.tsx`** — already fully wrapped in `t()`. Existing keys (`parking.listings`, `common.looking_for`) work; no code change.
+**`src/pages/Pets.tsx`**
+- Add `staleTime: 1000 * 60 * 5` and `gcTime: 1000 * 60 * 10` to pet-profiles and pet-posts useQuery calls to prevent skeleton flash on remount.
 
-**8. `src/pages/Venues.tsx`** — already wrapped. No code change. The empty-state message at line 166 still has Turkish fallback — wrap with proper key fallback.
+### Translation key inserts
+- `common.no_map_data` (en/tr)
+- `groups.whats_on_mind` (en/tr)
+- `groups.post_btn` (en/tr)
 
-### Database inserts (one batch)
+### Out of scope / preserved
+- Routes for `/families` and `/lost-found` stay registered in App.tsx (just hidden from nav) — won't break deep links.
+- Existing wall posts and classifieds with old category strings remain in DB; only filter labels change.
+- No auth/schema resets, no edits to preconfigured Supabase files.
 
-Insert / update missing keys:
-- `common.searching` (en/tr) — already exists? Will upsert.
-- `common.no_results`, `common.cancel`, `search.placeholder_mobile`
-- `pets.shop` already exists ("Pet Shop"/"Pet Mağazası"?) — verify; insert if missing.
-- All 16 `classified_categories` rows into `app_options` table.
-- Update Parking page TR title from "Otopark Bul" → keep as is (already reasonable).
-
-### Out of scope
-- Sidebar/MobileDrawer "Help" link already uses `t("nav.help", "Help")` — DB has the key (verified).
-- Profile date formatting already language-aware ✓.
-- PetSittingWalkingSection already uses `t("pets.pet_walking", ...)` ✓.
-- EventsMap "Detay →" — already fixed in previous pass.
-
-### Files to edit
-- `src/components/shared/PhotoUploader.tsx`
-- `src/components/pets/ShopsVetsSection.tsx`
-- `src/components/GlobalSearch.tsx`
+### Files touched
+- `src/pages/Venues.tsx`
+- `src/pages/Rentals.tsx`
+- `src/pages/Parking.tsx`
 - `src/pages/Classifieds.tsx`
-- `src/pages/Venues.tsx` (empty-state fallback only)
-- `src/pages/Groups.tsx` (only if submit button hardcoded — verify first)
-- DB: 1 INSERT for missing translation keys, 1 INSERT for classified_categories app_options
+- `src/components/AppSidebar.tsx`
+- `src/components/MobileDrawer.tsx`
+- `src/pages/GroupDetail.tsx`
+- `src/pages/Pets.tsx`
+- 1 DB migration batch
 
