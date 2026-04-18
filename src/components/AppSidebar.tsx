@@ -5,9 +5,8 @@ import { useLanguage } from "@/providers/LanguageProvider";
 import { useNavigate } from "react-router-dom";
 import {
   MessageSquare, Store, Calendar, Film,
-  Users, Dog, Heart, Search,
+  Users, Dog,
   Home, Car, Wrench, ShoppingBag, Briefcase,
-  Globe,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 
@@ -34,8 +33,6 @@ const AppSidebar = () => {
       items: [
         { to: "/groups", icon: Users, label: t("nav.groups", "Groups") },
         { to: "/pets", icon: Dog, label: t("nav.pets", "Pets") },
-        { to: "/families", icon: Heart, label: t("nav.families", "Families") },
-        { to: "/lost-found", icon: Search, label: t("nav.lost_found", "Lost & Found") },
       ],
     },
     {
@@ -57,14 +54,32 @@ const AppSidebar = () => {
       className="hidden lg:flex flex-col fixed top-0 left-0 h-screen z-40 bg-white overflow-y-auto"
       style={{ width: 220, borderRight: "1px solid #E2EBFC" }}
     >
-      <div style={{ padding: "20px 16px 12px" }}>
+      <div className="flex items-center justify-between" style={{ padding: "16px 16px 10px" }}>
         <span
           className="cursor-pointer"
-          style={{ fontSize: 16, fontWeight: 800, color: "#1E3A5F", letterSpacing: "-0.3px" }}
+          style={{ fontSize: 18, fontWeight: 800, color: "#1E3A5F", letterSpacing: "-0.3px" }}
           onClick={() => navigate("/wall")}
         >
           beyoğlu
         </span>
+        <div className="flex gap-1">
+          {["tr", "en"].map((lang) => (
+            <button
+              key={lang}
+              onClick={() => setLanguage(lang)}
+              style={{
+                fontSize: 11, fontWeight: language === lang ? 600 : 400,
+                color: language === lang ? "#1E3A5F" : "#94A3B8",
+                padding: "2px 6px", borderRadius: 4,
+                backgroundColor: language === lang ? "#EFF4FF" : "transparent",
+                border: language === lang ? "1px solid #E2EBFC" : "1px solid transparent",
+                textTransform: "uppercase",
+              }}
+            >
+              {lang}
+            </button>
+          ))}
+        </div>
       </div>
 
       <GlobalSearchDesktop />
@@ -148,22 +163,6 @@ const AppSidebar = () => {
           </button>
         )}
 
-        <div className="flex items-center gap-1 mt-2 ml-1">
-          <Globe className="w-3 h-3" style={{ color: "#94A3B8" }} />
-          {["tr", "en"].map((lang) => (
-            <button
-              key={lang}
-              onClick={() => setLanguage(lang)}
-              className="uppercase transition-colors"
-              style={{
-                fontSize: 11, fontWeight: language === lang ? 600 : 400,
-                color: language === lang ? "#1E3A5F" : "#94A3B8", padding: "0 3px",
-              }}
-            >
-              {lang}
-            </button>
-          ))}
-        </div>
       </div>
     </aside>
   );

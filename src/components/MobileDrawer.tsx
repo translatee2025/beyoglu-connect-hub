@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   MessageSquare, Store, Calendar, Film,
-  Users, Dog, Heart, Search,
+  Users, Dog,
   Home, Car, Wrench, ShoppingBag, Briefcase,
   X, Globe,
 } from "lucide-react";
@@ -34,8 +34,6 @@ const MobileDrawer = ({ open, onClose }: { open: boolean; onClose: () => void })
       items: [
         { to: "/groups", icon: Users, label: t("nav.groups", "Groups") },
         { to: "/pets", icon: Dog, label: t("nav.pets", "Pets") },
-        { to: "/families", icon: Heart, label: t("nav.families", "Families") },
-        { to: "/lost-found", icon: Search, label: t("nav.lost_found", "Lost & Found") },
       ],
     },
     {

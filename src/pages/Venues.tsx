@@ -55,12 +55,12 @@ const isVenueOpen = (hours: Record<string, { open: string; close: string }> | nu
 
 const CATEGORY_EMOJI: Record<string, string> = {
   "Restaurants & Bars": "🍽️",
-  "Cafés": "☕",
-  "Nightlife": "🍸",
-  "Health": "🏥",
+  "Nightlife": "🎵",
   "Culture": "🎨",
-  "Sports & Wellness": "💪",
-  "Pets": "🐾",
+  "Health": "🏥",
+  "Pharmacies": "💊",
+  "Tekke": "🕌",
+  "Wellness": "💪",
   "Other": "📍",
 };
 
@@ -71,12 +71,12 @@ const Venues = () => {
   const [postOpen, setPostOpen] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const { data: venueTypes = [] } = useQuery({
     queryKey: ["venue-types"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("venue_types").select("id, name, icon").eq("is_active", true).order("sort_order");
+      const { data, error } = await supabase.from("venue_types").select("id, name, name_tr, icon, sort_order").eq("is_active", true).order("sort_order");
       if (error) throw error;
       return data;
     },
@@ -148,8 +148,10 @@ const Venues = () => {
                   padding: "10px 4px",
                 }}
               >
-                <span className="text-2xl block mb-1">{CATEGORY_EMOJI[vt.name] || "📍"}</span>
-                <span className="text-xs block" style={{ color: selectedType === vt.id ? "#1E3A5F" : "#64748B" }}>{vt.name}</span>
+                <span className="text-2xl block mb-1">{CATEGORY_EMOJI[vt.name] || vt.icon || "📍"}</span>
+                <span className="text-xs block" style={{ color: selectedType === vt.id ? "#1E3A5F" : "#64748B" }}>
+                  {language === "tr" ? ((vt as any).name_tr || vt.name) : vt.name}
+                </span>
               </button>
             ))}
           </div>

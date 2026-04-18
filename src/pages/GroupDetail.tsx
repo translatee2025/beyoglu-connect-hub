@@ -89,7 +89,7 @@ const GroupDetail = () => {
 
   // Pending requests (for owner)
   const pendingMembers = members.filter(m => m.role === "pending");
-  const activeMembers = members.filter(m => m.role !== "pending" && m.role !== "rejected");
+  const activeMembers = members.filter(m => m.role !== "pending" && m.role !== "rejected" && m.profile?.display_name);
 
   const postMutation = useMutation({
     mutationFn: async () => {
@@ -293,26 +293,29 @@ const GroupDetail = () => {
         </TabsList>
 
         <TabsContent value="feed">
-          {isMember && (
-            <Dialog open={postOpen} onOpenChange={setPostOpen}>
-              <DialogTrigger asChild>
-                <Button className="w-full mb-4 gap-2" style={{ background: "#1E3A5F", color: "#fff", fontSize: 13 }}>
-                  <Plus className="w-4 h-4" /> {t("groups.post_to_group", "Post to Group")}
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle style={{ fontSize: 15 }}>{group.name} grubuna paylaş</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-3">
-                  <Textarea placeholder="Aklından ne geçiyor?" className="resize-none" rows={4} value={postContent} onChange={e => setPostContent(e.target.value)} style={{ fontSize: 13 }} />
-                  <MediaUpload value={postPhotos} onChange={setPostPhotos} maxFiles={6} />
-                  <Button className="w-full" disabled={(!postContent.trim() && postPhotos.length === 0) || postMutation.isPending} onClick={() => postMutation.mutate()} style={{ background: "#E74C3C", color: "#fff" }}>
-                    Paylaş
+          {isMember && user && (
+            <div className="rounded-xl bg-white p-4 mb-4" style={{ border: "1px solid #E2EBFC" }}>
+              <Textarea
+                value={postContent}
+                onChange={(e) => setPostContent(e.target.value)}
+                placeholder={t("groups.whats_on_mind", "What's on your mind?")}
+                className="resize-none text-sm mb-3 border-0 focus-visible:ring-0 p-0 shadow-none"
+                rows={3}
+              />
+              <div className="space-y-3">
+                <MediaUpload value={postPhotos} onChange={setPostPhotos} maxFiles={4} />
+                <div className="flex justify-end">
+                  <Button
+                    size="sm"
+                    disabled={(!postContent.trim() && postPhotos.length === 0) || postMutation.isPending}
+                    onClick={() => postMutation.mutate()}
+                    style={{ background: "#E74C3C", color: "#fff" }}
+                  >
+                    {t("groups.post_btn", "Post")}
                   </Button>
                 </div>
-              </DialogContent>
-            </Dialog>
+              </div>
+            </div>
           )}
 
           {posts.length === 0 ? (
