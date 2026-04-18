@@ -240,7 +240,7 @@ const Venues = () => {
                 })}
               </div>
             )
-          ) : <ListingMap items={mapPins} height="450px" />}
+          ) : <div className="pb-20 sm:pb-0"><ListingMap items={mapPins} height="450px" /></div>}
         </div>
       </div>
     </div>

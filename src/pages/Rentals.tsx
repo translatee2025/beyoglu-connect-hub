@@ -256,7 +256,7 @@ const Rentals = () => {
                 : processItems(offeringListings).length === 0 ? <EmptyStateComponent emoji="🏠" message={t("empty.rentals", "No listings in this area yet.")} actionLabel={t("rentals.list_apt", "List Apartment")} onAction={() => setPostOpen(true)} />
                 : <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{processItems(offeringListings).map((item: any) => <RentalCard key={item.id} item={item} />)}</div>
               ) : (
-                <ListingMap items={mapPins(processItems(offeringListings))} height="400px" />
+                <div className="pb-20 sm:pb-0"><ListingMap items={mapPins(processItems(offeringListings))} height="400px" /></div>
               )}
             </TabsContent>
           </Tabs>

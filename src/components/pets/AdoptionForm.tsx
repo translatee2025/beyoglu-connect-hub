@@ -181,8 +181,8 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
         <div>
           <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>{t("pets.gender_label", "Gender")}</Label>
           <div className="grid grid-cols-2 gap-2">
-            <button onClick={() => setForm({ ...form, gender: "male" })} className="p-3 rounded-lg text-center text-sm font-semibold" style={cardStyle(form.gender === "male")}>{t("pets.male_label", "Male 🐾")}</button>
-            <button onClick={() => setForm({ ...form, gender: "female" })} className="p-3 rounded-lg text-center text-sm font-semibold" style={cardStyle(form.gender === "female")}>{t("pets.female_label", "Female 🐾")}</button>
+            <button onClick={() => setForm({ ...form, gender: "male" })} className="p-3 rounded-lg text-center text-sm font-semibold flex items-center justify-center" style={{ ...cardStyle(form.gender === "male"), minHeight: 72 }}>{t("pets.male_label", "Male 🐾")}</button>
+            <button onClick={() => setForm({ ...form, gender: "female" })} className="p-3 rounded-lg text-center text-sm font-semibold flex items-center justify-center" style={{ ...cardStyle(form.gender === "female"), minHeight: 72 }}>{t("pets.female_label", "Female 🐾")}</button>
           </div>
         </div>
 

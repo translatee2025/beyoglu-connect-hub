@@ -299,7 +299,7 @@ const Events = () => {
             )
           ) : (
             <div>
-              {activeTab === "map" && <EventsMap events={mapEvents} />}
+              {activeTab === "map" && <div className="pb-20 sm:pb-0"><EventsMap events={mapEvents} /></div>}
             </div>
           )}
         </div>
