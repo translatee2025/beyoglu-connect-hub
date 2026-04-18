@@ -1,0 +1,1 @@
+ALTER TABLE public.venue_types ADD COLUMN IF NOT EXISTS name_tr text;
