@@ -53,6 +53,17 @@ const isVenueOpen = (hours: Record<string, { open: string; close: string }> | nu
   return currentTime >= h.open && currentTime <= h.close;
 };
 
+const CATEGORY_EMOJI: Record<string, string> = {
+  "Restaurants & Bars": "🍽️",
+  "Cafés": "☕",
+  "Nightlife": "🍸",
+  "Health": "🏥",
+  "Culture": "🎨",
+  "Sports & Wellness": "💪",
+  "Pets": "🐾",
+  "Other": "📍",
+};
+
 const Venues = () => {
   const [search, setSearch] = useState("");
   const [selectedType, setSelectedType] = useState("all");
@@ -126,28 +137,19 @@ const Venues = () => {
 
           {/* Category grid */}
           <div className="grid grid-cols-4 gap-2 mb-4">
-            {[
-              { key: "restaurants", emoji: "🍽️", label: "Restaurants & Bars" },
-              { key: "cafes", emoji: "☕", label: "Cafés" },
-              { key: "nightlife", emoji: "🍸", label: "Nightlife" },
-              { key: "health", emoji: "🏥", label: "Health" },
-              { key: "culture", emoji: "🎨", label: "Culture" },
-              { key: "sports", emoji: "💪", label: "Sports & Wellness" },
-              { key: "pets", emoji: "🐾", label: "Pets" },
-              { key: "other", emoji: "📍", label: "Other" },
-            ].map((cat) => (
+            {venueTypes.map((vt: any) => (
               <button
-                key={cat.key}
-                onClick={() => setSelectedType(selectedType === cat.key ? "all" : cat.key)}
+                key={vt.id}
+                onClick={() => setSelectedType(selectedType === vt.id ? "all" : vt.id)}
                 className="rounded-xl text-center transition-all"
                 style={{
-                  border: selectedType === cat.key ? "2px solid #1E3A5F" : "1px solid #E2EBFC",
-                  backgroundColor: selectedType === cat.key ? "#EFF4FF" : "white",
-                  padding: "16px 10px",
+                  border: selectedType === vt.id ? "2px solid #1E3A5F" : "1px solid #E2EBFC",
+                  backgroundColor: selectedType === vt.id ? "#EFF4FF" : "white",
+                  padding: "10px 4px",
                 }}
               >
-                <div className="text-[28px] mb-1">{cat.emoji}</div>
-                <span className="text-xs block" style={{ color: selectedType === cat.key ? "#1E3A5F" : "#64748B" }}>{cat.label}</span>
+                <span className="text-2xl block mb-1">{CATEGORY_EMOJI[vt.name] || "📍"}</span>
+                <span className="text-xs block" style={{ color: selectedType === vt.id ? "#1E3A5F" : "#64748B" }}>{vt.name}</span>
               </button>
             ))}
           </div>

@@ -80,8 +80,8 @@ const EventsMap = ({ events }: EventsMapProps) => {
   return (
     <div
       ref={mapRef}
-      className="w-full h-[500px] rounded-lg overflow-hidden"
-      style={{ border: "1px solid #E2EBFC" }}
+      className="w-full rounded-lg overflow-hidden"
+      style={{ border: "1px solid #E2EBFC", height: "min(500px, 55vh)" }}
     />
   );
 };

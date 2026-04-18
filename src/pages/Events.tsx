@@ -238,7 +238,7 @@ const Events = () => {
                         {/* Category badge */}
                         {event.category && (
                           <span className="absolute top-0 left-0 text-[10px] font-medium text-white" style={{ backgroundColor: "#1E3A5F", padding: "3px 8px", borderRadius: "0 0 6px 0" }}>
-                            {event.category}
+                            {t(`event_cat.${event.category.toLowerCase()}`, event.category)}
                           </span>
                         )}
                         {/* Free/Price badge */}

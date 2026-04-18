@@ -175,7 +175,7 @@ const EventDetail = () => {
           <div className="flex items-start justify-between gap-2 mb-2">
             <h1 className="text-[22px] font-bold" style={{ color: "#1E3A5F" }}>{event.title}</h1>
             <div className="flex items-center gap-1.5 flex-shrink-0">
-              {event.category && <Badge variant="outline" className="text-[10px]">{event.category}</Badge>}
+              {event.category && <Badge variant="outline" className="text-[10px]">{t(`event_cat.${event.category.toLowerCase()}`, event.category)}</Badge>}
               <span
                 className="text-[10px] font-medium px-2 py-0.5 rounded"
                 style={event.is_free
