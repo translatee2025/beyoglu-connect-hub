@@ -133,6 +133,7 @@ const Classifieds = () => {
   const currentSubCats = category !== "All" && category !== "Other" ? subOptions.map(o => o.label) : [];
 
   const getMeta = (cat: string | null) => categoryMeta[cat || "Other"] || categoryMeta.Other;
+  const getCatLabel = (cat: string | null) => categories.find((c: any) => c.name === cat || c.slug === cat?.toLowerCase())?.name || cat;
 
   const ClassifiedCard = ({ item }: { item: any }) => {
     const photo = parsePhotos(item.photos)[0] || null;
@@ -155,7 +156,7 @@ const Classifieds = () => {
             <div className="flex items-center gap-2">
               {item.category && (
                 <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 10, backgroundColor: "#F1F5F9", color: "#64748B" }}>
-                  {item.category}
+                  {getCatLabel(item.category)}
                 </span>
               )}
             </div>

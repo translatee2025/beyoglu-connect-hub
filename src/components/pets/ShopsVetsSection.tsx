@@ -119,7 +119,7 @@ const ShopsVetsSection = () => {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "#94A3B8" }} />
         <Input
-          placeholder="Mağaza veya klinik ara..."
+          placeholder={t("pets.shops_search", "Search stores or clinics...")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-10"
@@ -151,14 +151,14 @@ const ShopsVetsSection = () => {
             className="px-3 py-1.5 rounded-full text-xs font-medium"
             style={pillStyle(view === "list")}
           >
-            📋 Liste
+            📋 {t("common.list", "List")}
           </button>
           <button
             onClick={() => setView("map")}
             className="px-3 py-1.5 rounded-full text-xs font-medium"
             style={pillStyle(view === "map")}
           >
-            🗺️ Harita
+            🗺️ {t("common.map", "Map")}
           </button>
         </div>
       </div>
@@ -167,8 +167,8 @@ const ShopsVetsSection = () => {
         filtered.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-4xl mb-3">🏥</div>
-            <p className="text-sm font-medium" style={{ color: "#1E3A5F" }}>Mağaza veya klinik bulunamadı</p>
-            <p className="text-xs mt-1" style={{ color: "#94A3B8" }}>Arama kriterlerinizi değiştirin.</p>
+            <p className="text-sm font-medium" style={{ color: "#1E3A5F" }}>{t("pets.shops_empty", "No stores or clinics found")}</p>
+            <p className="text-xs mt-1" style={{ color: "#94A3B8" }}>{t("pets.shops_empty_hint", "Try changing your search.")}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -192,7 +192,7 @@ const ShopsVetsSection = () => {
                         border: "none",
                       }}
                     >
-                      {item.type === "shop" ? "Pet Shop" : "Veteriner"}
+                      {item.type === "shop" ? t("pets.shop", "Pet Shop") : t("pets.vet", "Veterinarian")}
                     </Badge>
                   </div>
 
@@ -216,7 +216,7 @@ const ShopsVetsSection = () => {
                     className="mt-2 text-xs h-7 px-4"
                     style={{ borderColor: "#1E3A5F", color: "#1E3A5F" }}
                   >
-                    Detay
+                    {t("common.details", "Details")}
                   </Button>
                 </div>
               );
