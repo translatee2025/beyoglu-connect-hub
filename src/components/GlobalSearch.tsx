@@ -25,7 +25,7 @@ const makeGetLabel = (language: string) => (type: string) =>
   language === "tr" ? (LABEL_MAP[type]?.tr || type) : (LABEL_MAP[type]?.en || type);
 
 export function GlobalSearchDesktop() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const getLabel = makeGetLabel(language);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -82,7 +82,7 @@ export function GlobalSearchDesktop() {
           value={query}
           onChange={e => { setQuery(e.target.value); setOpen(true); }}
           onFocus={() => query.length >= 2 && setOpen(true)}
-          placeholder="Ara..."
+          placeholder={t("common.search", "Search...")}
           className="w-full pl-8 pr-3 py-1.5 rounded-lg text-xs outline-none"
           style={{ background: "#F1F5F9", border: "1px solid #E2EBFC", color: "#1E3A5F", fontSize: 12 }}
         />
@@ -96,9 +96,9 @@ export function GlobalSearchDesktop() {
       {open && query.length >= 2 && (
         <div className="absolute left-3 right-3 top-full mt-1 bg-white rounded-lg shadow-lg border z-50 max-h-80 overflow-y-auto" style={{ borderColor: "#E2EBFC" }}>
           {loading ? (
-            <div className="p-4 text-center" style={{ fontSize: 12, color: "#94A3B8" }}>Aranıyor...</div>
+            <div className="p-4 text-center" style={{ fontSize: 12, color: "#94A3B8" }}>{t("common.searching", "Searching...")}</div>
           ) : results.length === 0 ? (
-            <div className="p-4 text-center" style={{ fontSize: 12, color: "#94A3B8" }}>Sonuç bulunamadı. Başka bir kelime deneyin.</div>
+            <div className="p-4 text-center" style={{ fontSize: 12, color: "#94A3B8" }}>{t("common.no_results", "No results found.")}</div>
           ) : (
             Object.entries(grouped).map(([type, items]) => {
               const Icon = ICONS[type];
@@ -131,7 +131,7 @@ export function GlobalSearchDesktop() {
 }
 
 export function GlobalSearchMobile() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const getLabel = makeGetLabel(language);
   const [expanded, setExpanded] = useState(false);
   const [query, setQuery] = useState("");
@@ -192,18 +192,18 @@ export function GlobalSearchMobile() {
           ref={inputRef}
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="Mekan, etkinlik, kişi ara..."
+          placeholder={t("search.placeholder_mobile", "Search venues, events, people...")}
           className="flex-1 outline-none"
           style={{ fontSize: 14, color: "#1E3A5F" }}
         />
-        <button onClick={() => { setExpanded(false); setQuery(""); setResults([]); }} style={{ fontSize: 13, color: "#E74C3C", fontWeight: 500 }}>İptal</button>
+        <button onClick={() => { setExpanded(false); setQuery(""); setResults([]); }} style={{ fontSize: 13, color: "#E74C3C", fontWeight: 500 }}>{t("common.cancel", "Cancel")}</button>
       </div>
 
       <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 56px)" }}>
         {loading ? (
-          <div className="p-6 text-center" style={{ fontSize: 13, color: "#94A3B8" }}>Aranıyor...</div>
+          <div className="p-6 text-center" style={{ fontSize: 13, color: "#94A3B8" }}>{t("common.searching", "Searching...")}</div>
         ) : query.length >= 2 && results.length === 0 ? (
-          <div className="p-6 text-center" style={{ fontSize: 13, color: "#94A3B8" }}>Sonuç bulunamadı. Başka bir kelime deneyin.</div>
+          <div className="p-6 text-center" style={{ fontSize: 13, color: "#94A3B8" }}>{t("common.no_results", "No results found.")}</div>
         ) : (
           Object.entries(grouped).map(([type, items]) => {
             const Icon = ICONS[type];

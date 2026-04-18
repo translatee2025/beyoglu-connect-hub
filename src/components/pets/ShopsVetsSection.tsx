@@ -233,6 +233,7 @@ const ShopsVetsSection = () => {
 /* ─── MAP ─── */
 
 const ShopsVetsMap = ({ items }: { items: ShopVetItem[] }) => {
+  const { t } = useLanguage();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
 
