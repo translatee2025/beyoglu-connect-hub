@@ -207,7 +207,7 @@ const Groups = () => {
       </div>
 
       {/* Group list */}
-      {isLoading ? (
+      {isLoading && groups.length === 0 ? (
         <SkeletonGrid count={2} hasPhoto photoHeight={120} />
       ) : filtered.length === 0 ? (
         <EmptyState emoji="👥" message={t("empty.groups", "No groups yet. Create the first one!")} actionLabel={t("groups.create", "Create Group")} onAction={() => setPostOpen(true)} />

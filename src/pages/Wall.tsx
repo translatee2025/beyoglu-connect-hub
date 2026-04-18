@@ -98,6 +98,7 @@ const Wall = () => {
         user_id: item.user_id, cardStyle: "social" as const,
       }));
     },
+    staleTime: 1000 * 60 * 2,
   });
 
   const { data: classifieds = [] } = useQuery({
@@ -114,6 +115,7 @@ const Wall = () => {
         cardStyle: "listing" as const,
       }));
     },
+    staleTime: 1000 * 60 * 5,
   });
 
   const { data: petPosts = [] } = useQuery({
@@ -127,6 +129,7 @@ const Wall = () => {
         cardStyle: "social" as const,
       }));
     },
+    staleTime: 1000 * 60 * 5,
   });
 
   const { data: venues = [] } = useQuery({
@@ -140,6 +143,7 @@ const Wall = () => {
         cardStyle: "social" as const,
       }));
     },
+    staleTime: 1000 * 60 * 5,
   });
 
   const { data: helpPosts = [] } = useQuery({
@@ -153,6 +157,7 @@ const Wall = () => {
         cardStyle: "social" as const,
       }));
     },
+    staleTime: 1000 * 60 * 5,
   });
 
   const postToWall = useMutation({
@@ -340,9 +345,9 @@ const Wall = () => {
         </div>
 
         {/* Feed */}
-        {wallLoading ? (
+        {wallLoading && filteredItems.length === 0 ? (
           <SkeletonFeedList count={3} />
-        ) : filteredItems.length === 0 ? (
+        ) : filteredItems.length === 0 && !wallLoading ? (
           <EmptyState emoji="🌟" message={t("empty.feed", "No posts yet. Be the first to share! 🌟")} actionLabel={t("common.post", "Post")} onAction={() => {}} />
         ) : (
           <div className="space-y-3">
