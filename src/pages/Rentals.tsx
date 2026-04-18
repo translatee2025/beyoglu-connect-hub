@@ -255,6 +255,8 @@ const Rentals = () => {
                 offeringLoading ? <SkeletonGrid count={3} hasPhoto photoHeight={180} />
                 : processItems(offeringListings).length === 0 ? <EmptyStateComponent emoji="🏠" message={t("empty.rentals", "No listings in this area yet.")} actionLabel={t("rentals.list_apt", "List Apartment")} onAction={() => setPostOpen(true)} />
                 : <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{processItems(offeringListings).map((item: any) => <RentalCard key={item.id} item={item} />)}</div>
+              ) : mapPins(processItems(offeringListings)).length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground text-sm">{t("common.no_map_data", "No listings with location data yet.")}</div>
               ) : (
                 <div className="pb-20 sm:pb-0"><ListingMap items={mapPins(processItems(offeringListings))} height="400px" /></div>
               )}

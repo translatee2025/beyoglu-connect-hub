@@ -68,21 +68,8 @@ const Classifieds = () => {
     return language === "tr" ? `${days}g` : `${days}d`;
   };
 
-  const { data: categories = [] } = useQuery({
-    queryKey: ["classified-categories"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("classified_categories")
-        .select("*")
-        .eq("section", "classifieds")
-        .eq("is_active", true)
-        .order("sort_order");
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const categoryNames = ["All", ...categories.map((c: any) => c.name)];
+  const { options: classifiedCats } = useAppOptions("classified_categories");
+  const categoryNames = ["All", ...classifiedCats.map((c) => c.label)];
 
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["classifieds"],
@@ -130,7 +117,6 @@ const Classifieds = () => {
 
   const subGroupKey = category !== "All" && category !== "Other" ? `classified_sub_${category.toLowerCase()}` : "";
   const { options: subOptions } = useAppOptions(subGroupKey);
-  const { options: classifiedCats } = useAppOptions("classified_categories");
   const currentSubCats = category !== "All" && category !== "Other" ? subOptions.map(o => o.label) : [];
 
   const getMeta = (cat: string | null) => categoryMeta[cat || "Other"] || categoryMeta.Other;
@@ -142,8 +128,7 @@ const Classifieds = () => {
       o.label.toLowerCase() === cat.toLowerCase() ||
       (o as any).metadata?.aliases?.includes?.(cat)
     );
-    if (found) return found.label;
-    return categories.find((c: any) => c.name === cat || c.slug === cat?.toLowerCase())?.name || cat;
+    return found ? found.label : cat;
   };
 
   const ClassifiedCard = ({ item }: { item: any }) => {
@@ -238,7 +223,7 @@ const Classifieds = () => {
               </DialogTrigger>
               <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                 <ClassifiedPostForm
-                  categories={categories.map((c: any) => c.name)}
+                  categories={classifiedCats.map((c) => c.label)}
                   onSuccess={() => { setPostOpen(false); queryClient.invalidateQueries({ queryKey: ["classifieds"] }); }}
                 />
               </DialogContent>

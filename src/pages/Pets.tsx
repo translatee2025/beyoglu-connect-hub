@@ -44,6 +44,8 @@ const Pets = () => {
       if (error) throw error;
       return data;
     },
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
   });
 
   const { data: petPosts = [], isLoading: postsLoading, refetch: refetchPosts } = useQuery({
@@ -53,6 +55,8 @@ const Pets = () => {
       if (error) throw error;
       return data;
     },
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
   });
 
   const lostPets = pets.filter((p: any) => p.is_lost);
