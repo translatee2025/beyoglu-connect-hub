@@ -259,7 +259,7 @@ const ShopsVetsMap = ({ items }: { items: ShopVetItem[] }) => {
       if (!item.lat || !item.lng) return;
       const color = item.type === "shop" ? "#1E3A5F" : "#0D9488";
       const emoji = item.type === "shop" ? "🛒" : "🏥";
-      const typeLabel = item.type === "shop" ? "Pet Shop" : "Veteriner";
+      const typeLabel = item.type === "shop" ? t("pets.shop", "Pet Shop") : t("pets.vet", "Veterinarian");
       const badgeBg = item.type === "shop" ? "#EFF4FF" : "#F0FDFA";
 
       const icon = L.divIcon({
@@ -287,7 +287,7 @@ const ShopsVetsMap = ({ items }: { items: ShopVetItem[] }) => {
             text-align:center;padding:5px;border-radius:6px;
             border:1px solid #1E3A5F;color:#1E3A5F;
             font-size:11px;font-weight:600;cursor:pointer;
-          ">Detay</div>
+          ">${t("common.details", "Details")}</div>
         </div>
       `, { maxWidth: 280 });
     });

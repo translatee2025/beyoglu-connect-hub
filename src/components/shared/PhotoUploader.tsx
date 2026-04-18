@@ -223,8 +223,8 @@ export function PhotoUploader({
       >
         <ImagePlus className="w-4 h-4" />
         {isMaxReached
-          ? t("common.max_photos_reached", `Maksimum ${maxFiles} fotoğraf eklendi`)
-          : t("common.add_photos", "+ Fotoğraf Ekle")}
+          ? t("common.max_photos_reached", `Max ${maxFiles} photos`)
+          : t("common.add_photo", "Add Photo")}
       </button>
     </div>
   );
