@@ -24,7 +24,7 @@ export function useAppOptions(groupKey: string) {
       if (error) throw error;
       return data || [];
     },
-    staleTime: 1000 * 60 * 10,
+    staleTime: 0,
   });
 
   const options: AppOption[] = useMemo(
