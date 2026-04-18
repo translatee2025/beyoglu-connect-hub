@@ -1,50 +1,59 @@
 
-# Plan — Full live audit, both languages, all 17 pages
 
-## Scope
-- **17 pages** × **2 languages (TR + EN)** × **~150 checklist items**
-- Output: per-item report (✅/🔴/⚠️) sorted by page + summary + top 5 critical issues
+## Plan — Final i18n cleanup pass
 
-## Approach
+Most translation keys already exist in DB. Code mostly uses `t()` correctly. The remaining hardcoded strings live in a handful of components, plus a few DB inserts to add missing keys and the classifieds category lookup.
 
-### Step 1 — Setup (2 calls)
-- Dismiss location prompt
-- Verify language toggle location (top right)
+### Code edits
 
-### Step 2 — Per page (×17), each language (×2)
-For each `(page, language)` pair:
-1. Navigate to the page
-2. Extract all visible text (buttons, pills, badges, tabs, timestamps, placeholders)
-3. Screenshot only when image-loading checks are required (Wall, Pets, Venues, Rentals, Parking, Profile)
-4. For pages with sub-tabs/forms (Pets sub-tabs, Adoption form, Group detail), additional `act` + `extract` per sub-view
+**1. `src/components/shared/PhotoUploader.tsx`** (lines 226-227)
+- Replace fallback `"+ Fotoğraf Ekle"` → use `t("common.add_photo", "Add Photo")` (key already in DB).
+- Same for "max photos reached" — change Turkish fallback to English.
 
-**Estimated browser calls**: ~80–110
-- Page navigations: 17 pages × 2 langs = 34
-- Extracts: 34 + ~12 sub-tabs/forms = ~46
-- Screenshots (image checks): ~12
-- Language toggles: ~17
-- Setup/dismiss: ~2
+**2. `src/components/pets/ShopsVetsSection.tsx`** (lines 262, 290)
+- Map popup: replace hardcoded `typeLabel = "Pet Shop"/"Veteriner"` with localized strings via `t("pets.shop", ...)` / `t("pets.vet", ...)`.
+- Map popup "Detay" button → `t("common.details", ...)`.
 
-### Step 3 — Aggregate
-Build the full report in one final message:
-- Per-page section with every item from the checklist marked
-- Note differences between TR and EN (e.g., "EN shows 'Mesaj Gönder' = leaked TR string")
-- Summary counts + top 5 critical issues
+**3. `src/components/GlobalSearch.tsx`**
+- Add `t()` from `useLanguage` in both `GlobalSearchDesktop` and `GlobalSearchMobile`.
+- Replace placeholder `"Ara..."` → `t("common.search", "Search...")`.
+- Replace `"Aranıyor..."` → `t("common.searching", "Searching...")`.
+- Replace `"Sonuç bulunamadı..."` → `t("common.no_results", "No results found.")`.
+- Mobile: placeholder `"Mekan, etkinlik, kişi ara..."` → `t("search.placeholder_mobile", ...)`, "İptal" → `t("common.cancel", "Cancel")`.
 
-## Pages to cover
-`/wall`, `/pets` (+ Pet Sitting tab, + Find a Friend tab, + Adoption form), `/groups`, `/groups/:id`, `/events`, `/events/:id`, `/venues`, `/venue/:id`, `/rentals`, `/parking`, `/help`, `/lost-found`, `/classifieds`, `/profile/:id`, Global Search.
+**4. `src/pages/Classifieds.tsx`**
+- Add `useAppOptions("classified_categories")` hook.
+- Update `getCatLabel` to first look up from app_options (localized), then fall back to DB category name.
 
-## What I will report per item
-`[emoji] [Page · TR|EN] — [What checked] — [Exact text found]`
-Items checked in both languages get two lines if behavior differs, one line if identical.
+**5. `src/pages/Groups.tsx`** — verify CreateGroupForm submit button at the bottom of the form uses `t("common.creating",...)` / `t("groups.create",...)`. Will need to view lines 373-453 to confirm and patch if needed.
 
-## Trade-offs you should know
-- **Time**: ~10–15 minutes of browser activity
-- **Cost**: ~100 browser tool calls (high but you approved)
-- **Failure modes**: If a page errors or session drops, I'll report what I got and continue. Won't restart the entire audit.
-- **Detail pages** (`/groups/:id`, `/events/:id`, `/venue/:id`, `/profile/:id`): I'll pick the first available record on each list page.
+**6. `src/pages/LostFound.tsx`** — already correctly uses `t()` for all top-level strings. No changes needed.
 
-## What I will NOT do
-- Test create/post/delete actions (read-only audit; would mutate live data)
-- Test auth-gated flows beyond what's visible to logged-out user
-- Fix any bugs found — this is audit-only, fixes come in a follow-up
+**7. `src/pages/Parking.tsx`** — already fully wrapped in `t()`. Existing keys (`parking.listings`, `common.looking_for`) work; no code change.
+
+**8. `src/pages/Venues.tsx`** — already wrapped. No code change. The empty-state message at line 166 still has Turkish fallback — wrap with proper key fallback.
+
+### Database inserts (one batch)
+
+Insert / update missing keys:
+- `common.searching` (en/tr) — already exists? Will upsert.
+- `common.no_results`, `common.cancel`, `search.placeholder_mobile`
+- `pets.shop` already exists ("Pet Shop"/"Pet Mağazası"?) — verify; insert if missing.
+- All 16 `classified_categories` rows into `app_options` table.
+- Update Parking page TR title from "Otopark Bul" → keep as is (already reasonable).
+
+### Out of scope
+- Sidebar/MobileDrawer "Help" link already uses `t("nav.help", "Help")` — DB has the key (verified).
+- Profile date formatting already language-aware ✓.
+- PetSittingWalkingSection already uses `t("pets.pet_walking", ...)` ✓.
+- EventsMap "Detay →" — already fixed in previous pass.
+
+### Files to edit
+- `src/components/shared/PhotoUploader.tsx`
+- `src/components/pets/ShopsVetsSection.tsx`
+- `src/components/GlobalSearch.tsx`
+- `src/pages/Classifieds.tsx`
+- `src/pages/Venues.tsx` (empty-state fallback only)
+- `src/pages/Groups.tsx` (only if submit button hardcoded — verify first)
+- DB: 1 INSERT for missing translation keys, 1 INSERT for classified_categories app_options
+
