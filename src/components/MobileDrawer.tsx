@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   MessageSquare, Store, Calendar, Film,
-  Users, Dog, Heart, Search,
+  Users, Dog,
   Home, Car, Wrench, ShoppingBag, Briefcase,
   X, Globe,
 } from "lucide-react";

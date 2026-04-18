@@ -5,9 +5,8 @@ import { useLanguage } from "@/providers/LanguageProvider";
 import { useNavigate } from "react-router-dom";
 import {
   MessageSquare, Store, Calendar, Film,
-  Users, Dog, Heart, Search,
+  Users, Dog,
   Home, Car, Wrench, ShoppingBag, Briefcase,
-  Globe,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 
