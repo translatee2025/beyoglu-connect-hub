@@ -130,10 +130,21 @@ const Classifieds = () => {
 
   const subGroupKey = category !== "All" && category !== "Other" ? `classified_sub_${category.toLowerCase()}` : "";
   const { options: subOptions } = useAppOptions(subGroupKey);
+  const { options: classifiedCats } = useAppOptions("classified_categories");
   const currentSubCats = category !== "All" && category !== "Other" ? subOptions.map(o => o.label) : [];
 
   const getMeta = (cat: string | null) => categoryMeta[cat || "Other"] || categoryMeta.Other;
-  const getCatLabel = (cat: string | null) => categories.find((c: any) => c.name === cat || c.slug === cat?.toLowerCase())?.name || cat;
+  const getCatLabel = (cat: string | null) => {
+    if (!cat) return cat;
+    const norm = cat.toLowerCase().replace(/\s+/g, "_").replace(/&/g, "and");
+    const found = classifiedCats.find(o =>
+      o.value === norm ||
+      o.label.toLowerCase() === cat.toLowerCase() ||
+      (o as any).metadata?.aliases?.includes?.(cat)
+    );
+    if (found) return found.label;
+    return categories.find((c: any) => c.name === cat || c.slug === cat?.toLowerCase())?.name || cat;
+  };
 
   const ClassifiedCard = ({ item }: { item: any }) => {
     const photo = parsePhotos(item.photos)[0] || null;
