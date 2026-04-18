@@ -61,7 +61,7 @@ const ListingMap = ({ items, height = "400px" }: ListingMapProps) => {
     }
   }, [items]);
 
-  return <div ref={mapRef} className="w-full rounded-lg overflow-hidden border border-border" style={{ height }} />;
+  return <div ref={mapRef} className="w-full rounded-lg overflow-hidden border border-border" style={{ height: `min(${height}, 55vh)` }} />;
 };
 
 export default ListingMap;

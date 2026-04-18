@@ -195,6 +195,12 @@ const Pets = () => {
 
 const PostCard = ({ post, badgeLabel, isUrgent, onContact, speciesEmojiMap }: { post: any; badgeLabel: string; isUrgent?: boolean; onContact: (userId: string) => void; speciesEmojiMap?: Record<string, string> }) => {
   const { t } = useLanguage();
+  const { speciesOptions } = useSpecies();
+  const getSpeciesLabel = (key: string) => {
+    const k = (key || "").toLowerCase();
+    const found = speciesOptions.find(s => s.value === key || s.label.toLowerCase().includes(k));
+    return found ? found.label.replace(found.emoji + " ", "") : key;
+  };
   return (
   <Card className="hover:shadow-md transition-shadow overflow-hidden" style={{ border: `1px solid ${isUrgent ? "#FECACA" : "#E2EBFC"}` }}>
     {/* Photo */}
@@ -210,7 +216,7 @@ const PostCard = ({ post, badgeLabel, isUrgent, onContact, speciesEmojiMap }: { 
     <CardHeader className="pb-2">
       <div className="flex items-center gap-2 mb-1 flex-wrap">
         <Badge className="text-[10px] px-1.5 py-0 h-4" style={{ backgroundColor: "#EFF4FF", color: "#1E3A5F", border: "none" }}>{badgeLabel}</Badge>
-        {post.species && <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">{post.species}</Badge>}
+        {post.species && <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">{getSpeciesLabel(post.species)}</Badge>}
         {post.breed && <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">{post.breed}</Badge>}
       </div>
       <CardTitle className="text-[15px]" style={{ color: "#1E3A5F" }}>{post.title}</CardTitle>
