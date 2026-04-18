@@ -59,7 +59,7 @@ const EventsMap = ({ events }: EventsMapProps) => {
       const photoHtml = event.cover_photo
         ? `<img src="${event.cover_photo}" alt="" style="width:60px;height:60px;object-fit:cover;border-radius:6px;margin-right:8px;float:left;" />`
         : "";
-      const detailLink = event.id ? `<a href="/events/${event.id}" style="color:#1E3A5F;font-size:11px;font-weight:500;text-decoration:none;">Detay →</a>` : "";
+      const detailLink = event.id ? `<a href="/events/${event.id}" style="color:#1E3A5F;font-size:11px;font-weight:500;text-decoration:none;">Details →</a>` : "";
 
       L.marker(event.coordinates, { icon: markerIcon })
         .addTo(map)
