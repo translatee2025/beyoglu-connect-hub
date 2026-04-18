@@ -161,7 +161,7 @@ const Pets = () => {
                 ))}
               </div>
 
-              {postsLoading ? (
+              {postsLoading && adoptionPosts.length === 0 ? (
                 <SkeletonGrid count={2} hasPhoto photoHeight={140} />
               ) : adoptionPosts.length === 0 ? (
                 <EmptyState emoji="🐾" title={t("pets.no_adoption", "No adoption posts yet")} subtitle={t("pets.post_adoption", "Post a pet available for adoption!")} onAction={() => setPostChooserOpen(true)} />
