@@ -269,7 +269,7 @@ const ParkingPostForm = ({ mode, onSuccess }: { mode: "looking" | "offer"; onSuc
   const [photos, setPhotos] = useState<string[]>([]);
   const { toast } = useToast();
   const { t } = useLanguage();
-  const { options: parkingTypes } = useAppOptions("parking_types");
+  const { options: parkingTypes, isLoading: typesLoading } = useAppOptions("parking_types");
 
   const mutation = useMutation({
     mutationFn: async () => {
