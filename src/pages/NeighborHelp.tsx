@@ -258,7 +258,7 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
             <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.category", "Category")}</Label>
             <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
               <SelectTrigger style={{ fontSize: 13 }}><SelectValue /></SelectTrigger>
-              <SelectContent>{helpCats.map(c => <SelectItem key={c.value} value={c.value}>{c.emoji ? `${c.emoji} ${c.label}` : c.label}</SelectItem>)}</SelectContent>
+              <SelectContent>{catsLoading ? <SelectItem value="__loading" disabled>Loading...</SelectItem> : helpCats.map(c => <SelectItem key={c.value} value={c.value}>{c.emoji ? `${c.emoji} ${c.label}` : c.label}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div>
