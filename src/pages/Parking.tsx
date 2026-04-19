@@ -298,7 +298,7 @@ const ParkingPostForm = ({ mode, onSuccess }: { mode: "looking" | "offer"; onSuc
           <div><Label>{t("parking.type_label", "Parking Type")}</Label>
             <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
               <SelectTrigger><SelectValue placeholder={t("common.select_type", "Select type")} /></SelectTrigger>
-              <SelectContent>{parkingTypes.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
+              <SelectContent>{typesLoading ? <SelectItem value="__loading" disabled>Loading...</SelectItem> : parkingTypes.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div><Label>{mode === "looking" ? t("common.budget_monthly", "Budget (₺/mo)") : t("common.price_monthly", "Price (₺/mo)")}</Label><Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="2.000" /></div>
