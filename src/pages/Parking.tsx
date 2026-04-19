@@ -116,6 +116,8 @@ const Parking = () => {
 
   const mapPins = (items: any[]) => items.filter((i) => i.lat && i.lng).map((i) => ({ lat: i.lat, lng: i.lng, title: i.title, badge: i.category, extra: i.price ? `₺${i.price}/ay` : undefined }));
 
+  const getCatLabel = (key: string) => parkingTypes.find((o) => o.value === key)?.label || key;
+
   const ParkingCard = ({ item }: { item: any }) => {
     const photo = parsePhotos(item.photos)[0] || null;
     const [imgError, setImgError] = useState(false);
@@ -131,7 +133,7 @@ const Parking = () => {
         <Badge variant={item.listing_mode === "offering" ? "default" : "secondary"} style={{ fontSize: 11 }}>
           {item.listing_mode === "offering" ? t("common.available", "Available") : t("common.looking_for", "Looking")}
         </Badge>
-        {item.category && <Badge variant="outline" style={{ fontSize: 11 }}>{item.category}</Badge>}
+        {item.category && <Badge variant="outline" style={{ fontSize: 11 }}>{getCatLabel(item.category)}</Badge>}
       </div>
 
       <div style={{ fontSize: 13, fontWeight: 600, color: "#1E3A5F", marginBottom: 4 }}>{item.title}</div>
