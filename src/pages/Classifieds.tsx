@@ -120,15 +120,9 @@ const Classifieds = () => {
   const currentSubCats = category !== "All" && category !== "Other" ? subOptions.map(o => o.label) : [];
 
   const getMeta = (cat: string | null) => categoryMeta[cat || "Other"] || categoryMeta.Other;
-  const getCatLabel = (cat: string | null) => {
-    if (!cat) return cat;
-    const norm = cat.toLowerCase().replace(/\s+/g, "_").replace(/&/g, "and");
-    const found = classifiedCats.find(o =>
-      o.value === norm ||
-      o.label.toLowerCase() === cat.toLowerCase() ||
-      (o as any).metadata?.aliases?.includes?.(cat)
-    );
-    return found ? found.label : cat;
+  const getCatLabel = (key: string | null) => {
+    if (!key) return null;
+    return classifiedCats.find(o => o.value === key)?.label || key;
   };
 
   const ClassifiedCard = ({ item }: { item: any }) => {
