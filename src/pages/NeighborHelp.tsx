@@ -39,7 +39,11 @@ const NeighborHelp = () => {
     ...helpCats.map((o) => ({ key: o.value, label: o.label })),
   ], [helpCats, t]);
 
-  const getCategoryLabel = (key: string) => helpCats.find((o) => o.value === key)?.label || key;
+  const getCategoryLabel = (key: string | null) => {
+    if (!key) return "";
+    const k = key.toLowerCase();
+    return helpCats.find((o) => o.value.toLowerCase() === k || o.label.toLowerCase() === k)?.label || key;
+  };
 
   const timeAgo = (date: string) => {
     const diff = Date.now() - new Date(date).getTime();
