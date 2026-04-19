@@ -276,7 +276,7 @@ const RentalPostForm = ({ mode, onSuccess }: { mode: "looking" | "offer"; onSucc
   const [photos, setPhotos] = useState<string[]>([]);
   const { toast } = useToast();
   const { t } = useLanguage();
-  const { options: rentalTypes } = useAppOptions("rental_types");
+  const { options: rentalTypes, isLoading: typesLoading } = useAppOptions("rental_types");
   const mutation = useMutation({
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -312,7 +312,7 @@ const RentalPostForm = ({ mode, onSuccess }: { mode: "looking" | "offer"; onSucc
           <div><Label>{t("common.category", "Category")}</Label>
             <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
               <SelectTrigger><SelectValue placeholder={t("common.select_type", "Select type")} /></SelectTrigger>
-              <SelectContent>{rentalTypes.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
+              <SelectContent>{typesLoading ? <SelectItem value="__loading" disabled>Loading...</SelectItem> : rentalTypes.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div><Label>{mode === "looking" ? t("rentals.budget", "Budget (₺)") : t("rentals.price", "Price (₺)")}</Label><Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="15.000" /></div>
