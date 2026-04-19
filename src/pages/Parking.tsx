@@ -46,7 +46,16 @@ const Parking = () => {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { options: parkingTypes } = useAppOptions("parking_types");
+  const { options: parkingTypesRaw } = useAppOptions("parking_types");
+  const FALLBACK_PARKING_TYPES = useMemo(() => [
+    { value: "street", label: "Street Parking", emoji: null, metadata: {} },
+    { value: "private_garage", label: "Private Garage", emoji: null, metadata: {} },
+    { value: "covered_lot", label: "Covered Lot", emoji: null, metadata: {} },
+    { value: "open_lot", label: "Open Lot", emoji: null, metadata: {} },
+    { value: "underground", label: "Underground", emoji: null, metadata: {} },
+    { value: "other", label: "Other", emoji: null, metadata: {} },
+  ], []);
+  const parkingTypes = parkingTypesRaw.length > 0 ? parkingTypesRaw : (FALLBACK_PARKING_TYPES as any);
   const parkingTypeKeys = useMemo(() => [
     { key: "All", label: t("filter.all", "All") },
     ...parkingTypes.map((o) => ({ key: o.value, label: o.label })),

@@ -69,7 +69,15 @@ const Classifieds = () => {
   };
 
   const { options: classifiedCats } = useAppOptions("classified_categories");
-  const categoryNames = ["All", ...classifiedCats.map((c) => c.label)];
+  const FALLBACK_CATS = [
+    "Electronics","Home & Furniture","Fashion","Sports","Antiques",
+    "Music","Cars & Bikes","Lessons & Tutoring","Events & Tickets",
+    "Free Stuff","Services","Other"
+  ];
+  const categoryLabels = classifiedCats.length > 0
+    ? classifiedCats.map((c) => c.label)
+    : FALLBACK_CATS;
+  const categoryNames = ["All", ...categoryLabels];
 
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["classifieds"],
@@ -217,7 +225,7 @@ const Classifieds = () => {
               </DialogTrigger>
               <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                 <ClassifiedPostForm
-                  categories={classifiedCats.map((c) => c.label)}
+                  categories={categoryLabels}
                   onSuccess={() => { setPostOpen(false); queryClient.invalidateQueries({ queryKey: ["classifieds"] }); }}
                 />
               </DialogContent>

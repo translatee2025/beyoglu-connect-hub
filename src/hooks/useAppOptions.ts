@@ -15,6 +15,7 @@ export function useAppOptions(groupKey: string) {
   const { data = [], isLoading } = useQuery({
     queryKey: ["app_options", groupKey],
     queryFn: async () => {
+      if (!groupKey) return [];
       const { data, error } = await supabase
         .from("app_options")
         .select("*")
@@ -24,7 +25,9 @@ export function useAppOptions(groupKey: string) {
       if (error) throw error;
       return data || [];
     },
+    enabled: !!groupKey,
     staleTime: 0,
+    gcTime: 0,
   });
 
   const options: AppOption[] = useMemo(
