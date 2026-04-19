@@ -193,7 +193,7 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const [photos, setPhotos] = useState<string[]>([]);
   const { toast } = useToast();
   const { t } = useLanguage();
-  const { options: helpCats } = useAppOptions("help_categories");
+  const { options: helpCats, isLoading: catsLoading } = useAppOptions("help_categories");
 
   const mutation = useMutation({
     mutationFn: async () => {
