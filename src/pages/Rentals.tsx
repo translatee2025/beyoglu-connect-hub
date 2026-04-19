@@ -116,6 +116,8 @@ const Rentals = () => {
 
   const mapPins = (items: any[]) => items.filter((i) => i.lat && i.lng).map((i) => ({ lat: i.lat, lng: i.lng, title: i.title, badge: i.category, extra: i.price ? `${i.currency || "₺"}${i.price}` : undefined }));
 
+  const getCatLabel = (key: string) => rentalTypes.find((o) => o.value === key)?.label || key;
+
   const RentalCard = ({ item }: { item: any }) => {
     const photo = parsePhotos(item.photos)[0] || null;
     const [imgError, setImgError] = useState(false);
@@ -142,7 +144,7 @@ const Rentals = () => {
         <div style={{ padding: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: "#1E3A5F", marginBottom: 4 }}>{item.title}</div>
           <div style={{ fontSize: 11, color: "#94A3B8", marginBottom: 6 }}>
-            {[item.category, item.description?.match(/(\d+)\s*m²/)?.[0]].filter(Boolean).join(" · ")}
+            {[item.category ? getCatLabel(item.category) : null, item.description?.match(/(\d+)\s*m²/)?.[0]].filter(Boolean).join(" · ")}
           </div>
           {item.description && (
             <p style={{ fontSize: 12, color: "#64748B", marginBottom: 8, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
