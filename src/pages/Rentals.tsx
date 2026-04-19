@@ -46,7 +46,17 @@ const Rentals = () => {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { options: rentalTypes } = useAppOptions("rental_types");
+  const { options: rentalTypesRaw } = useAppOptions("rental_types");
+  const FALLBACK_RENTAL_TYPES = useMemo(() => [
+    { value: "apartment", label: "Apartment", emoji: null, metadata: {} },
+    { value: "room", label: "Room", emoji: null, metadata: {} },
+    { value: "studio", label: "Studio", emoji: null, metadata: {} },
+    { value: "house", label: "House", emoji: null, metadata: {} },
+    { value: "office", label: "Office", emoji: null, metadata: {} },
+    { value: "shop", label: "Shop", emoji: null, metadata: {} },
+    { value: "other", label: "Other", emoji: null, metadata: {} },
+  ], []);
+  const rentalTypes = rentalTypesRaw.length > 0 ? rentalTypesRaw : (FALLBACK_RENTAL_TYPES as any);
   const aptCategoryKeys = useMemo(() => [
     { key: "All", label: t("filter.all", "All") },
     ...rentalTypes.map((o) => ({ key: o.value, label: o.label })),
