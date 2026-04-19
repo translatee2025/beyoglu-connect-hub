@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,6 +17,56 @@ const getAvatarColor = (userId: string) => {
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 };
 
+type ProfileMini = { display_name: string | null; avatar_url: string | null };
+
+// ─── Shared batch loader ──────────────────────────────────────
+// All <UserName /> instances rendered within the same ~30ms tick
+// get coalesced into ONE supabase `.in()` query, then their per-id
+// React Query caches are populated. This eliminates the N+1 problem
+// without requiring any changes to consuming pages.
+
+let pendingIds = new Set<string>();
+let pendingResolvers: Array<{ ids: string[]; resolve: (map: Record<string, ProfileMini>) => void; reject: (e: any) => void }> = [];
+let flushTimer: ReturnType<typeof setTimeout> | null = null;
+
+const flushBatch = async () => {
+  flushTimer = null;
+  const ids = Array.from(pendingIds);
+  const resolvers = pendingResolvers;
+  pendingIds = new Set();
+  pendingResolvers = [];
+  if (ids.length === 0) return;
+
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("user_id, display_name, avatar_url")
+      .in("user_id", ids);
+    if (error) throw error;
+    const map: Record<string, ProfileMini> = {};
+    (data || []).forEach((p: any) => {
+      map[p.user_id] = { display_name: p.display_name, avatar_url: p.avatar_url };
+    });
+    resolvers.forEach(r => r.resolve(map));
+  } catch (e) {
+    resolvers.forEach(r => r.reject(e));
+  }
+};
+
+const fetchProfileBatched = (userId: string): Promise<ProfileMini | null> => {
+  return new Promise((resolve, reject) => {
+    pendingIds.add(userId);
+    pendingResolvers.push({
+      ids: [userId],
+      resolve: (map) => resolve(map[userId] ?? null),
+      reject,
+    });
+    if (!flushTimer) {
+      flushTimer = setTimeout(flushBatch, 30);
+    }
+  });
+};
+
 interface UserNameProps {
   userId: string;
   showAvatar?: boolean;
@@ -25,18 +75,23 @@ interface UserNameProps {
 }
 
 export function UserName({ userId, showAvatar = false, avatarSize = "w-6 h-6", className = "" }: UserNameProps) {
+  const queryClient = useQueryClient();
+
   const { data: profile } = useQuery({
     queryKey: ["profile-mini", userId],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("display_name, avatar_url")
-        .eq("user_id", userId)
-        .maybeSingle();
-      return data;
+      const result = await fetchProfileBatched(userId);
+      // Also seed sibling caches if the batch returned other profiles we just fetched.
+      // (Not strictly necessary since each useQuery hook fires its own batched call,
+      // but keeps things consistent if profileMap data arrives via prefetch.)
+      return result;
     },
     staleTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 30,
     enabled: !!userId,
+    retry: 0,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const name = profile?.display_name || "User";
