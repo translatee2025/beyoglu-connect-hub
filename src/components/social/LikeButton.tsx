@@ -11,28 +11,28 @@ interface LikeButtonProps {
 }
 
 export function LikeButton({ entityType, entityId, size = "sm" }: LikeButtonProps) {
-  const { isLiked, count, toggle } = useLikes(entityType, entityId);
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const handleClick = () => {
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-    toggle();
-  };
+  // For logged-out users, render a lightweight stub that does NOT fire
+  // any Supabase queries — clicking simply routes to /auth.
+  if (!user) {
+    return (
+      <Button variant="ghost" size={size} className="gap-1" onClick={() => navigate("/auth")}>
+        <Heart className="w-4 h-4" />
+      </Button>
+    );
+  }
+
+  return <LikeButtonAuthed entityType={entityType} entityId={entityId} size={size} />;
+}
+
+function LikeButtonAuthed({ entityType, entityId, size }: LikeButtonProps) {
+  const { isLiked, count, toggle } = useLikes(entityType, entityId);
 
   return (
-    <Button
-      variant="ghost"
-      size={size}
-      className="gap-1"
-      onClick={handleClick}
-    >
-      <Heart
-        className={`w-4 h-4 transition-colors ${isLiked ? "fill-destructive text-destructive" : ""}`}
-      />
+    <Button variant="ghost" size={size} className="gap-1" onClick={() => toggle()}>
+      <Heart className={`w-4 h-4 transition-colors ${isLiked ? "fill-destructive text-destructive" : ""}`} />
       {count > 0 && <span className="text-xs">{count}</span>}
     </Button>
   );
