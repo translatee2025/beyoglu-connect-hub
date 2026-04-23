@@ -127,10 +127,11 @@ const Wall = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  const { data: petPosts = [] } = useQuery({
+  const { data: petPosts = [], isLoading: petsLoading } = useQuery({
     queryKey: ["wall-pets"],
     queryFn: async () => {
-      const { data } = await supabase.from("pet_posts").select("id, title, description, post_type, created_at, user_id").order("created_at", { ascending: false }).limit(20);
+      const { data, error } = await supabase.from("pet_posts").select("id, title, description, post_type, created_at, user_id").order("created_at", { ascending: false }).limit(20);
+      if (error) { console.error("[Wall] pets error", error); return []; }
       return (data || []).map((item: any) => ({
         id: item.id, source: "pets", title: item.title, description: item.description,
         created_at: item.created_at, badge: "pet", icon: Dog,
@@ -139,12 +140,14 @@ const Wall = () => {
       }));
     },
     staleTime: 1000 * 60 * 5,
+    retry: 1,
   });
 
-  const { data: venues = [] } = useQuery({
+  const { data: venues = [], isLoading: venuesLoading } = useQuery({
     queryKey: ["wall-venues"],
     queryFn: async () => {
-      const { data } = await supabase.from("venues").select("id, name, description, created_at, created_by_user_id").order("created_at", { ascending: false }).limit(20);
+      const { data, error } = await supabase.from("venues").select("id, name, description, created_at, created_by_user_id").order("created_at", { ascending: false }).limit(20);
+      if (error) { console.error("[Wall] venues error", error); return []; }
       return (data || []).map((item: any) => ({
         id: item.id, source: "venues", title: item.name, description: item.description,
         created_at: item.created_at, badge: "venue", icon: Store,
@@ -153,12 +156,14 @@ const Wall = () => {
       }));
     },
     staleTime: 1000 * 60 * 5,
+    retry: 1,
   });
 
-  const { data: helpPosts = [] } = useQuery({
+  const { data: helpPosts = [], isLoading: helpLoading } = useQuery({
     queryKey: ["wall-help"],
     queryFn: async () => {
-      const { data } = await supabase.from("neighbor_help_posts").select("id, title, description, help_type, created_at, user_id").order("created_at", { ascending: false }).limit(20);
+      const { data, error } = await supabase.from("neighbor_help_posts").select("id, title, description, help_type, created_at, user_id").order("created_at", { ascending: false }).limit(20);
+      if (error) { console.error("[Wall] help error", error); return []; }
       return (data || []).map((item: any) => ({
         id: item.id, source: "help", title: item.title, description: item.description,
         created_at: item.created_at, badge: "helper", icon: Wrench,
@@ -167,7 +172,10 @@ const Wall = () => {
       }));
     },
     staleTime: 1000 * 60 * 5,
+    retry: 1,
   });
+
+  const anyLoading = wallLoading || classifiedsLoading || petsLoading || venuesLoading || helpLoading;
 
   const postToWall = useMutation({
     mutationFn: async (params: { content: string; photos: string[] }) => {
