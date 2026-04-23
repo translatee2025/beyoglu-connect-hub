@@ -12,7 +12,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { UserName } from "@/components/shared/UserName";
+import { SafeImage } from "@/components/shared/SafeImage";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { SkeletonGrid } from "@/components/shared/SkeletonCard";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -182,13 +182,7 @@ const Venues = () => {
                     >
                       {/* Photo area */}
                       <div className="h-[140px] relative overflow-hidden" style={{ borderRadius: "12px 12px 0 0" }}>
-                        {venue.photos?.[0] || venue.cover_photo ? (
-                          <img src={venue.photos?.[0] || venue.cover_photo} alt={venue.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; const p = (e.target as HTMLImageElement).parentElement; if (p) p.style.background = '#EFF4FF'; }} />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: ph.bg }}>
-                            <span className="text-[32px]">{ph.emoji}</span>
-                          </div>
-                        )}
+                        <SafeImage src={venue.photos?.[0] || venue.cover_photo} alt={venue.name} className="w-full h-full object-cover" fallbackBg={ph.bg} fallbackEmoji={ph.emoji} />
                         {/* Category badge */}
                         {typeName && (
                           <span

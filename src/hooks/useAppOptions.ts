@@ -26,8 +26,13 @@ export function useAppOptions(groupKey: string) {
       return data || [];
     },
     enabled: !!groupKey,
-    staleTime: 0,
-    gcTime: 0,
+    // Cache for the full session — option lists rarely change. The previous
+    // staleTime: 0 / gcTime: 0 caused the dropdowns to re-fetch on every
+    // mount and present empty arrays mid-render.
+    staleTime: 1000 * 60 * 30,
+    gcTime: 1000 * 60 * 60,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const options: AppOption[] = useMemo(

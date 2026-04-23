@@ -1,13 +1,13 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Search, Plus, Flag, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import ClassifiedPostForm from "@/components/classifieds/ClassifiedPostForm";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { UserName } from "@/components/shared/UserName";
+import { ProfileInline } from "@/components/shared/ProfileInline";
+import { useProfilesMap } from "@/hooks/useProfilesMap";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
@@ -18,16 +18,37 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { DistanceLabel } from "@/components/shared/DistanceLabel";
 import SortFilterBar, { type SortOption } from "@/components/shared/SortFilterBar";
 import { parsePhotos } from "@/lib/parsePhotos";
-import { useAppOptions } from "@/hooks/useAppOptions";
+import { useAppOptions, type AppOption } from "@/hooks/useAppOptions";
+import { SafeImage } from "@/components/shared/SafeImage";
 
-const categoryMeta: Record<string, { bg: string; emoji: string }> = {
-  Electronics: { bg: "#EFF4FF", emoji: "📱" },
-  Furniture: { bg: "#FEF3C7", emoji: "🪑" },
-  Clothing: { bg: "#EDE9FE", emoji: "👕" },
-  Books: { bg: "#DCFCE7", emoji: "📚" },
-  Vehicles: { bg: "#F1F5F9", emoji: "🚗" },
-  Services: { bg: "#E0F2FE", emoji: "🛠️" },
-  Other: { bg: "#F9FAFB", emoji: "📦" },
+const FALLBACK_CATEGORY_OPTIONS: AppOption[] = [
+  { value: "electronics", label: "Electronics", emoji: "📱", metadata: {} },
+  { value: "home_furniture", label: "Home & Furniture", emoji: "🪑", metadata: {} },
+  { value: "fashion", label: "Fashion", emoji: "👕", metadata: {} },
+  { value: "sports", label: "Sports", emoji: "⚽", metadata: {} },
+  { value: "antiques", label: "Antiques", emoji: "🏺", metadata: {} },
+  { value: "music", label: "Music", emoji: "🎵", metadata: {} },
+  { value: "cars_bikes", label: "Cars & Bikes", emoji: "🚗", metadata: {} },
+  { value: "lessons_tutoring", label: "Lessons & Tutoring", emoji: "📚", metadata: {} },
+  { value: "events_tickets", label: "Events & Tickets", emoji: "🎟️", metadata: {} },
+  { value: "free_stuff", label: "Free Stuff", emoji: "🎁", metadata: {} },
+  { value: "services", label: "Services", emoji: "🛠️", metadata: {} },
+  { value: "other", label: "Other", emoji: "📦", metadata: {} },
+];
+
+const CATEGORY_VISUAL: Record<string, { bg: string; emoji: string }> = {
+  electronics: { bg: "#EFF4FF", emoji: "📱" },
+  home_furniture: { bg: "#FEF3C7", emoji: "🪑" },
+  fashion: { bg: "#EDE9FE", emoji: "👕" },
+  sports: { bg: "#DCFCE7", emoji: "⚽" },
+  antiques: { bg: "#FEF3C7", emoji: "🏺" },
+  music: { bg: "#FCE7F3", emoji: "🎵" },
+  cars_bikes: { bg: "#F1F5F9", emoji: "🚗" },
+  lessons_tutoring: { bg: "#E0F2FE", emoji: "📚" },
+  events_tickets: { bg: "#EDE9FE", emoji: "🎟️" },
+  free_stuff: { bg: "#DCFCE7", emoji: "🎁" },
+  services: { bg: "#E0F2FE", emoji: "🛠️" },
+  other: { bg: "#F9FAFB", emoji: "📦" },
 };
 
 const parsePrice = (p: string | null) => {
@@ -38,7 +59,7 @@ const parsePrice = (p: string | null) => {
 const Classifieds = () => {
   const [reportTarget, setReportTarget] = useState<{ id: string } | null>(null);
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All");
+  const [category, setCategory] = useState("All"); // "All" or a value_key
   const [subCategory, setSubCategory] = useState<string | null>(null);
   const [postOpen, setPostOpen] = useState(false);
   const [sort, setSort] = useState<SortOption>("newest");
@@ -68,16 +89,8 @@ const Classifieds = () => {
     return language === "tr" ? `${days}g` : `${days}d`;
   };
 
-  const { options: classifiedCats } = useAppOptions("classified_categories");
-  const FALLBACK_CATS = [
-    "Electronics","Home & Furniture","Fashion","Sports","Antiques",
-    "Music","Cars & Bikes","Lessons & Tutoring","Events & Tickets",
-    "Free Stuff","Services","Other"
-  ];
-  const categoryLabels = classifiedCats.length > 0
-    ? classifiedCats.map((c) => c.label)
-    : FALLBACK_CATS;
-  const categoryNames = ["All", ...categoryLabels];
+  const { options: dbCats } = useAppOptions("classified_categories");
+  const categoryOptions: AppOption[] = dbCats.length > 0 ? dbCats : FALLBACK_CATEGORY_OPTIONS;
 
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["classifieds"],
@@ -91,6 +104,9 @@ const Classifieds = () => {
       return data;
     },
   });
+
+  // Batch profile loader for all visible cards
+  const { profilesMap } = useProfilesMap(listings.map((i: any) => i.user_id));
 
   const processItems = () => {
     let items = listings.filter((item: any) => {
@@ -123,14 +139,14 @@ const Classifieds = () => {
     setSubCategory(null);
   };
 
-  const subGroupKey = category !== "All" && category !== "Other" ? `classified_sub_${category.toLowerCase()}` : "";
+  // subgroup key derived from canonical value_key, never from label
+  const subGroupKey = category !== "All" && category !== "other" ? `classified_sub_${category}` : "";
   const { options: subOptions } = useAppOptions(subGroupKey);
-  const currentSubCats = category !== "All" && category !== "Other" ? subOptions.map(o => o.label) : [];
 
-  const getMeta = (cat: string | null) => categoryMeta[cat || "Other"] || categoryMeta.Other;
+  const getMeta = (cat: string | null) => CATEGORY_VISUAL[cat || "other"] || CATEGORY_VISUAL.other;
   const getCatLabel = (key: string | null) => {
     if (!key) return null;
-    return classifiedCats.find(o => o.value === key)?.label || key;
+    return categoryOptions.find((o) => o.value === key)?.label || key;
   };
 
   const ClassifiedCard = ({ item }: { item: any }) => {
@@ -139,14 +155,15 @@ const Classifieds = () => {
 
     return (
       <div style={{ borderRadius: 12, overflow: "hidden", backgroundColor: "white", border: "1px solid #E2EBFC" }}>
-        <div style={{ position: "relative", height: 140, backgroundColor: meta.bg }}>
-          {photo ? (
-            <img src={photo} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          ) : (
-            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>
-              {meta.emoji}
-            </div>
-          )}
+        <div style={{ position: "relative", height: 140 }}>
+          <SafeImage
+            src={photo}
+            alt={item.title}
+            className="w-full h-full"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            fallbackBg={meta.bg}
+            fallbackEmoji={meta.emoji}
+          />
         </div>
 
         <div style={{ padding: 12 }}>
@@ -187,7 +204,7 @@ const Classifieds = () => {
           )}
 
           <div className="flex items-center gap-2" style={{ marginBottom: 6 }}>
-            {item.user_id && <UserName userId={item.user_id} showAvatar avatarSize="w-4 h-4" />}
+            {item.user_id && <ProfileInline userId={item.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-4 h-4" />}
             <span style={{ fontSize: 11, color: "#94A3B8" }}>· {formatTimeAgo(item.created_at)}</span>
           </div>
 
@@ -225,7 +242,7 @@ const Classifieds = () => {
               </DialogTrigger>
               <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                 <ClassifiedPostForm
-                  categories={categoryLabels}
+                  categoryOptions={categoryOptions}
                   onSuccess={() => { setPostOpen(false); queryClient.invalidateQueries({ queryKey: ["classifieds"] }); }}
                 />
               </DialogContent>
@@ -233,34 +250,42 @@ const Classifieds = () => {
           </div>
 
           <div className="flex flex-wrap gap-2 mb-3">
-            {categoryNames.map((cat) => (
-              <Button key={cat} variant={category === cat ? "default" : "outline"} size="sm" onClick={() => handleCategoryChange(cat)}>
-                {cat === "All" ? t("classifieds.all", "All") : cat}
+            <Button variant={category === "All" ? "default" : "outline"} size="sm" onClick={() => handleCategoryChange("All")}>
+              {t("classifieds.all", "All")}
+            </Button>
+            {categoryOptions.map((cat) => (
+              <Button
+                key={cat.value}
+                variant={category === cat.value ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleCategoryChange(cat.value)}
+              >
+                {cat.emoji ? `${cat.emoji} ${cat.label}` : cat.label}
               </Button>
             ))}
           </div>
 
-          {currentSubCats.length > 0 && (
+          {subOptions.length > 0 && (
             <div
               ref={subRef}
               className="flex gap-2 mb-4 overflow-x-auto pb-1"
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
-              {currentSubCats.map((sub) => (
+              {subOptions.map((sub) => (
                 <button
-                  key={sub}
-                  onClick={() => setSubCategory(subCategory === sub ? null : sub)}
+                  key={sub.value}
+                  onClick={() => setSubCategory(subCategory === sub.value ? null : sub.value)}
                   className="flex-shrink-0 transition-colors"
                   style={{
                     padding: "4px 12px", borderRadius: 16, fontSize: 11,
-                    fontWeight: subCategory === sub ? 500 : 400,
-                    backgroundColor: subCategory === sub ? "#1E3A5F" : "white",
-                    color: subCategory === sub ? "white" : "#64748B",
-                    border: subCategory === sub ? "none" : "0.5px solid #E2EBFC",
+                    fontWeight: subCategory === sub.value ? 500 : 400,
+                    backgroundColor: subCategory === sub.value ? "#1E3A5F" : "white",
+                    color: subCategory === sub.value ? "white" : "#64748B",
+                    border: subCategory === sub.value ? "none" : "0.5px solid #E2EBFC",
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {sub}
+                  {sub.label}
                 </button>
               ))}
             </div>

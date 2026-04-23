@@ -11,7 +11,8 @@ import { Progress } from "@/components/ui/progress";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { UserName } from "@/components/shared/UserName";
+import { ProfileInline } from "@/components/shared/ProfileInline";
+import { useProfilesMap } from "@/hooks/useProfilesMap";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
@@ -75,6 +76,8 @@ const NeighborHelp = () => {
   const filtered = posts.filter((p: any) =>
     p.title.toLowerCase().includes(search.toLowerCase()) || (p.description || "").toLowerCase().includes(search.toLowerCase())
   );
+
+  const { profilesMap } = useProfilesMap(filtered.map((p: any) => p.user_id));
 
   return (
     <div className="mx-auto px-4 py-6" style={{ maxWidth: 700 }}>
@@ -162,9 +165,7 @@ const NeighborHelp = () => {
                 {/* User info + district */}
                 <div className="flex items-center gap-2 mb-3" style={{ fontSize: 12 }}>
                   {post.user_id && (
-                    <Link to={`/profile/${post.user_id}`} onClick={(e) => e.stopPropagation()}>
-                      <UserName userId={post.user_id} showAvatar avatarSize="w-5 h-5" className="text-[12px]" />
-                    </Link>
+                    <ProfileInline userId={post.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-5 h-5" className="text-[12px]" />
                   )}
                   {post.neighborhood && (
                     <span className="flex items-center gap-0.5" style={{ color: "#94A3B8", fontSize: 11 }}>
