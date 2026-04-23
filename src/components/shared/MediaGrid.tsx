@@ -1,4 +1,5 @@
 import { Film } from "lucide-react";
+import { SafeImage } from "@/components/shared/SafeImage";
 
 interface MediaGridProps {
   urls: string[];
@@ -17,16 +18,29 @@ export function MediaGrid({ urls, className = "" }: MediaGridProps) {
         {isVideo(url) ? (
           <video src={url} controls className="w-full max-h-80 object-cover" />
         ) : (
-          <img src={url} alt="" className="w-full max-h-80 object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          <SafeImage
+            src={url}
+            className="w-full max-h-80 object-cover"
+            fallbackBg="#EFF4FF"
+            fallbackEmoji="🖼️"
+            style={{ height: 240 }}
+          />
         )}
       </div>
     );
   }
 
   return (
-    <div className={`grid gap-1.5 rounded-lg overflow-hidden ${urls.length === 2 ? "grid-cols-2" : "grid-cols-3"} ${className}`}>
+    <div
+      className={`grid gap-1.5 rounded-lg overflow-hidden ${
+        urls.length === 2 ? "grid-cols-2" : "grid-cols-3"
+      } ${className}`}
+    >
       {urls.slice(0, 6).map((url, i) => (
-        <div key={i} className="relative aspect-square overflow-hidden border border-border rounded bg-muted">
+        <div
+          key={i}
+          className="relative aspect-square overflow-hidden border border-border rounded bg-muted"
+        >
           {isVideo(url) ? (
             <>
               <video src={url} className="w-full h-full object-cover" muted />
@@ -35,7 +49,12 @@ export function MediaGrid({ urls, className = "" }: MediaGridProps) {
               </div>
             </>
           ) : (
-            <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <SafeImage
+              src={url}
+              className="w-full h-full object-cover"
+              fallbackBg="#EFF4FF"
+              fallbackEmoji="🖼️"
+            />
           )}
         </div>
       ))}
