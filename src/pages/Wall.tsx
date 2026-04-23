@@ -113,12 +113,12 @@ const Wall = () => {
     queryFn: async () => {
       let q = supabase.from("wall_posts").select("id, content, photos, user_id, created_at").is("group_id", null);
       if (selectedDistrict) q = q.eq("district_id", selectedDistrict);
-      const { data, error } = await q.order("created_at", { ascending: false }).limit(20);
-      if (error) {
-        console.error("[Wall] wall_posts error", error);
-        return [];
-      }
-      return (data || []).map((item: any) => ({
+      const data = await withQueryTimeout(
+        q.order("created_at", { ascending: false }).limit(20),
+        [],
+        "wall_posts",
+      );
+      return data.map((item: any) => ({
         id: item.id, source: "wall", title: item.content?.slice(0, 80),
         description: item.content?.length > 80 ? item.content : undefined,
         photos: item.photos || [], created_at: item.created_at,
@@ -133,9 +133,12 @@ const Wall = () => {
   const { data: classifieds = [], isLoading: classifiedsLoading } = useQuery({
     queryKey: ["wall-classifieds"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("classifieds").select("id, title, description, section, price, currency, created_at, user_id").order("created_at", { ascending: false }).limit(20);
-      if (error) { console.error("[Wall] classifieds error", error); return []; }
-      return (data || []).map((item: any) => ({
+      const data = await withQueryTimeout(
+        supabase.from("classifieds").select("id, title, description, section, price, currency, created_at, user_id").order("created_at", { ascending: false }).limit(20),
+        [],
+        "classifieds",
+      );
+      return data.map((item: any) => ({
         id: item.id, source: "classifieds", title: item.title, description: item.description,
         created_at: item.created_at,
         badge: item.section === "rental" ? "rental" : item.section === "parking" ? "parking" : "classified",
@@ -146,14 +149,18 @@ const Wall = () => {
       }));
     },
     staleTime: 1000 * 60 * 5,
+    retry: 1,
   });
 
   const { data: petPosts = [], isLoading: petsLoading } = useQuery({
     queryKey: ["wall-pets"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("pet_posts").select("id, title, description, post_type, created_at, user_id").order("created_at", { ascending: false }).limit(20);
-      if (error) { console.error("[Wall] pets error", error); return []; }
-      return (data || []).map((item: any) => ({
+      const data = await withQueryTimeout(
+        supabase.from("pet_posts").select("id, title, description, post_type, created_at, user_id").order("created_at", { ascending: false }).limit(20),
+        [],
+        "pet_posts",
+      );
+      return data.map((item: any) => ({
         id: item.id, source: "pets", title: item.title, description: item.description,
         created_at: item.created_at, badge: "pet", icon: Dog,
         entityType: "pet_post" as EntityType, user_id: item.user_id,
@@ -167,9 +174,12 @@ const Wall = () => {
   const { data: venues = [], isLoading: venuesLoading } = useQuery({
     queryKey: ["wall-venues"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("venues").select("id, name, description, created_at, created_by_user_id").order("created_at", { ascending: false }).limit(20);
-      if (error) { console.error("[Wall] venues error", error); return []; }
-      return (data || []).map((item: any) => ({
+      const data = await withQueryTimeout(
+        supabase.from("venues").select("id, name, description, created_at, created_by_user_id").order("created_at", { ascending: false }).limit(20),
+        [],
+        "venues",
+      );
+      return data.map((item: any) => ({
         id: item.id, source: "venues", title: item.name, description: item.description,
         created_at: item.created_at, badge: "venue", icon: Store,
         entityType: "venue" as EntityType, user_id: item.created_by_user_id,
@@ -183,9 +193,12 @@ const Wall = () => {
   const { data: helpPosts = [], isLoading: helpLoading } = useQuery({
     queryKey: ["wall-help"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("neighbor_help_posts").select("id, title, description, help_type, created_at, user_id").order("created_at", { ascending: false }).limit(20);
-      if (error) { console.error("[Wall] help error", error); return []; }
-      return (data || []).map((item: any) => ({
+      const data = await withQueryTimeout(
+        supabase.from("neighbor_help_posts").select("id, title, description, help_type, created_at, user_id").order("created_at", { ascending: false }).limit(20),
+        [],
+        "neighbor_help_posts",
+      );
+      return data.map((item: any) => ({
         id: item.id, source: "help", title: item.title, description: item.description,
         created_at: item.created_at, badge: "helper", icon: Wrench,
         entityType: "help_post" as EntityType, user_id: item.user_id,
