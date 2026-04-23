@@ -14,7 +14,9 @@ import ListingMap from "@/components/shared/ListingMap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { UserName } from "@/components/shared/UserName";
+import { ProfileInline } from "@/components/shared/ProfileInline";
+import { useProfilesMap } from "@/hooks/useProfilesMap";
+import { SafeImage } from "@/components/shared/SafeImage";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
@@ -128,18 +130,16 @@ const Rentals = () => {
 
   const getCatLabel = (key: string) => rentalTypes.find((o) => o.value === key)?.label || key;
 
+  const allListings = useMemo(() => [...lookingListings, ...offeringListings], [lookingListings, offeringListings]);
+  const { profilesMap } = useProfilesMap(allListings.map((i: any) => i.user_id));
+
   const RentalCard = ({ item }: { item: any }) => {
     const photo = parsePhotos(item.photos)[0] || null;
-    const [imgError, setImgError] = useState(false);
     const price = item.price;
     return (
       <div style={{ borderRadius: 12, overflow: "hidden", backgroundColor: "white", border: "1px solid #E2EBFC" }}>
-        <div style={{ position: "relative", height: 180, backgroundColor: "#EFF4FF" }}>
-          {photo && !imgError ? (
-            <img src={photo} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={() => setImgError(true)} />
-          ) : (
-            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32 }}>🏠</div>
-          )}
+        <div style={{ position: "relative", height: 180 }}>
+          <SafeImage src={photo} alt={item.title} className="w-full h-full" style={{ width: "100%", height: "100%", objectFit: "cover" }} fallbackBg="#EFF4FF" fallbackEmoji="🏠" />
           {price && (
             <div style={{
               position: "absolute", bottom: 0, right: 0,
@@ -162,7 +162,7 @@ const Rentals = () => {
             </p>
           )}
           <div className="flex items-center gap-2" style={{ marginBottom: 8 }}>
-            {item.user_id && <UserName userId={item.user_id} showAvatar avatarSize="w-4 h-4" />}
+            {item.user_id && <ProfileInline userId={item.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-4 h-4" />}
             <span style={{ fontSize: 11, color: "#94A3B8" }}>· {formatTimeAgo(item.created_at)}</span>
           </div>
           <DistanceLabel lat={item.lat} lng={item.lng} neighborhood={item.neighborhood} />

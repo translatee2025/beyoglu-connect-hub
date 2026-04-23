@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { UserName } from "@/components/shared/UserName";
+import { ProfileInline } from "@/components/shared/ProfileInline";
+import { useProfilesMap } from "@/hooks/useProfilesMap";
+import { SafeImage } from "@/components/shared/SafeImage";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -141,6 +143,8 @@ const Events = () => {
     return true;
   });
 
+  const { profilesMap } = useProfilesMap(filteredEvents.map((e) => e.user_id));
+
   const mapEvents = filteredEvents
     .filter(e => e.lat && e.lng)
     .map(e => ({
@@ -228,13 +232,7 @@ const Events = () => {
                     >
                       {/* Cover photo */}
                       <div className="h-[160px] relative overflow-hidden" style={{ borderRadius: "12px 12px 0 0" }}>
-                        {event.cover_photo ? (
-                          <img src={event.cover_photo} alt={event.title} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: ph.bg }}>
-                            <span className="text-[32px]">{ph.emoji}</span>
-                          </div>
-                        )}
+                        <SafeImage src={event.cover_photo} alt={event.title} className="w-full h-full object-cover" fallbackBg={ph.bg} fallbackEmoji={ph.emoji} />
                         {/* Category badge */}
                         {event.category && (
                           <span className="absolute top-0 left-0 text-[10px] font-medium text-white" style={{ backgroundColor: "#1E3A5F", padding: "3px 8px", borderRadius: "0 0 6px 0" }}>
@@ -270,7 +268,7 @@ const Events = () => {
                         <div className="flex items-center justify-between mb-2">
                           {event.user_id && (
                             <div onClick={(e) => e.stopPropagation()}>
-                              <UserName userId={event.user_id} showAvatar avatarSize="w-4 h-4" className="text-[11px]" />
+                              <ProfileInline userId={event.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-4 h-4" className="text-[11px]" />
                             </div>
                           )}
                           <span className="text-[11px]" style={{ color: "#94A3B8" }}>

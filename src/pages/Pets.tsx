@@ -12,7 +12,9 @@ import LostFoundSection from "@/components/pets/LostFoundSection";
 import PetSittingWalkingSection from "@/components/pets/PetSittingWalkingSection";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { UserName } from "@/components/shared/UserName";
+import { ProfileInline } from "@/components/shared/ProfileInline";
+import { useProfilesMap } from "@/hooks/useProfilesMap";
+import { SafeImage } from "@/components/shared/SafeImage";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
@@ -166,11 +168,7 @@ const Pets = () => {
               ) : adoptionPosts.length === 0 ? (
                 <EmptyState emoji="🐾" title={t("pets.no_adoption", "No adoption posts yet")} subtitle={t("pets.post_adoption", "Post a pet available for adoption!")} onAction={() => setPostChooserOpen(true)} />
               ) : (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {adoptionPosts.map((post: any) => (
-                    <PostCard key={post.id} post={post} badgeLabel={t("pets.adoption", "Adoption")} onContact={handleContact} speciesEmojiMap={speciesEmojiMap} />
-                  ))}
-                </div>
+                <AdoptionGrid posts={adoptionPosts} t={t} handleContact={handleContact} speciesEmojiMap={speciesEmojiMap} />
               )}
             </TabsContent>
 
@@ -197,7 +195,18 @@ const Pets = () => {
   );
 };
 
-const PostCard = ({ post, badgeLabel, isUrgent, onContact, speciesEmojiMap }: { post: any; badgeLabel: string; isUrgent?: boolean; onContact: (userId: string) => void; speciesEmojiMap?: Record<string, string> }) => {
+const AdoptionGrid = ({ posts, t, handleContact, speciesEmojiMap }: { posts: any[]; t: any; handleContact: (id: string) => void; speciesEmojiMap?: Record<string, string> }) => {
+  const { profilesMap } = useProfilesMap(posts.map((p) => p.user_id));
+  return (
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {posts.map((post: any) => (
+        <PostCard key={post.id} post={post} badgeLabel={t("pets.adoption", "Adoption")} onContact={handleContact} speciesEmojiMap={speciesEmojiMap} profilesMap={profilesMap} />
+      ))}
+    </div>
+  );
+};
+
+const PostCard = ({ post, badgeLabel, isUrgent, onContact, speciesEmojiMap, profilesMap }: { post: any; badgeLabel: string; isUrgent?: boolean; onContact: (userId: string) => void; speciesEmojiMap?: Record<string, string>; profilesMap?: Record<string, any> }) => {
   const { t } = useLanguage();
   const { speciesOptions } = useSpecies();
   const getSpeciesLabel = (key: string) => {
@@ -210,7 +219,7 @@ const PostCard = ({ post, badgeLabel, isUrgent, onContact, speciesEmojiMap }: { 
     {/* Photo */}
     {post.photos?.[0] ? (
       <div className="h-[140px] overflow-hidden">
-        <img src={post.photos[0]} alt={post.title} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; const p = (e.target as HTMLImageElement).parentElement; if (p) p.style.background = '#EFF4FF'; }} />
+        <SafeImage src={post.photos[0]} alt={post.title} className="w-full h-full object-cover" fallbackBg="#EFF4FF" fallbackEmoji={speciesEmojiMap?.[post.species] || "🐾"} />
       </div>
     ) : (
       <div className="h-[140px] flex items-center justify-center" style={{ backgroundColor: "#EFF4FF" }}>
@@ -226,7 +235,7 @@ const PostCard = ({ post, badgeLabel, isUrgent, onContact, speciesEmojiMap }: { 
       <CardTitle className="text-[15px]" style={{ color: "#1E3A5F" }}>{post.title}</CardTitle>
       {post.description && <p className="text-[11px] mt-1 line-clamp-2" style={{ color: "#64748B" }}>{post.description}</p>}
       {post.price && <p className="font-bold text-[13px] mt-1" style={{ color: "#1E3A5F" }}>{post.price}</p>}
-      {post.user_id && <div className="mt-1"><UserName userId={post.user_id} showAvatar /></div>}
+      {post.user_id && profilesMap && <div className="mt-1"><ProfileInline userId={post.user_id} profilesMap={profilesMap} showAvatar /></div>}
       {post.address && (
         <div className="flex items-center gap-1 text-[11px] mt-1" style={{ color: "#94A3B8" }}>
           <MapPin className="w-3 h-3" /> {post.address}
