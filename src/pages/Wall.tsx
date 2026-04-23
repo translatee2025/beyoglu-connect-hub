@@ -49,6 +49,28 @@ const FILTER_KEYS: { key: FilterKey; tKey: string; fallback: string; emoji?: str
 
 const ALLOWED_DISTRICTS = ["beyoğlu", "şişli", "kadıköy", "beşiktaş"];
 
+const withQueryTimeout = async <T,>(
+  operation: PromiseLike<{ data: T | null; error: unknown }>,
+  fallback: T,
+  label: string,
+  timeoutMs = 6000,
+): Promise<T> => {
+  const timeoutResult = new Promise<{ data: T; error: Error }>((resolve) => {
+    window.setTimeout(() => {
+      resolve({ data: fallback, error: new Error(`${label} timed out`) });
+    }, timeoutMs);
+  });
+
+  const result = await Promise.race([Promise.resolve(operation), timeoutResult]);
+
+  if (result.error) {
+    console.error(`[Wall] ${label} error`, result.error);
+    return fallback;
+  }
+
+  return result.data ?? fallback;
+};
+
 const Wall = () => {
   const [reportTarget, setReportTarget] = useState<{ type: string; id: string } | null>(null);
   const [newPost, setNewPost] = useState("");
