@@ -87,15 +87,16 @@ const Wall = () => {
 
   const badgeLabel = (key: string, fallback: string) => t(`wall.badge.${key}`, fallback);
 
-  const { data: wallPosts = [], isLoading: wallLoading, error: wallError } = useQuery({
+  const { data: wallPosts = [], isLoading: wallLoading } = useQuery({
     queryKey: ["wall-posts", selectedDistrict],
     queryFn: async () => {
-      console.log("[Wall] fetching wall_posts, district=", selectedDistrict);
       let q = supabase.from("wall_posts").select("id, content, photos, user_id, created_at").is("group_id", null);
       if (selectedDistrict) q = q.eq("district_id", selectedDistrict);
       const { data, error } = await q.order("created_at", { ascending: false }).limit(20);
-      console.log("[Wall] wall_posts result:", { count: data?.length, error });
-      if (error) throw error;
+      if (error) {
+        console.error("[Wall] wall_posts error", error);
+        return [];
+      }
       return (data || []).map((item: any) => ({
         id: item.id, source: "wall", title: item.content?.slice(0, 80),
         description: item.content?.length > 80 ? item.content : undefined,
@@ -105,13 +106,14 @@ const Wall = () => {
       }));
     },
     staleTime: 1000 * 60 * 2,
+    retry: 1,
   });
-  if (wallError) console.error("[Wall] wallError", wallError);
 
-  const { data: classifieds = [] } = useQuery({
+  const { data: classifieds = [], isLoading: classifiedsLoading } = useQuery({
     queryKey: ["wall-classifieds"],
     queryFn: async () => {
-      const { data } = await supabase.from("classifieds").select("id, title, description, section, price, currency, created_at, user_id").order("created_at", { ascending: false }).limit(20);
+      const { data, error } = await supabase.from("classifieds").select("id, title, description, section, price, currency, created_at, user_id").order("created_at", { ascending: false }).limit(20);
+      if (error) { console.error("[Wall] classifieds error", error); return []; }
       return (data || []).map((item: any) => ({
         id: item.id, source: "classifieds", title: item.title, description: item.description,
         created_at: item.created_at,
