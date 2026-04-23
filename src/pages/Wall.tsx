@@ -50,7 +50,6 @@ const FILTER_KEYS: { key: FilterKey; tKey: string; fallback: string; emoji?: str
 const ALLOWED_DISTRICTS = ["beyoğlu", "şişli", "kadıköy", "beşiktaş"];
 
 const Wall = () => {
-  console.log("[Wall] mount");
   const [reportTarget, setReportTarget] = useState<{ type: string; id: string } | null>(null);
   const [newPost, setNewPost] = useState("");
   const [newPhotos, setNewPhotos] = useState<string[]>([]);
