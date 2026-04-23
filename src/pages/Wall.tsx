@@ -50,7 +50,6 @@ const FILTER_KEYS: { key: FilterKey; tKey: string; fallback: string; emoji?: str
 const ALLOWED_DISTRICTS = ["beyoğlu", "şişli", "kadıköy", "beşiktaş"];
 
 const Wall = () => {
-  console.log("[Wall] mount");
   const [reportTarget, setReportTarget] = useState<{ type: string; id: string } | null>(null);
   const [newPost, setNewPost] = useState("");
   const [newPhotos, setNewPhotos] = useState<string[]>([]);
@@ -87,15 +86,16 @@ const Wall = () => {
 
   const badgeLabel = (key: string, fallback: string) => t(`wall.badge.${key}`, fallback);
 
-  const { data: wallPosts = [], isLoading: wallLoading, error: wallError } = useQuery({
+  const { data: wallPosts = [], isLoading: wallLoading } = useQuery({
     queryKey: ["wall-posts", selectedDistrict],
     queryFn: async () => {
-      console.log("[Wall] fetching wall_posts, district=", selectedDistrict);
       let q = supabase.from("wall_posts").select("id, content, photos, user_id, created_at").is("group_id", null);
       if (selectedDistrict) q = q.eq("district_id", selectedDistrict);
       const { data, error } = await q.order("created_at", { ascending: false }).limit(20);
-      console.log("[Wall] wall_posts result:", { count: data?.length, error });
-      if (error) throw error;
+      if (error) {
+        console.error("[Wall] wall_posts error", error);
+        return [];
+      }
       return (data || []).map((item: any) => ({
         id: item.id, source: "wall", title: item.content?.slice(0, 80),
         description: item.content?.length > 80 ? item.content : undefined,
@@ -105,13 +105,14 @@ const Wall = () => {
       }));
     },
     staleTime: 1000 * 60 * 2,
+    retry: 1,
   });
-  if (wallError) console.error("[Wall] wallError", wallError);
 
-  const { data: classifieds = [] } = useQuery({
+  const { data: classifieds = [], isLoading: classifiedsLoading } = useQuery({
     queryKey: ["wall-classifieds"],
     queryFn: async () => {
-      const { data } = await supabase.from("classifieds").select("id, title, description, section, price, currency, created_at, user_id").order("created_at", { ascending: false }).limit(20);
+      const { data, error } = await supabase.from("classifieds").select("id, title, description, section, price, currency, created_at, user_id").order("created_at", { ascending: false }).limit(20);
+      if (error) { console.error("[Wall] classifieds error", error); return []; }
       return (data || []).map((item: any) => ({
         id: item.id, source: "classifieds", title: item.title, description: item.description,
         created_at: item.created_at,
@@ -125,10 +126,11 @@ const Wall = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  const { data: petPosts = [] } = useQuery({
+  const { data: petPosts = [], isLoading: petsLoading } = useQuery({
     queryKey: ["wall-pets"],
     queryFn: async () => {
-      const { data } = await supabase.from("pet_posts").select("id, title, description, post_type, created_at, user_id").order("created_at", { ascending: false }).limit(20);
+      const { data, error } = await supabase.from("pet_posts").select("id, title, description, post_type, created_at, user_id").order("created_at", { ascending: false }).limit(20);
+      if (error) { console.error("[Wall] pets error", error); return []; }
       return (data || []).map((item: any) => ({
         id: item.id, source: "pets", title: item.title, description: item.description,
         created_at: item.created_at, badge: "pet", icon: Dog,
@@ -137,12 +139,14 @@ const Wall = () => {
       }));
     },
     staleTime: 1000 * 60 * 5,
+    retry: 1,
   });
 
-  const { data: venues = [] } = useQuery({
+  const { data: venues = [], isLoading: venuesLoading } = useQuery({
     queryKey: ["wall-venues"],
     queryFn: async () => {
-      const { data } = await supabase.from("venues").select("id, name, description, created_at, created_by_user_id").order("created_at", { ascending: false }).limit(20);
+      const { data, error } = await supabase.from("venues").select("id, name, description, created_at, created_by_user_id").order("created_at", { ascending: false }).limit(20);
+      if (error) { console.error("[Wall] venues error", error); return []; }
       return (data || []).map((item: any) => ({
         id: item.id, source: "venues", title: item.name, description: item.description,
         created_at: item.created_at, badge: "venue", icon: Store,
@@ -151,12 +155,14 @@ const Wall = () => {
       }));
     },
     staleTime: 1000 * 60 * 5,
+    retry: 1,
   });
 
-  const { data: helpPosts = [] } = useQuery({
+  const { data: helpPosts = [], isLoading: helpLoading } = useQuery({
     queryKey: ["wall-help"],
     queryFn: async () => {
-      const { data } = await supabase.from("neighbor_help_posts").select("id, title, description, help_type, created_at, user_id").order("created_at", { ascending: false }).limit(20);
+      const { data, error } = await supabase.from("neighbor_help_posts").select("id, title, description, help_type, created_at, user_id").order("created_at", { ascending: false }).limit(20);
+      if (error) { console.error("[Wall] help error", error); return []; }
       return (data || []).map((item: any) => ({
         id: item.id, source: "help", title: item.title, description: item.description,
         created_at: item.created_at, badge: "helper", icon: Wrench,
@@ -165,7 +171,10 @@ const Wall = () => {
       }));
     },
     staleTime: 1000 * 60 * 5,
+    retry: 1,
   });
+
+  const anyLoading = wallLoading || classifiedsLoading || petsLoading || venuesLoading || helpLoading;
 
   const postToWall = useMutation({
     mutationFn: async (params: { content: string; photos: string[] }) => {
@@ -355,9 +364,9 @@ const Wall = () => {
         </div>
 
         {/* Feed */}
-        {wallLoading && filteredItems.length === 0 ? (
+        {filteredItems.length === 0 && anyLoading ? (
           <SkeletonFeedList count={3} />
-        ) : filteredItems.length === 0 && !wallLoading ? (
+        ) : filteredItems.length === 0 ? (
           <EmptyState emoji="🌟" message={t("empty.feed", "No posts yet. Be the first to share! 🌟")} actionLabel={t("common.post", "Post")} onAction={() => {}} />
         ) : (
           <div className="space-y-3">
