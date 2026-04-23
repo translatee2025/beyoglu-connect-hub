@@ -13,12 +13,14 @@ import { LikeButton } from "@/components/social/LikeButton";
 import { type EntityType } from "@/hooks/useLikes";
 import { PhotoUploader } from "@/components/shared/PhotoUploader";
 import { MediaGrid } from "@/components/shared/MediaGrid";
-import { UserName } from "@/components/shared/UserName";
+import { ProfileInline } from "@/components/shared/ProfileInline";
+import { useProfilesMap } from "@/hooks/useProfilesMap";
 import { CommentsSection } from "@/components/shared/CommentsSection";
 import { ReportDialog } from "@/components/shared/ReportDialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { SkeletonFeedList } from "@/components/shared/SkeletonCard";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { SafeImage } from "@/components/shared/SafeImage";
 
 type FeedItem = {
   id: string;
@@ -194,6 +196,9 @@ const Wall = () => {
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 50);
 
+  // Batch-load all profile data for visible feed items in ONE query
+  const { profilesMap } = useProfilesMap(allItems.map((i) => i.user_id));
+
   const filteredItems = allItems.filter((item) => {
     if (activeFilter === "all") return true;
     if (activeFilter === "rentals") return ["rental", "parking", "classified"].includes(item.badge);
@@ -360,9 +365,9 @@ const Wall = () => {
               const badge = BADGE_MAP[item.badge] || { label: item.badge, variant: "post" };
 
               if (item.cardStyle === "listing") {
-                return <ListingCard key={`${item.source}-${item.id}`} item={item} badge={badge} timeAgo={timeAgo} user={user} setReportTarget={setReportTarget} t={t} />;
+                return <ListingCard key={`${item.source}-${item.id}`} item={item} badge={badge} timeAgo={timeAgo} user={user} setReportTarget={setReportTarget} t={t} profilesMap={profilesMap} />;
               }
-              return <SocialCard key={`${item.source}-${item.id}`} item={item} badge={badge} timeAgo={timeAgo} user={user} setReportTarget={setReportTarget} t={t} />;
+              return <SocialCard key={`${item.source}-${item.id}`} item={item} badge={badge} timeAgo={timeAgo} user={user} setReportTarget={setReportTarget} t={t} profilesMap={profilesMap} />;
             })}
           </div>
         )}
@@ -380,12 +385,12 @@ const Wall = () => {
 };
 
 /* ── Listing Card ── */
-const ListingCard = ({ item, badge, timeAgo, user, setReportTarget, t }: any) => (
+const ListingCard = ({ item, badge, timeAgo, user, setReportTarget, t, profilesMap }: any) => (
   <div className="bg-card rounded-xl overflow-hidden transition-colors hover:bg-[#FAFCFF]" style={{ border: '1px solid #E2EBFC' }}>
     {/* Photo area */}
     <div className="relative h-[200px] overflow-hidden" style={{ backgroundColor: '#EFF4FF' }}>
       {item.photos && item.photos.length > 0 ? (
-        <img src={item.photos[0]} alt={item.title} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; const p = (e.target as HTMLImageElement).parentElement; if (p) p.style.background = '#EFF4FF'; }} />
+        <SafeImage src={item.photos[0]} alt={item.title} className="w-full h-full object-cover" fallbackBg="#EFF4FF" fallbackEmoji="🖼️" />
       ) : (
         <div className="w-full h-full flex items-center justify-center">
           <item.icon className="w-10 h-10 text-[#94A3B8] opacity-40" />
@@ -408,7 +413,7 @@ const ListingCard = ({ item, badge, timeAgo, user, setReportTarget, t }: any) =>
       {item.description && <p className="text-xs mt-1 line-clamp-2" style={{ color: '#64748B', lineHeight: '1.5' }}>{item.description}</p>}
       {/* Poster row */}
       <div className="flex items-center gap-1.5 mt-2">
-        {item.user_id && <UserName userId={item.user_id} showAvatar avatarSize="w-4 h-4" className="text-[11px]" />}
+        {item.user_id && <ProfileInline userId={item.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-4 h-4" className="text-[11px]" />}
         <span className="text-[11px] text-[#94A3B8]">· {timeAgo(item.created_at)}</span>
       </div>
       {/* CTA */}
@@ -420,12 +425,12 @@ const ListingCard = ({ item, badge, timeAgo, user, setReportTarget, t }: any) =>
 );
 
 /* ── Social Card ── */
-const SocialCard = ({ item, badge, timeAgo, user, setReportTarget, t }: any) => (
+const SocialCard = ({ item, badge, timeAgo, user, setReportTarget, t, profilesMap }: any) => (
   <div className="bg-card rounded-xl p-3.5 transition-colors hover:bg-[#FAFCFF]" style={{ border: '1px solid #E2EBFC' }}>
     {/* Header */}
     <div className="flex items-start justify-between">
       <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-        {item.user_id && <UserName userId={item.user_id} showAvatar avatarSize="w-8 h-8" className="text-[13px] font-medium" />}
+        {item.user_id && <ProfileInline userId={item.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-8 h-8" className="text-[13px] font-medium" />}
         <span className="text-[11px] text-[#94A3B8]">· {timeAgo(item.created_at)}</span>
       </div>
       <div className="flex items-center gap-1.5 flex-shrink-0">
