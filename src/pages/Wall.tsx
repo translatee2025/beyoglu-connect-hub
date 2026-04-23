@@ -365,9 +365,9 @@ const Wall = () => {
         </div>
 
         {/* Feed */}
-        {wallLoading && filteredItems.length === 0 ? (
+        {filteredItems.length === 0 && anyLoading ? (
           <SkeletonFeedList count={3} />
-        ) : filteredItems.length === 0 && !wallLoading ? (
+        ) : filteredItems.length === 0 ? (
           <EmptyState emoji="🌟" message={t("empty.feed", "No posts yet. Be the first to share! 🌟")} actionLabel={t("common.post", "Post")} onAction={() => {}} />
         ) : (
           <div className="space-y-3">
