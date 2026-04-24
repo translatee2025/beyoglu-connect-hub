@@ -19,8 +19,9 @@ import { useLanguage } from "@/providers/LanguageProvider";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
 import { SkeletonGrid } from "@/components/shared/SkeletonCard";
-import { useSpecies, useBreeds } from "@/hooks/useSpeciesBreeds";
+import { useSpecies, useBreeds, type Species } from "@/hooks/useSpeciesBreeds";
 import { Stethoscope } from "lucide-react";
+import { resolveSpecies, matchesSpeciesFilter, pickPetPhoto } from "@/lib/petNormalization";
 
 const Pets = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -31,7 +32,7 @@ const Pets = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { speciesOptions, speciesEmojiMap } = useSpecies();
+  const { species, speciesOptions, speciesEmojiMap } = useSpecies();
   const { breedOptions } = useBreeds(speciesFilter !== "all" ? speciesFilter : undefined);
 
   const handleContact = (userId: string) => {
@@ -39,7 +40,7 @@ const Pets = () => {
     navigate(`/messages?to=${userId}`);
   };
 
-  const { data: pets = [], refetch: refetchPets } = useQuery({
+  const { data: pets = [], isLoading: petsLoading, isSuccess: petsLoaded, refetch: refetchPets } = useQuery({
     queryKey: ["pet-profiles"],
     queryFn: async () => {
       const { data, error } = await supabase.from("pet_profiles").select("*").order("created_at", { ascending: false });
@@ -50,7 +51,7 @@ const Pets = () => {
     gcTime: 1000 * 60 * 10,
   });
 
-  const { data: petPosts = [], isLoading: postsLoading, refetch: refetchPosts } = useQuery({
+  const { data: petPosts = [], refetch: refetchPosts } = useQuery({
     queryKey: ["pet-posts"],
     queryFn: async () => {
       const { data, error } = await supabase.from("pet_posts").select("*").order("created_at", { ascending: false });
@@ -64,17 +65,19 @@ const Pets = () => {
   const lostPets = pets.filter((p: any) => p.is_lost);
   const lostFoundPosts = petPosts.filter((p: any) => p.post_type === "lost" || p.post_type === "found");
 
-  // Adoption listings come from pet_profiles. Map fields so PostCard renders correctly.
+  // Adoption listings come from pet_profiles. Exclude lost pets.
   const adoptionPosts = useMemo(() => {
-    let list: any[] = (pets as any[]).map((p: any) => ({
-      ...p,
-      title: p.name,
-      description: p.bio,
-      address: p.neighborhood,
-      user_id: p.owner_id,
-    }));
+    let list: any[] = (pets as any[])
+      .filter((p: any) => !p.is_lost)
+      .map((p: any) => ({
+        ...p,
+        title: p.name,
+        description: p.bio,
+        address: p.neighborhood,
+        user_id: p.owner_id,
+      }));
     if (speciesFilter !== "all") {
-      list = list.filter((p: any) => p.species === speciesFilter || p.species_id === speciesFilter);
+      list = list.filter((p: any) => matchesSpeciesFilter(p, speciesFilter, species));
     }
     if (breedFilter !== "all") {
       list = list.filter((p: any) => p.breed === breedFilter);
@@ -83,7 +86,7 @@ const Pets = () => {
       list.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }
     return list;
-  }, [pets, speciesFilter, breedFilter, adoptionSort]);
+  }, [pets, speciesFilter, breedFilter, adoptionSort, species]);
 
   const handleRefresh = () => { refetchPets(); refetchPosts(); };
 
@@ -163,12 +166,12 @@ const Pets = () => {
                 ))}
               </div>
 
-              {postsLoading && adoptionPosts.length === 0 ? (
+              {petsLoading ? (
                 <SkeletonGrid count={2} hasPhoto photoHeight={140} />
-              ) : adoptionPosts.length === 0 ? (
+              ) : petsLoaded && adoptionPosts.length === 0 ? (
                 <EmptyState emoji="🐾" title={t("pets.no_adoption", "No adoption posts yet")} subtitle={t("pets.post_adoption", "Post a pet available for adoption!")} onAction={() => setPostChooserOpen(true)} />
               ) : (
-                <AdoptionGrid posts={adoptionPosts} t={t} handleContact={handleContact} speciesEmojiMap={speciesEmojiMap} />
+                <AdoptionGrid posts={adoptionPosts} t={t} handleContact={handleContact} speciesEmojiMap={speciesEmojiMap} species={species} />
               )}
             </TabsContent>
 
@@ -195,41 +198,33 @@ const Pets = () => {
   );
 };
 
-const AdoptionGrid = ({ posts, t, handleContact, speciesEmojiMap }: { posts: any[]; t: any; handleContact: (id: string) => void; speciesEmojiMap?: Record<string, string> }) => {
+const AdoptionGrid = ({ posts, t, handleContact, speciesEmojiMap, species }: { posts: any[]; t: any; handleContact: (id: string) => void; speciesEmojiMap?: Record<string, string>; species: Species[] }) => {
   const { profilesMap } = useProfilesMap(posts.map((p) => p.user_id));
   return (
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {posts.map((post: any) => (
-        <PostCard key={post.id} post={post} badgeLabel={t("pets.adoption", "Adoption")} onContact={handleContact} speciesEmojiMap={speciesEmojiMap} profilesMap={profilesMap} />
+        <PostCard key={post.id} post={post} badgeLabel={t("pets.adoption", "Adoption")} onContact={handleContact} speciesEmojiMap={speciesEmojiMap} profilesMap={profilesMap} species={species} />
       ))}
     </div>
   );
 };
 
-const PostCard = ({ post, badgeLabel, isUrgent, onContact, speciesEmojiMap, profilesMap }: { post: any; badgeLabel: string; isUrgent?: boolean; onContact: (userId: string) => void; speciesEmojiMap?: Record<string, string>; profilesMap?: Record<string, any> }) => {
+const PostCard = ({ post, badgeLabel, isUrgent, onContact, speciesEmojiMap, profilesMap, species }: { post: any; badgeLabel: string; isUrgent?: boolean; onContact: (userId: string) => void; speciesEmojiMap?: Record<string, string>; profilesMap?: Record<string, any>; species?: Species[] }) => {
   const { t } = useLanguage();
-  const { speciesOptions } = useSpecies();
-  const getSpeciesLabel = (key: string) => {
-    const k = (key || "").toLowerCase();
-    const found = speciesOptions.find(s => s.value === key || s.label.toLowerCase().includes(k));
-    return found ? found.label.replace(found.emoji + " ", "") : key;
-  };
+  const resolved = species ? resolveSpecies(post, species) : undefined;
+  const speciesLabel = resolved?.name_en;
+  const emoji = resolved?.emoji || speciesEmojiMap?.[(post.species || "").toLowerCase()] || "🐾";
+  const photo = pickPetPhoto(post);
   return (
   <Card className="hover:shadow-md transition-shadow overflow-hidden" style={{ border: `1px solid ${isUrgent ? "#FECACA" : "#E2EBFC"}` }}>
     {/* Photo */}
-    {post.photos?.[0] ? (
-      <div className="h-[140px] overflow-hidden">
-        <SafeImage src={post.photos[0]} alt={post.title} className="w-full h-full object-cover" fallbackBg="#EFF4FF" fallbackEmoji={speciesEmojiMap?.[post.species] || "🐾"} />
-      </div>
-    ) : (
-      <div className="h-[140px] flex items-center justify-center" style={{ backgroundColor: "#EFF4FF" }}>
-        <span className="text-4xl">{speciesEmojiMap?.[post.species] || "🐾"}</span>
-      </div>
-    )}
+    <div className="h-[140px] overflow-hidden">
+      <SafeImage src={photo} alt={post.title} className="w-full h-full object-cover" fallbackBg="#EFF4FF" fallbackEmoji={emoji} />
+    </div>
     <CardHeader className="pb-2">
       <div className="flex items-center gap-2 mb-1 flex-wrap">
         <Badge className="text-[10px] px-1.5 py-0 h-4" style={{ backgroundColor: "#EFF4FF", color: "#1E3A5F", border: "none" }}>{badgeLabel}</Badge>
-        {post.species && <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">{getSpeciesLabel(post.species)}</Badge>}
+        {speciesLabel && <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">{emoji} {speciesLabel}</Badge>}
         {post.breed && <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">{post.breed}</Badge>}
       </div>
       <CardTitle className="text-[15px]" style={{ color: "#1E3A5F" }}>{post.title}</CardTitle>

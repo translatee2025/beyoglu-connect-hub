@@ -26,8 +26,8 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
   const { toast } = useToast();
   const { t } = useLanguage();
   const queryClient = useQueryClient();
-  const { speciesOptions, isLoading: speciesLoading } = useSpecies();
-  const { breedOptions, isLoading: breedsLoading } = useBreeds(form.species);
+  const { species, speciesOptions, isLoading: speciesLoading } = useSpecies();
+  const { breedOptions, breeds, isLoading: breedsLoading } = useBreeds(form.species);
 
   // Photo upload handled by PhotoUploader component
 
@@ -36,12 +36,19 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error(t("pets.login_required", "Please log in"));
       const cleanPhotos = photos.filter(Boolean);
-      // species column on pet_profiles is an enum (e.g. "dog"); form.species may be a UUID id from speciesOptions.
-      // Pass through as-is — DB will accept enum values; UUID values would error, but speciesOptions in this form uses enum strings.
+      // Normalize species: form.species may be a UUID (from speciesOptions). Resolve to:
+      //  - species_id (uuid)
+      //  - species enum text (e.g. "dog") for legacy consumers
+      const selectedSpecies = species.find((s) => s.id === form.species);
+      const speciesEnumText = selectedSpecies
+        ? selectedSpecies.name_en.toLowerCase()
+        : form.species || null;
+      const selectedBreed = breeds.find((b) => b.name_en === form.breed || b.name_tr === form.breed);
       const insertPayload: any = {
         owner_id: user.id,
         name: form.title,
         breed: form.breed || null,
+        breed_id: selectedBreed?.id || null,
         age_years: form.age_years ? parseInt(form.age_years) : null,
         age_months: form.age_months ? parseInt(form.age_months) : null,
         gender: form.gender || null,
@@ -54,7 +61,12 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
         is_neutered: form.is_neutered,
         is_lost: false,
       };
-      if (form.species) insertPayload.species = form.species;
+      if (selectedSpecies) {
+        insertPayload.species_id = selectedSpecies.id;
+        insertPayload.species = speciesEnumText;
+      } else if (form.species) {
+        insertPayload.species = form.species;
+      }
       const { error } = await supabase.from("pet_profiles").insert(insertPayload);
       if (error) throw error;
     },

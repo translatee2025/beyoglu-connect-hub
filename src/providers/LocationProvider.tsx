@@ -36,11 +36,13 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     const stored = localStorage.getItem("location_permission");
     if (stored === "granted") {
       requestLocation();
-    } else if (stored === "denied") {
+    } else if (stored === "denied" || stored === "deferred") {
       // User previously skipped — don't show prompt again
     } else {
-      // First time — show prompt
-      setShowPrompt(true);
+      // First time — defer prompt so the page content renders first and the modal
+      // never makes the app look "stuck" on initial load.
+      const timer = setTimeout(() => setShowPrompt(true), 4000);
+      return () => clearTimeout(timer);
     }
   }, []);
 
@@ -78,24 +80,31 @@ export function LocationProvider({ children }: { children: ReactNode }) {
   return (
     <LocationContext.Provider value={{ lat, lng, granted, getDistance }}>
       {showPrompt && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
-          <div className="bg-white rounded-t-2xl sm:rounded-2xl p-6 w-full max-w-sm mx-4 mb-0 sm:mb-0 shadow-xl" style={{ animation: "slideUp 0.3s ease-out" }}>
-            <div className="flex items-center justify-center w-12 h-12 rounded-full mx-auto mb-4" style={{ background: "#E0F2FE" }}>
-              <MapPin className="w-6 h-6" style={{ color: "#1E3A5F" }} />
-            </div>
-            <h3 className="text-center mb-2" style={{ fontSize: 15, fontWeight: 600, color: "#1E3A5F" }}>
-              {t("location.permission_title", "Location Permission")}
-            </h3>
-            <p className="text-center mb-5" style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5 }}>
-              {t("location.permission_desc", "Allow location access to see what's nearby.")}
-            </p>
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={handleSkip} style={{ fontSize: 13 }}>
-                {t("common.skip", "Skip")}
-              </Button>
-              <Button className="flex-1" onClick={handleAllow} style={{ background: "#1E3A5F", color: "#fff", fontSize: 13 }}>
-                {t("location.allow", "Allow")}
-              </Button>
+        <div className="fixed bottom-20 sm:bottom-6 right-4 left-4 sm:left-auto sm:right-6 z-[100] sm:max-w-sm">
+          <div className="bg-white rounded-2xl p-4 shadow-xl border" style={{ borderColor: "#E2EBFC", animation: "slideUp 0.3s ease-out" }}>
+            <div className="flex items-start gap-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full flex-shrink-0" style={{ background: "#E0F2FE" }}>
+                <MapPin className="w-5 h-5" style={{ color: "#1E3A5F" }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="mb-1" style={{ fontSize: 14, fontWeight: 600, color: "#1E3A5F" }}>
+                  {t("location.permission_title", "Location Permission")}
+                </h3>
+                <p className="mb-3" style={{ fontSize: 12, color: "#64748B", lineHeight: 1.4 }}>
+                  {t("location.permission_desc", "Allow location access to see what's nearby.")}
+                </p>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="flex-1" onClick={handleSkip} style={{ fontSize: 12 }}>
+                    {t("common.skip", "Skip")}
+                  </Button>
+                  <Button size="sm" className="flex-1" onClick={handleAllow} style={{ background: "#1E3A5F", color: "#fff", fontSize: 12 }}>
+                    {t("location.allow", "Allow")}
+                  </Button>
+                </div>
+              </div>
+              <button onClick={handleSkip} className="text-muted-foreground hover:text-foreground flex-shrink-0" aria-label="Dismiss">
+                <X className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
