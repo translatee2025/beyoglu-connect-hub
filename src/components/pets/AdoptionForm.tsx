@@ -165,10 +165,10 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
         <div className="grid grid-cols-2 gap-2">
           <div>
             <Label className="text-xs" style={{ color: "#1E3A5F" }}>{t("pets.age_years", "Age (Years)")}</Label>
-            <Select value={form.age_years} onValueChange={(v) => setForm({ ...form, age_years: v })}>
+            <Select value={form.age_years || "unknown"} onValueChange={(v) => setForm({ ...form, age_years: v === "unknown" ? "" : v })}>
               <SelectTrigger style={{ border: "1px solid #E2EBFC" }}><SelectValue placeholder={t("pets.select", "Select")} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Unknown</SelectItem>
+                <SelectItem value="unknown">Unknown</SelectItem>
                 {Array.from({ length: 16 }, (_, i) => (
                   <SelectItem key={i} value={String(i)}>{i}</SelectItem>
                 ))}
