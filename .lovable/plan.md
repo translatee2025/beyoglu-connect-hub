@@ -1,106 +1,79 @@
 
-Goal: do one stabilization pass that fixes the real systemic causes instead of patching symptoms.
+Goal: make the Pets adoption view reliable so it never appears blank/empty when adoption records exist, and fix the underlying pet data inconsistencies that are still causing fragile behavior.
 
-1. Confirmed root causes to address
-- Profile N+1 still exists in practice across card pages. `UserName` is still rendered inside repeated cards on `Wall.tsx`, `Classifieds.tsx`, `Parking.tsx`, `Rentals.tsx`, `Pets.tsx`, `NeighborHelp.tsx`, `Events.tsx`, `Venues.tsx`, and others. The current `UserName` batching reduces some calls, but every card still mounts its own query hook and Wall also has per-card like queries.
-- Category data is inconsistent, not just “stale”. Some screens use `value_key`, some use labels, and Classifieds currently posts label strings from the form while filters/badges expect canonical keys. That guarantees broken dropdown/filter/badge behavior even if the fetch succeeds.
-- Image rendering is brittle. Many cards use inline `<img>` with `onError` DOM mutations that hide the image permanently instead of switching to a stable fallback. Photo parsing is also inconsistent across pages.
-- Navigation recovery is weak. `NotFound.tsx` uses a plain `<a href="/">`, causing a full reload instead of SPA navigation. That can reset the app after a bad route.
-- Wall is especially overloaded because it combines many sources, still renders per-card `UserName`, and for logged-in users also mounts a `LikeButton` query per feed item.
+1. Confirmed findings
+- The published `/pets` page is not failing because of missing read access: `pet_profiles`, `pet_posts`, `species`, and `profiles` requests all return 200, and the published site currently renders adoption cards in browser inspection.
+- The current adoption tab has a real state bug: it shows loading/empty UI based on `pet_posts` loading (`postsLoading`) instead of `pet_profiles` loading, even though adoption cards come from `pet_profiles`. That can produce false empty states.
+- Pet species handling is inconsistent across the pets module:
+  - `useSpecies()` returns species table UUIDs.
+  - `pet_profiles.species` is still an enum-like text field (`dog`, `cat`, etc.).
+  - `AdoptionForm` and `AddPetForm` currently pass `form.species` straight into `pet_profiles.species`, even though that value can be a UUID from `speciesOptions`.
+- That mismatch means pet creation/edit flows can silently break or create malformed data, which then makes adoption filters and labels unreliable.
+- A blocking location-permission modal is rendered globally by `LocationProvider`. It does not fully explain an empty data state, but it can make the page look “stuck” and should be softened so it never obscures the core listing experience.
 
-2. Implementation pass
-- Create one shared page-level profile loader hook:
-  - `useProfilesMap(userIds: string[])`
-  - single `.in("user_id", ids)` query
-  - returns `{ [userId]: { display_name, avatar_url } }`
-- Create one presentational profile renderer for cards, e.g. `ProfileInline`, that accepts `userId + profileMap` and never fetches.
-- Replace `UserName` inside repeated card lists on:
-  - `Wall.tsx`
-  - `Classifieds.tsx`
-  - `Parking.tsx`
-  - `Rentals.tsx`
-  - `Pets.tsx`
-  - `NeighborHelp.tsx`
-  - `Events.tsx`
-  - `Venues.tsx`
-  - and any other page that renders card grids/lists with `UserName`
-- Keep `UserName` only for isolated/detail contexts where one-off fetches are acceptable.
+2. Pets adoption stabilization pass
+- Refactor `src/pages/Pets.tsx` so adoption state is driven by the correct query:
+  - track `petsLoading` from the `pet_profiles` query
+  - use `petsLoading` for skeletons/empty state in the adoption tab
+  - keep `pet_posts` loading isolated to lost/found and other pet-post features
+- Harden the adoption list derivation:
+  - derive adoption cards only from normalized pet profile rows
+  - exclude lost pets from adoption listings unless explicitly intended
+  - ensure search/filter/sort run against normalized values, not mixed raw DB shapes
+- Add a safer adoption empty-state condition:
+  - show skeleton while `pet_profiles` is still loading
+  - only show “No adoption posts yet” after `pet_profiles` resolves successfully with zero usable rows
 
-3. Wall hardening
-- Refactor Wall feed loading so one slow source does not hold the entire page in skeleton state.
-- Add page-level profile batching for all feed items.
-- Batch likes for visible Wall items instead of one `useLikes` query per card.
-- Keep comments lazy-loaded only when opened.
-- Fix the realtime cache key mismatch so updates target `["wall-posts", selectedDistrict]`.
-- Remove temporary debug logs after validation.
+3. Normalize pet species/breed data
+- Introduce a single mapping layer for pet records:
+  - canonical species identity = `species_id` when available
+  - display label/emoji = looked up from `species` table
+  - legacy enum text (`dog`, `cat`, etc.) = fallback only
+- Update `AdoptionForm.tsx` and `AddPetForm.tsx` so they write consistent pet data:
+  - store `species_id` from the selected option
+  - store `breed_id` where available
+  - keep `species` text aligned to the canonical species name expected by existing UI/database consumers
+- Update pet list/filter components to compare on canonical ids first, with legacy text fallback for old rows.
+- Fix label rendering so cards, pills, and filters never depend on partial string matching like `label.includes(...)`.
 
-4. Category system fix
-- Standardize category handling everywhere to:
-  - store `value_key` in DB
-  - render human labels from app options
-  - never post labels back into DB
-- Refactor `useAppOptions` consumers so forms/pages work with option objects, not raw label arrays.
-- Fix `Classifieds.tsx` + `ClassifiedPostForm.tsx`:
-  - form select values must be canonical keys
-  - pills/badges must render labels from those keys
-  - subcategory group keys must be derived from parent `value_key`, not label text
-- Apply same key/label discipline to:
-  - `Parking.tsx`
-  - `Rentals.tsx`
-  - `NeighborHelp.tsx`
-- Use fallback option objects only as a temporary rendering fallback, not as posted DB values.
+4. Data backfill and compatibility
+- Add one migration to repair malformed/legacy pet rows without deleting data:
+  - fill `species_id` for existing `pet_profiles` rows by matching legacy `species` text to the `species` table
+  - optionally fill `breed_id` where an exact breed match exists for the resolved species
+  - normalize obviously broken UUID-in-enum cases created by the current forms
+- Preserve all existing pet data and make the code tolerate both normalized and legacy rows during rollout.
 
-5. Database/data cleanup
-- Audit `app_options` rows for:
-  - `classified_categories`
-  - `parking_types`
-  - `rental_types`
-  - `help_categories`
-  - any `classified_sub_*` groups
-- Add a migration that:
-  - seeds missing option groups/rows without deleting existing data
-  - backfills old Turkish/label category values in `classifieds` and related tables to canonical `value_key`s
-- Preserve all existing content; no schema reset.
+5. Reduce UI blockers on Pets
+- Adjust `LocationProvider` behavior so the location modal does not feel like the page is broken:
+  - render it as dismissible/non-blocking for list browsing, or defer it until the user enters a nearby/map mode
+  - avoid showing it immediately on first render of every page
+- Keep location access optional and only required for “nearby” features.
 
-6. Image stability fix
-- Create a shared `SafeImage`/`CardImage` component with:
-  - local error state
-  - placeholder fallback instead of `style.display = "none"`
-  - consistent `loading="lazy"` behavior
-- Normalize media sources with `parsePhotos` everywhere needed.
-- Replace ad-hoc image rendering in Wall, Classifieds, Rentals, Parking, Venues, Groups, Events, Pets, and other card pages that currently use inline `<img>` fallback hacks.
-- Ensure cards still show a visual placeholder when storage/media temporarily fails.
+6. Secondary Pets hardening in the same pass
+- Replace remaining brittle pet image usage with the shared safe image pattern where needed.
+- Normalize photo selection for pet cards so both `photos[]` and `photo_url` render consistently.
+- Update lost/found and friend-finder pet views to use the same species normalization logic, preventing another round of empty/filter mismatches elsewhere in the pets module.
 
-7. Navigation recovery fix
-- Replace the hard reload in `NotFound.tsx` with SPA navigation (`Link` or navigate(-1)/home button).
-- Add a small route-change utility to restore stable page behavior after bad routes/back navigation if needed.
-- Verify no other plain `href="/"` style navigations are used for internal app routes.
-
-8. Verification pass after implementation
-- Measure requests on Wall, Classifieds, Pets, Rentals, Parking, Help:
-  - one profile batch request per page instead of dozens
-  - no per-card profile fetch storm
-  - no per-card like storm on Wall
-- Open category dialogs and verify options appear consistently on first open.
-- Post/select/filter categories and confirm badges show labels, not raw keys or Turkish legacy strings.
-- Navigate into a detail page, trigger a 404 path, then go back and confirm content/images remain visible.
-- Validate image fallback behavior on broken/slow media URLs.
+7. Verification after implementation
+- Verify `/pets` published and preview both:
+  - render adoption cards on first load
+  - show skeletons only while `pet_profiles` is actually loading
+  - show a true empty state only when there are genuinely no adoption pets
+- Test species and breed filters across mixed old/new pet rows.
+- Create a new adoption listing and confirm it:
+  - inserts successfully
+  - appears in the adoption tab immediately
+  - keeps image, species label, and filters working
+- Test with location modal skipped and allowed to confirm the page remains usable in both cases.
 
 Technical details
 - Files likely touched:
-  - `src/hooks/useAppOptions.ts`
-  - new shared hooks/components for profile maps and safe images
-  - `src/components/shared/UserName.tsx` (reduced role or left for non-list contexts)
-  - `src/components/classifieds/ClassifiedPostForm.tsx`
-  - `src/pages/Wall.tsx`
-  - `src/pages/Classifieds.tsx`
-  - `src/pages/Parking.tsx`
-  - `src/pages/Rentals.tsx`
-  - `src/pages/NeighborHelp.tsx`
   - `src/pages/Pets.tsx`
-  - `src/pages/Events.tsx`
-  - `src/pages/Venues.tsx`
-  - `src/pages/NotFound.tsx`
-  - one database migration for option seeding + category backfill
+  - `src/components/pets/AdoptionForm.tsx`
+  - `src/components/pets/AddPetForm.tsx`
+  - `src/hooks/useSpeciesBreeds.ts`
+  - `src/providers/LocationProvider.tsx`
+  - shared pet normalization helper(s)
+  - one migration for pet species/breed backfill
 - No schema reset, no auth reset, no data deletion.
-- The objective is stabilization first: consistent keys, batched profile/like loading, resilient media, and SPA-safe recovery.
+- Priority is correctness first: proper adoption loading state, normalized species data, and a non-blocking browsing experience.
