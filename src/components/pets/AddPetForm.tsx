@@ -49,7 +49,7 @@ const AddPetForm = ({ onSuccess }: AddPetFormProps) => {
   const [photos, setPhotos] = useState<string[]>([]);
   const [form, setForm] = useState({
     name: "",
-    species: "dog",
+    species: "",
     breed: "",
     age_years: "",
     age_months: "",
@@ -67,8 +67,8 @@ const AddPetForm = ({ onSuccess }: AddPetFormProps) => {
     lifestyle_tags: [] as string[],
   });
 
-  const { speciesOptions } = useSpecies();
-  const { breedOptions } = useBreeds(form.species);
+  const { species, speciesOptions } = useSpecies();
+  const { breedOptions, breeds } = useBreeds(form.species);
 
   const toggleArray = (field: "personality_tags" | "looking_for" | "size_preference" | "lifestyle_tags", value: string) => {
     setForm(prev => ({
@@ -94,11 +94,19 @@ const AddPetForm = ({ onSuccess }: AddPetFormProps) => {
 
     setLoading(true);
     try {
+      // Normalize species: form.species is a UUID from speciesOptions.
+      const selectedSpecies = species.find((s) => s.id === form.species);
+      const speciesEnumText = selectedSpecies
+        ? (selectedSpecies.name_en.toLowerCase() as any)
+        : (form.species as any);
+      const selectedBreed = breeds.find((b) => b.name_en === form.breed || b.name_tr === form.breed);
       const { error } = await supabase.from("pet_profiles").insert({
         owner_id: user.id,
         name: form.name.trim(),
-        species: form.species as any,
+        species: speciesEnumText,
+        species_id: selectedSpecies?.id || null,
         breed: form.breed || null,
+        breed_id: selectedBreed?.id || null,
         age_years: form.age_years ? parseInt(form.age_years) : null,
         age_months: form.age_months ? parseInt(form.age_months) : null,
         gender: form.gender || null,
@@ -109,6 +117,7 @@ const AddPetForm = ({ onSuccess }: AddPetFormProps) => {
         personality_tags: form.personality_tags as any,
         looking_for: form.looking_for,
         photo_url: photos.length > 0 ? photos[0] : null,
+        photos: photos,
         size: form.size || null,
         energy_level: form.energy_level || null,
         gender_preference: form.gender_preference,
