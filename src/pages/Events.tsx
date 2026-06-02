@@ -170,20 +170,20 @@ const Events = () => {
           {/* Date range filter */}
           <div className="flex items-center gap-2 mb-3 flex-wrap">
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px]" style={{ color: "#64748B" }}>{t("events.from", "From")}</span>
+              <span className="text-xs" style={{ color: "#64748B" }}>{t("events.from", "From")}</span>
               <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="text-xs h-8 w-[130px]" />
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px]" style={{ color: "#64748B" }}>{t("events.to", "To")}</span>
+              <span className="text-xs" style={{ color: "#64748B" }}>{t("events.to", "To")}</span>
               <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="text-xs h-8 w-[130px]" />
             </div>
             {(dateFrom || dateTo) && (
-              <button onClick={() => { setDateFrom(""); setDateTo(""); }} className="text-[11px] underline" style={{ color: "#E74C3C" }}>{t("common.clear", "Clear")}</button>
+              <button onClick={() => { setDateFrom(""); setDateTo(""); }} className="text-xs underline" style={{ color: "#E74C3C" }}>{t("common.clear", "Clear")}</button>
             )}
             {/* Free toggle */}
             <button
               onClick={() => setFreeOnly(!freeOnly)}
-              className="flex-shrink-0 text-[11px] transition-all"
+              className="flex-shrink-0 text-xs transition-all"
               style={{
                 padding: "5px 14px",
                 borderRadius: "20px",
@@ -220,13 +220,13 @@ const Events = () => {
                         <SafeImage src={event.cover_photo} alt={event.title} className="w-full h-full object-cover" fallbackBg={ph.bg} fallbackEmoji={ph.emoji} />
                         {/* Category badge */}
                         {event.category && (
-                          <span className="absolute top-0 left-0 text-[10px] font-medium text-white" style={{ backgroundColor: "#1E3A5F", padding: "3px 8px", borderRadius: "0 0 6px 0" }}>
+                          <span className="absolute top-0 left-0 text-xs font-medium text-white" style={{ backgroundColor: "#1E3A5F", padding: "3px 8px", borderRadius: "0 0 6px 0" }}>
                             {t(`event_cat.${event.category.toLowerCase()}`, event.category)}
                           </span>
                         )}
                         {/* Free/Price badge */}
                         <span
-                          className="absolute top-0 right-0 text-[10px] font-medium"
+                          className="absolute top-0 right-0 text-xs font-medium"
                           style={{
                             padding: "3px 8px",
                             borderRadius: "0 0 0 6px",
@@ -241,11 +241,11 @@ const Events = () => {
                       {/* Card body */}
                       <div className="p-3">
                         <h3 className="text-[14px] font-semibold mb-1" style={{ color: "#1E3A5F" }}>{event.title}</h3>
-                        <p className="text-[11px] flex items-center gap-1 mb-0.5" style={{ color: "#64748B" }}>
+                        <p className="text-xs flex items-center gap-1 mb-0.5" style={{ color: "#64748B" }}>
                           📅 {formatEventDate(event.start_at)}
                         </p>
                         {(event.venue_name || event.address) && (
-                          <p className="text-[11px] flex items-center gap-1 truncate mb-0.5" style={{ color: "#94A3B8" }}>
+                          <p className="text-xs flex items-center gap-1 truncate mb-0.5" style={{ color: "#64748B" }}>
                             📍 {event.venue_name || event.address}
                           </p>
                         )}
@@ -253,10 +253,10 @@ const Events = () => {
                         <div className="flex items-center justify-between mb-2">
                           {event.user_id && (
                             <div onClick={(e) => e.stopPropagation()}>
-                              <ProfileInline userId={event.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-4 h-4" className="text-[11px]" />
+                              <ProfileInline userId={event.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-4 h-4" className="text-xs" />
                             </div>
                           )}
-                          <span className="text-[11px]" style={{ color: "#94A3B8" }}>
+                          <span className="text-xs" style={{ color: "#64748B" }}>
                             👥 {attendeeCounts[event.id] || 0}
                           </span>
                         </div>

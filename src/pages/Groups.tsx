@@ -183,7 +183,7 @@ const Groups = () => {
 
       {/* Search */}
       <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "#94A3B8" }} />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "#64748B" }} />
         <Input placeholder={t("groups.search_placeholder", "Grup ara...")} value={search} onChange={e => setSearch(e.target.value)} className="pl-10" style={{ fontSize: 13 }} />
       </div>
 
@@ -257,7 +257,7 @@ const Groups = () => {
                 <div style={{ padding: 12 }}>
                   <h3 style={{ fontSize: 14, fontWeight: 600, color: "#1E3A5F", marginBottom: 4 }} className="truncate">{group.name}</h3>
 
-                  <div className="flex items-center gap-3 mb-2" style={{ fontSize: 12, color: "#94A3B8" }}>
+                  <div className="flex items-center gap-3 mb-2" style={{ fontSize: 12, color: "#64748B" }}>
                     <span>👥 {group.member_count}</span>
                     {lastPostDate && <span>{language === "tr" ? "Son gönderi" : "Last post"}: {timeAgo(lastPostDate)}</span>}
                   </div>
@@ -370,7 +370,7 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
         ) : (
           <>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
-            <button onClick={() => fileRef.current?.click()} disabled={uploading} className="w-full flex items-center justify-center gap-2 border-dashed border-2 rounded-xl" style={{ height: 80, borderColor: "#CBD5E1", color: "#94A3B8", fontSize: 13 }}>
+            <button onClick={() => fileRef.current?.click()} disabled={uploading} className="w-full flex items-center justify-center gap-2 border-dashed border-2 rounded-xl" style={{ height: 80, borderColor: "#CBD5E1", color: "#64748B", fontSize: 13 }}>
               {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-5 h-5" />}
               {uploading ? "Uploading..." : t("groups.form.add_cover", "Add Cover Photo")}
             </button>
@@ -386,9 +386,9 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
 
       {/* Description */}
       <div className="mb-4">
-        <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.description", "Description")} * <span style={{ color: "#94A3B8" }}>({t("groups.form.min_chars", "min 20 characters")})</span></Label>
+        <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.description", "Description")} * <span style={{ color: "#64748B" }}>({t("groups.form.min_chars", "min 20 characters")})</span></Label>
         <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder={t("groups.form.desc_placeholder", "What is the group about?")} rows={3} style={{ fontSize: 13 }} />
-        <span style={{ fontSize: 11, color: form.description.length >= 20 ? "#16A34A" : "#94A3B8" }}>{form.description.length}/20</span>
+        <span style={{ fontSize: 11, color: form.description.length >= 20 ? "#16A34A" : "#64748B" }}>{form.description.length}/20</span>
       </div>
 
       {/* Category - tappable cards */}
@@ -431,7 +431,7 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
               >
                 <Icon className="w-5 h-5" style={{ color: gt.color }} />
                 <span style={{ fontSize: 11, fontWeight: 600, color: gt.color }}>{gt.label}</span>
-                <span style={{ fontSize: 9, color: "#94A3B8" }}>{gt.desc}</span>
+                <span style={{ fontSize: 9, color: "#64748B" }}>{gt.desc}</span>
               </button>
             );
           })}

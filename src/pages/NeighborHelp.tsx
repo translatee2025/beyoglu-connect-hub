@@ -84,7 +84,7 @@ const NeighborHelp = () => {
       {/* Search + post button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
         <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "#94A3B8" }} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "#64748B" }} />
           <Input placeholder={t("common.search", "Search...")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" style={{ fontSize: 13 }} />
         </div>
         <Dialog open={postOpen} onOpenChange={setPostOpen}>
@@ -142,7 +142,7 @@ const NeighborHelp = () => {
                   <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 12, border: "1px solid #E2E8F0", color: "#64748B" }}>
                     {getCategoryLabel(post.category)}
                   </span>
-                  <span style={{ fontSize: 11, color: "#94A3B8", marginLeft: "auto" }}>{timeAgo(post.created_at)}</span>
+                  <span style={{ fontSize: 11, color: "#64748B", marginLeft: "auto" }}>{timeAgo(post.created_at)}</span>
                 </div>
 
                 {/* Title */}
@@ -165,10 +165,10 @@ const NeighborHelp = () => {
                 {/* User info + district */}
                 <div className="flex items-center gap-2 mb-3" style={{ fontSize: 12 }}>
                   {post.user_id && (
-                    <ProfileInline userId={post.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-5 h-5" className="text-[12px]" />
+                    <ProfileInline userId={post.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-5 h-5" className="text-xs" />
                   )}
                   {post.neighborhood && (
-                    <span className="flex items-center gap-0.5" style={{ color: "#94A3B8", fontSize: 11 }}>
+                    <span className="flex items-center gap-0.5" style={{ color: "#64748B", fontSize: 11 }}>
                       <MapPin className="w-3 h-3" /> {post.neighborhood}
                     </span>
                   )}
@@ -220,7 +220,7 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
     <div style={{ padding: 4 }}>
       <DialogHeader><DialogTitle style={{ fontSize: 16, fontWeight: 700, color: "#1E3A5F" }}>{t("help.post_title", "Post Help Listing")}</DialogTitle></DialogHeader>
       <Progress value={(step / 2) * 100} className="h-1.5 mt-3" />
-      <p className="text-center mt-1 mb-4" style={{ fontSize: 11, color: "#94A3B8" }}>{step} / 2</p>
+      <p className="text-center mt-1 mb-4" style={{ fontSize: 11, color: "#64748B" }}>{step} / 2</p>
 
       {step === 1 && (
         <div className="space-y-4">

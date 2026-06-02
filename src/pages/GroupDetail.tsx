@@ -201,7 +201,7 @@ const GroupDetail = () => {
     }
   };
 
-  if (!group) return <div className="min-h-screen bg-background flex items-center justify-center" style={{ color: "#94A3B8" }}>Yükleniyor...</div>;
+  if (!group) return <div className="min-h-screen bg-background flex items-center justify-center" style={{ color: "#64748B" }}>Yükleniyor...</div>;
 
   const typeBadge = group.group_type === "public"
     ? { label: t("groups.public_short", "Public"), bg: "#DCFCE7", color: "#16A34A" }
@@ -227,7 +227,7 @@ const GroupDetail = () => {
 
           <div className="flex flex-wrap items-center gap-2 mb-4">
             <span style={{ fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 12, background: typeBadge.bg, color: typeBadge.color }}>{typeBadge.label}</span>
-            <span style={{ fontSize: 12, color: "#94A3B8" }}>👥 {group.member_count} {language === "tr" ? "üye" : "members"}</span>
+            <span style={{ fontSize: 12, color: "#64748B" }}>👥 {group.member_count} {language === "tr" ? "üye" : "members"}</span>
           </div>
 
           {/* Action buttons */}
@@ -319,7 +319,7 @@ const GroupDetail = () => {
           )}
 
           {posts.length === 0 ? (
-            <div className="text-center py-12" style={{ color: "#94A3B8" }}>
+            <div className="text-center py-12" style={{ color: "#64748B" }}>
               <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
               <p style={{ fontSize: 13 }}>{t("groups.empty_feed", "Henüz gönderi yok. İlk gönderiyi paylaş!")}</p>
             </div>
@@ -329,7 +329,7 @@ const GroupDetail = () => {
                 <div key={post.id} className="rounded-xl" style={{ border: "1px solid #E2EBFC", padding: 12 }}>
                   <div className="flex items-center gap-2 mb-2">
                     {post.user_id && <UserName userId={post.user_id} showAvatar />}
-                    <span style={{ fontSize: 11, color: "#94A3B8" }}>{timeAgo(post.created_at)}</span>
+                    <span style={{ fontSize: 11, color: "#64748B" }}>{timeAgo(post.created_at)}</span>
                   </div>
                   <p style={{ fontSize: 13, color: "#1E3A5F", lineHeight: 1.5 }}>{post.content}</p>
                   {post.photos && post.photos.length > 0 && (
@@ -368,7 +368,7 @@ const GroupDetail = () => {
                   </span>
                 )}
                 {user && member.user_id !== user.id && (
-                  <button onClick={() => handleMessage(member.user_id)} style={{ color: "#94A3B8" }}>
+                  <button onClick={() => handleMessage(member.user_id)} style={{ color: "#64748B" }}>
                     <MessageSquare className="w-4 h-4" />
                   </button>
                 )}

@@ -158,8 +158,8 @@ const Profile = () => {
   const initials = (profile?.display_name || "U").slice(0, 2).toUpperCase();
   const memberSince = profile?.created_at ? new Date(profile.created_at).toLocaleDateString(language === "tr" ? "tr-TR" : "en-US", { month: "long", year: "numeric" }) : "";
 
-  if (isLoading) return <div className="flex justify-center py-20" style={{ color: "#94A3B8" }}>{t("common.loading", "Yükleniyor...")}</div>;
-  if (!profile) return <div className="flex justify-center py-20" style={{ color: "#94A3B8" }}>{t("profile.user_not_found", "Kullanıcı bulunamadı")}</div>;
+  if (isLoading) return <div className="flex justify-center py-20" style={{ color: "#64748B" }}>{t("common.loading", "Yükleniyor...")}</div>;
+  if (!profile) return <div className="flex justify-center py-20" style={{ color: "#64748B" }}>{t("profile.user_not_found", "Kullanıcı bulunamadı")}</div>;
 
   const UserListModal = ({ open, onClose, title, users }: { open: boolean; onClose: () => void; title: string; users: any[] }) => (
     <Dialog open={open} onOpenChange={onClose}>
@@ -175,7 +175,7 @@ const Profile = () => {
               <span style={{ fontSize: 13, fontWeight: 500, color: "#1E3A5F" }}>{u.display_name || t("common.user", "Kullanıcı")}</span>
             </Link>
           ))}
-          {users.length === 0 && <p style={{ fontSize: 13, color: "#94A3B8", textAlign: "center", padding: 16 }}>{t("profile.nobody_yet", "Henüz kimse yok")}</p>}
+          {users.length === 0 && <p style={{ fontSize: 13, color: "#64748B", textAlign: "center", padding: 16 }}>{t("profile.nobody_yet", "Henüz kimse yok")}</p>}
         </div>
       </DialogContent>
     </Dialog>
@@ -191,12 +191,12 @@ const Profile = () => {
           </Avatar>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: "#1E3A5F" }}>{profile.display_name || t("profile.anonymous", "Anonim")}</h1>
           {(districtName || profile.neighborhood) && (
-            <div className="flex items-center gap-1 mt-1" style={{ color: "#94A3B8", fontSize: 13 }}>
+            <div className="flex items-center gap-1 mt-1" style={{ color: "#64748B", fontSize: 13 }}>
               <MapPin className="w-3 h-3" /> {districtName || profile.neighborhood}
             </div>
           )}
           {profile.bio && <p className="mt-2" style={{ fontSize: 13, color: "#64748B", maxWidth: 400 }}>{profile.bio}</p>}
-          {memberSince && <p className="mt-1" style={{ fontSize: 11, color: "#94A3B8" }}>{t("profile.member_since", "Üye")}: {memberSince}</p>}
+          {memberSince && <p className="mt-1" style={{ fontSize: 11, color: "#64748B" }}>{t("profile.member_since", "Üye")}: {memberSince}</p>}
         </div>
 
         <div className="flex justify-center gap-0 mb-5">
@@ -207,7 +207,7 @@ const Profile = () => {
           ].map((s, i) => (
             <button key={i} onClick={s.onClick} className="flex flex-col items-center px-5" style={{ borderRight: i < 2 ? "1px solid #E2E8F0" : "none", cursor: s.onClick ? "pointer" : "default" }}>
               <span style={{ fontSize: 18, fontWeight: 700, color: "#1E3A5F" }}>{s.n}</span>
-              <span style={{ fontSize: 11, color: "#94A3B8" }}>{s.label}</span>
+              <span style={{ fontSize: 11, color: "#64748B" }}>{s.label}</span>
             </button>
           ))}
         </div>
@@ -238,12 +238,12 @@ const Profile = () => {
           </TabsList>
 
           <TabsContent value="posts">
-            {posts.length === 0 ? <p className="text-center py-8" style={{ color: "#94A3B8", fontSize: 13 }}>{t("profile.no_posts", "Henüz gönderi yok")}</p> : (
+            {posts.length === 0 ? <p className="text-center py-8" style={{ color: "#64748B", fontSize: 13 }}>{t("profile.no_posts", "Henüz gönderi yok")}</p> : (
               <div className="space-y-3 mt-3">
                 {posts.map(p => (
                   <Card key={p.id}><CardContent className="py-3 px-4">
                     <p style={{ fontSize: 13, color: "#1E3A5F" }}>{p.content}</p>
-                    <span style={{ fontSize: 11, color: "#94A3B8" }}>{new Date(p.created_at).toLocaleDateString("tr-TR")}</span>
+                    <span style={{ fontSize: 11, color: "#64748B" }}>{new Date(p.created_at).toLocaleDateString("tr-TR")}</span>
                   </CardContent></Card>
                 ))}
               </div>
@@ -251,7 +251,7 @@ const Profile = () => {
           </TabsContent>
 
           <TabsContent value="listings">
-            {listings.length === 0 ? <p className="text-center py-8" style={{ color: "#94A3B8", fontSize: 13 }}>{t("profile.no_listings", "Henüz ilan yok")}</p> : (
+            {listings.length === 0 ? <p className="text-center py-8" style={{ color: "#64748B", fontSize: 13 }}>{t("profile.no_listings", "Henüz ilan yok")}</p> : (
               <div className="space-y-3 mt-3">
                 {listings.map(l => (
                   <Card key={l.id}><CardContent className="py-3 px-4 flex items-center gap-3">
@@ -265,7 +265,7 @@ const Profile = () => {
           </TabsContent>
 
           <TabsContent value="reviews">
-            {reviews.length === 0 ? <p className="text-center py-8" style={{ color: "#94A3B8", fontSize: 13 }}>{t("profile.no_reviews", "Henüz yorum yok")}</p> : (
+            {reviews.length === 0 ? <p className="text-center py-8" style={{ color: "#64748B", fontSize: 13 }}>{t("profile.no_reviews", "Henüz yorum yok")}</p> : (
               <div className="space-y-3 mt-3">
                 {reviews.map((r: any) => (
                   <Card key={r.id}><CardContent className="py-3 px-4">
@@ -280,7 +280,7 @@ const Profile = () => {
                       <span style={{ fontSize: 12 }}>{"⭐".repeat(r.rating)}</span>
                     </div>
                     {r.comment && <p style={{ fontSize: 13, color: "#64748B" }}>{r.comment}</p>}
-                    <span style={{ fontSize: 11, color: "#94A3B8" }}>{new Date(r.created_at).toLocaleDateString("tr-TR")}</span>
+                    <span style={{ fontSize: 11, color: "#64748B" }}>{new Date(r.created_at).toLocaleDateString("tr-TR")}</span>
                   </CardContent></Card>
                 ))}
               </div>
@@ -288,7 +288,7 @@ const Profile = () => {
           </TabsContent>
 
           <TabsContent value="groups">
-            {groups.length === 0 ? <p className="text-center py-8" style={{ color: "#94A3B8", fontSize: 13 }}>{t("profile.no_groups", "Henüz grup yok")}</p> : (
+            {groups.length === 0 ? <p className="text-center py-8" style={{ color: "#64748B", fontSize: 13 }}>{t("profile.no_groups", "Henüz grup yok")}</p> : (
               <div className="space-y-3 mt-3">
                 {groups.map(g => (
                   <Link key={g.id} to={`/groups/${g.id}`}>
@@ -296,7 +296,7 @@ const Profile = () => {
                       <Users className="w-5 h-5" style={{ color: "#1E3A5F" }} />
                       <div className="flex-1">
                         <span style={{ fontSize: 13, fontWeight: 600, color: "#1E3A5F" }}>{g.name}</span>
-                        <p style={{ fontSize: 11, color: "#94A3B8" }}>{g.member_count} {t("common.members", "üye")}</p>
+                        <p style={{ fontSize: 11, color: "#64748B" }}>{g.member_count} {t("common.members", "üye")}</p>
                       </div>
                       <Badge variant="secondary" style={{ fontSize: 10 }}>{g.category}</Badge>
                     </CardContent></Card>

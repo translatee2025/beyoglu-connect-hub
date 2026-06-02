@@ -93,7 +93,7 @@ const MobileDrawer = ({ open, onClose }: { open: boolean; onClose: () => void })
                 <div className="text-sm font-medium truncate" style={{ color: "#1E3A5F" }}>
                   {profile?.display_name || user.email?.split("@")[0]}
                 </div>
-                <div className="text-xs" style={{ color: "#94A3B8" }}>
+                <div className="text-xs" style={{ color: "#64748B" }}>
                   {profile?.neighborhood || "Beyoğlu"}
                 </div>
               </div>
@@ -134,7 +134,7 @@ const MobileDrawer = ({ open, onClose }: { open: boolean; onClose: () => void })
               {si > 0 && <div style={{ height: 1, background: "#E2EBFC", margin: "10px 0" }} />}
               <div
                 style={{
-                  fontSize: 9, fontWeight: 700, color: "#94A3B8", letterSpacing: "0.07em",
+                  fontSize: 9, fontWeight: 700, color: "#64748B", letterSpacing: "0.07em",
                   textTransform: "uppercase" as const, margin: "14px 0 5px 10px",
                 }}
               >
@@ -156,7 +156,7 @@ const MobileDrawer = ({ open, onClose }: { open: boolean; onClose: () => void })
         </nav>
 
         <div className="mt-auto border-t px-4 py-3 flex items-center gap-2" style={{ borderColor: "#E2EBFC" }}>
-          <Globe className="w-3.5 h-3.5" style={{ color: "#94A3B8" }} />
+          <Globe className="w-3.5 h-3.5" style={{ color: "#64748B" }} />
           {["tr", "en"].map((lang) => (
             <button
               key={lang}
@@ -164,7 +164,7 @@ const MobileDrawer = ({ open, onClose }: { open: boolean; onClose: () => void })
               className="uppercase transition-colors"
               style={{
                 fontSize: 12, fontWeight: language === lang ? 600 : 400,
-                color: language === lang ? "#1E3A5F" : "#94A3B8", padding: "2px 6px",
+                color: language === lang ? "#1E3A5F" : "#64748B", padding: "2px 6px",
               }}
             >
               {lang}

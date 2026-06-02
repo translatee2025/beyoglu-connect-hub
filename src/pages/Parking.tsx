@@ -165,7 +165,7 @@ const Parking = () => {
 
       <div className="flex items-center gap-2" style={{ marginBottom: 6 }}>
         {item.user_id && <ProfileInline userId={item.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-4 h-4" />}
-        <span style={{ fontSize: 11, color: "#94A3B8" }}>· {formatTimeAgo(item.created_at)}</span>
+        <span style={{ fontSize: 11, color: "#64748B" }}>· {formatTimeAgo(item.created_at)}</span>
       </div>
 
       <DistanceLabel lat={item.lat} lng={item.lng} neighborhood={item.neighborhood} />
@@ -192,13 +192,13 @@ const Parking = () => {
             <div className="flex border-b border-[#E2EBFC] mb-5">
               <button
                 onClick={() => setMainTab("offering")}
-                className={`flex-1 py-3 text-sm font-medium text-center transition-colors ${mainTab === "offering" ? "text-[#1E3A5F] border-b-2 border-[#1E3A5F]" : "text-[#94A3B8] hover:text-[#64748B]"}`}
+                className={`flex-1 py-3 text-sm font-medium text-center transition-colors ${mainTab === "offering" ? "text-[#1E3A5F] border-b-2 border-[#1E3A5F]" : "text-[#64748B] hover:text-[#64748B]"}`}
               >
                 {t("parking.listings", "Parking Listings")}
               </button>
               <button
                 onClick={() => setMainTab("looking")}
-                className={`flex-1 py-3 text-sm font-medium text-center transition-colors ${mainTab === "looking" ? "text-[#1E3A5F] border-b-2 border-[#1E3A5F]" : "text-[#94A3B8] hover:text-[#64748B]"}`}
+                className={`flex-1 py-3 text-sm font-medium text-center transition-colors ${mainTab === "looking" ? "text-[#1E3A5F] border-b-2 border-[#1E3A5F]" : "text-[#64748B] hover:text-[#64748B]"}`}
               >
                 {t("common.looking_for", "Looking")}
               </button>

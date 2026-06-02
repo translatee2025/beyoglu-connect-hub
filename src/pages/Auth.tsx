@@ -83,7 +83,14 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-background">
+    <div className="relative min-h-screen flex items-center justify-center px-4 bg-background">
+      <button
+        type="button"
+        onClick={() => navigate('/')}
+        className="absolute top-4 left-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="w-4 h-4" /> {t('auth.back_home', 'Back to Beyoğlu')}
+      </button>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           {!isLogin && totalSteps > 1 && (

@@ -108,9 +108,9 @@ const PetSwipeCards = ({ pets, onLike }: PetSwipeCardsProps) => {
             <div className="text-xs text-muted-foreground space-y-1 pt-1 border-t border-border">
               <p className="font-medium text-foreground flex items-center gap-1"><Info className="w-3 h-3" /> Looking for</p>
               <div className="flex flex-wrap gap-1">
-                {pet.looking_for?.map((l: string) => <Badge key={l} variant="outline" className="text-[10px]">{l}</Badge>)}
+                {pet.looking_for?.map((l: string) => <Badge key={l} variant="outline" className="text-xs">{l}</Badge>)}
                 {pet.gender_preference && pet.gender_preference !== "any" && (
-                  <Badge variant="outline" className="text-[10px]">{pet.gender_preference === "male" ? "♂ males only" : "♀ females only"}</Badge>
+                  <Badge variant="outline" className="text-xs">{pet.gender_preference === "male" ? "♂ males only" : "♀ females only"}</Badge>
                 )}
               </div>
             </div>

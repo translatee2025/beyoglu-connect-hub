@@ -438,7 +438,7 @@ const ListingCard = ({ item, badge, timeAgo, user, setReportTarget, t, profilesM
         <SafeImage src={item.photos[0]} alt={item.title} className="w-full h-full object-cover" fallbackBg="#EFF4FF" fallbackEmoji="🖼️" />
       ) : (
         <div className="w-full h-full flex items-center justify-center">
-          <item.icon className="w-10 h-10 text-[#94A3B8] opacity-40" />
+          <item.icon className="w-10 h-10 text-[#64748B] opacity-40" />
         </div>
       )}
       {item.price && (
@@ -454,12 +454,12 @@ const ListingCard = ({ item, badge, timeAgo, user, setReportTarget, t, profilesM
         <ReportMenu item={item} user={user} setReportTarget={setReportTarget} t={t} />
       </div>
       {item.title && <p className="text-sm font-semibold" style={{ color: '#1E3A5F' }}>{item.title}</p>}
-      {item.details && <p className="text-[11px] mt-0.5" style={{ color: '#94A3B8' }}>{item.details}</p>}
+      {item.details && <p className="text-xs mt-0.5" style={{ color: '#64748B' }}>{item.details}</p>}
       {item.description && <p className="text-xs mt-1 line-clamp-2" style={{ color: '#64748B', lineHeight: '1.5' }}>{item.description}</p>}
       {/* Poster row */}
       <div className="flex items-center gap-1.5 mt-2">
-        {item.user_id && <ProfileInline userId={item.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-4 h-4" className="text-[11px]" />}
-        <span className="text-[11px] text-[#94A3B8]">· {timeAgo(item.created_at)}</span>
+        {item.user_id && <ProfileInline userId={item.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-4 h-4" className="text-xs" />}
+        <span className="text-xs text-[#64748B]">· {timeAgo(item.created_at)}</span>
       </div>
       {/* CTA */}
       <button className="w-full mt-2.5 py-2 rounded-lg text-white text-xs font-medium" style={{ backgroundColor: '#E74C3C' }}>
@@ -475,8 +475,8 @@ const SocialCard = ({ item, badge, timeAgo, user, setReportTarget, t, profilesMa
     {/* Header */}
     <div className="flex items-start justify-between">
       <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-        {item.user_id && <ProfileInline userId={item.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-8 h-8" className="text-[13px] font-medium" />}
-        <span className="text-[11px] text-[#94A3B8]">· {timeAgo(item.created_at)}</span>
+        {item.user_id && <ProfileInline userId={item.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-8 h-8" className="text-sm font-medium" />}
+        <span className="text-xs text-[#64748B]">· {timeAgo(item.created_at)}</span>
       </div>
       <div className="flex items-center gap-1.5 flex-shrink-0">
         <Badge variant={badge.variant as any}>{badge.label}</Badge>
@@ -484,8 +484,8 @@ const SocialCard = ({ item, badge, timeAgo, user, setReportTarget, t, profilesMa
       </div>
     </div>
     {/* Body */}
-    {item.title && <p className="text-[13px] font-medium text-foreground mt-2">{item.title}</p>}
-    {item.description && <p className="text-[13px] text-foreground mt-0.5 line-clamp-3" style={{ lineHeight: '1.6' }}>{item.description}</p>}
+    {item.title && <p className="text-sm font-medium text-foreground mt-2">{item.title}</p>}
+    {item.description && <p className="text-sm text-foreground mt-0.5 line-clamp-3" style={{ lineHeight: '1.6' }}>{item.description}</p>}
     {/* Photos */}
     {item.photos && item.photos.length > 0 && (
       <div className="mt-2.5 rounded-lg overflow-hidden" style={{ maxHeight: '220px' }}>
@@ -496,7 +496,7 @@ const SocialCard = ({ item, badge, timeAgo, user, setReportTarget, t, profilesMa
     <div className="flex items-center gap-3.5 mt-2.5 pt-2" style={{ borderTop: '1px solid #E2EBFC' }}>
       <LikeButton entityType={item.entityType} entityId={item.id} initialLikes={likesMap?.[item.id]} />
       <CommentsSection entityType={item.entityType} entityId={item.id} />
-      <button className="text-[11px] font-medium ml-auto" style={{ color: '#94A3B8' }}>{t("common.send_message", "Send Message")}</button>
+      <button className="text-xs font-medium ml-auto" style={{ color: '#64748B' }}>{t("common.send_message", "Send Message")}</button>
     </div>
   </div>
 );
@@ -507,7 +507,7 @@ const ReportMenu = ({ item, user, setReportTarget, t }: any) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="p-1 text-[#94A3B8] hover:text-foreground"><MoreHorizontal className="w-3.5 h-3.5" /></button>
+        <button className="p-1 text-[#64748B] hover:text-foreground"><MoreHorizontal className="w-3.5 h-3.5" /></button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setReportTarget({ type: item.source === "wall" ? "wall_post" : item.source === "classifieds" ? "classified" : item.source === "venues" ? "venue" : item.source === "help" ? "help_post" : item.entityType, id: item.id })} className="text-xs">

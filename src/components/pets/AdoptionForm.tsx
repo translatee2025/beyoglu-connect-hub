@@ -107,7 +107,7 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
         <div>
           <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>{t("pets.species_label", "Species")}</Label>
           {speciesLoading ? (
-            <p className="text-xs" style={{ color: "#94A3B8" }}>{t("loading", "Loading...")}</p>
+            <p className="text-xs" style={{ color: "#64748B" }}>{t("loading", "Loading...")}</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {speciesOptions.map((s) => (
@@ -129,7 +129,7 @@ const AdoptionForm = ({ onSuccess, onBack }: AdoptionFormProps) => {
           <div>
             <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>{t("pets.breed_label", "Breed")}</Label>
             {breedsLoading ? (
-              <p className="text-xs" style={{ color: "#94A3B8" }}>{t("loading", "Loading...")}</p>
+              <p className="text-xs" style={{ color: "#64748B" }}>{t("loading", "Loading...")}</p>
             ) : (
               <div className="flex flex-wrap gap-1.5">
                 <button

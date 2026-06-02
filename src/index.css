@@ -28,7 +28,8 @@
     --secondary-foreground: 213 52% 24%;
 
     --muted: 215 20% 65%;
-    --muted-foreground: 215 20% 65%;
+    /* Darkened to meet WCAG AA 4.5:1 on white (bible §7.2 / AP-007) */
+    --muted-foreground: 215 18% 42%;
 
     --accent: 222 100% 97%;
     --accent-foreground: 213 52% 24%;
@@ -46,7 +47,7 @@
 
     --text-primary: 213 52% 24%;
     --text-secondary: 215 16% 47%;
-    --text-tertiary: 215 20% 65%;
+    --text-tertiary: 215 18% 42%;
 
     --gradient-hero: linear-gradient(135deg, hsl(213 52% 24%) 0%, hsl(213 52% 30%) 100%);
     --gradient-subtle: linear-gradient(180deg, hsl(222 33% 99%) 0%, hsl(222 33% 98%) 100%);
@@ -60,7 +61,9 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 }
 

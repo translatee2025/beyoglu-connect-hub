@@ -51,7 +51,7 @@ export function ProfileInline({
         <Avatar className={avatarSize}>
           <AvatarImage src={profile?.avatar_url || undefined} />
           <AvatarFallback
-            className="text-[10px] font-medium"
+            className="text-xs font-medium"
             style={{ backgroundColor: colors.bg, color: colors.text }}
           >
             {initials}

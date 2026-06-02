@@ -300,7 +300,7 @@ const FriendFinder = () => {
         <div className="text-center py-12" style={{ color: "#64748B" }}>Finding pets near you...</div>
       ) : filteredPets.length === 0 ? (
         <div className="text-center py-12">
-          <Dog className="w-16 h-16 mx-auto mb-4" style={{ color: "#94A3B8" }} />
+          <Dog className="w-16 h-16 mx-auto mb-4" style={{ color: "#64748B" }} />
           <h3 className="text-lg font-semibold text-foreground mb-2">No matches found</h3>
           <p className="mb-4" style={{ color: "#64748B" }}>Try adjusting your filters.</p>
           <Button variant="outline" onClick={() => setFilters(defaultFilters)}>Clear Filters</Button>
@@ -343,13 +343,13 @@ const FriendCard = ({ pet, onWoof, speciesEmojiMap, species }: { pet: any; onWoo
     </div>
     <CardContent className="p-4">
       <h3 className="font-bold text-lg" style={{ color: "#1E3A5F" }}>{pet.name}</h3>
-      <p className="text-sm" style={{ color: "#94A3B8" }}>{pet.breed || pet.species}{pet.age_years ? ` • ${pet.age_years}y` : ""}</p>
-      {pet.neighborhood && <div className="flex items-center gap-1 text-xs mt-1" style={{ color: "#94A3B8" }}><MapPin className="w-3 h-3" />{pet.neighborhood}</div>}
+      <p className="text-sm" style={{ color: "#64748B" }}>{pet.breed || pet.species}{pet.age_years ? ` • ${pet.age_years}y` : ""}</p>
+      {pet.neighborhood && <div className="flex items-center gap-1 text-xs mt-1" style={{ color: "#64748B" }}><MapPin className="w-3 h-3" />{pet.neighborhood}</div>}
       {pet.bio && <p className="text-sm mt-2 line-clamp-2" style={{ color: "#64748B" }}>{pet.bio}</p>}
       {pet.personality_tags?.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-2">
           {pet.personality_tags.slice(0, 3).map((tag: string) => (
-            <span key={tag} className={`text-[11px] px-2 py-0.5 rounded-full border ${personalityColors[tag] || "bg-gray-100 text-gray-800 border-gray-200"}`}>{tag}</span>
+            <span key={tag} className={`text-xs px-2 py-0.5 rounded-full border ${personalityColors[tag] || "bg-gray-100 text-gray-800 border-gray-200"}`}>{tag}</span>
           ))}
         </div>
       )}

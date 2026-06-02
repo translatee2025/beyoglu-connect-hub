@@ -117,7 +117,7 @@ const ShopsVetsSection = () => {
     <div className="space-y-4">
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "#94A3B8" }} />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "#64748B" }} />
         <Input
           placeholder={t("pets.shops_search", "Search stores or clinics...")}
           value={search}
@@ -168,7 +168,7 @@ const ShopsVetsSection = () => {
           <div className="text-center py-12">
             <div className="text-4xl mb-3">🏥</div>
             <p className="text-sm font-medium" style={{ color: "#1E3A5F" }}>{t("pets.shops_empty", "No stores or clinics found")}</p>
-            <p className="text-xs mt-1" style={{ color: "#94A3B8" }}>{t("pets.shops_empty_hint", "Try changing your search.")}</p>
+            <p className="text-xs mt-1" style={{ color: "#64748B" }}>{t("pets.shops_empty_hint", "Try changing your search.")}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -181,11 +181,11 @@ const ShopsVetsSection = () => {
                   style={{ border: "1px solid #E2EBFC" }}
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold text-[13px]" style={{ color: "#1E3A5F" }}>
+                    <span className="font-semibold text-sm" style={{ color: "#1E3A5F" }}>
                       {item.name}
                     </span>
                     <Badge
-                      className="text-[10px] px-1.5 py-0 h-4"
+                      className="text-xs px-1.5 py-0 h-4"
                       style={{
                         backgroundColor: item.type === "shop" ? "#EFF4FF" : "#F0FDFA",
                         color: item.type === "shop" ? "#1E3A5F" : "#0D9488",
@@ -197,17 +197,17 @@ const ShopsVetsSection = () => {
                   </div>
 
                   {item.address && (
-                    <p className="text-[11px]" style={{ color: "#94A3B8" }}>📍 {item.address}</p>
+                    <p className="text-xs" style={{ color: "#64748B" }}>📍 {item.address}</p>
                   )}
 
                   {item.phone && (
-                    <a href={`tel:${item.phone}`} className="text-[11px] block mt-0.5" style={{ color: "#94A3B8" }}>
+                    <a href={`tel:${item.phone}`} className="text-xs block mt-0.5" style={{ color: "#64748B" }}>
                       📞 {item.phone}
                     </a>
                   )}
 
                   {dist && (
-                    <p className="text-[11px] mt-0.5" style={{ color: "#94A3B8" }}>📏 {dist}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "#64748B" }}>📏 {dist}</p>
                   )}
 
                   <Button
@@ -282,8 +282,8 @@ const ShopsVetsMap = ({ items }: { items: ShopVetItem[] }) => {
         <div style="min-width:200px;font-family:system-ui,sans-serif;">
           <div style="font-weight:700;font-size:14px;color:#1E3A5F;margin-bottom:4px;">${item.name}</div>
           <div style="display:inline-block;font-size:10px;padding:2px 6px;border-radius:4px;background:${badgeBg};color:${color};font-weight:600;margin-bottom:6px;">${typeLabel}</div>
-          ${item.address ? `<div style="font-size:11px;color:#94A3B8;margin-bottom:2px;">📍 ${item.address}</div>` : ""}
-          ${item.phone ? `<div style="font-size:11px;color:#94A3B8;margin-bottom:6px;">📞 <a href="tel:${item.phone}" style="color:#1E3A5F;">${item.phone}</a></div>` : ""}
+          ${item.address ? `<div style="font-size:11px;color:#64748B;margin-bottom:2px;">📍 ${item.address}</div>` : ""}
+          ${item.phone ? `<div style="font-size:11px;color:#64748B;margin-bottom:6px;">📞 <a href="tel:${item.phone}" style="color:#1E3A5F;">${item.phone}</a></div>` : ""}
           <div style="
             text-align:center;padding:5px;border-radius:6px;
             border:1px solid #1E3A5F;color:#1E3A5F;

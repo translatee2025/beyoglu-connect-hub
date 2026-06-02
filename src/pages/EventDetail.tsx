@@ -122,8 +122,8 @@ const EventDetail = () => {
     },
   });
 
-  if (isLoading) return <div className="min-h-screen bg-background flex items-center justify-center text-[#94A3B8] text-sm">Yükleniyor...</div>;
-  if (!event) return <div className="min-h-screen bg-background flex items-center justify-center text-[#94A3B8] text-sm">Etkinlik bulunamadı</div>;
+  if (isLoading) return <div className="min-h-screen bg-background flex items-center justify-center text-[#64748B] text-sm">Yükleniyor...</div>;
+  if (!event) return <div className="min-h-screen bg-background flex items-center justify-center text-[#64748B] text-sm">Etkinlik bulunamadı</div>;
 
   const isOwner = user?.id === event.user_id;
   const ph = getPlaceholder(event.category);
@@ -163,9 +163,9 @@ const EventDetail = () => {
           <div className="flex items-start justify-between gap-2 mb-2">
             <h1 className="text-[22px] font-bold" style={{ color: "#1E3A5F" }}>{event.title}</h1>
             <div className="flex items-center gap-1.5 flex-shrink-0">
-              {event.category && <Badge variant="outline" className="text-[10px]">{t(`event_cat.${event.category.toLowerCase()}`, event.category)}</Badge>}
+              {event.category && <Badge variant="outline" className="text-xs">{t(`event_cat.${event.category.toLowerCase()}`, event.category)}</Badge>}
               <span
-                className="text-[10px] font-medium px-2 py-0.5 rounded"
+                className="text-xs font-medium px-2 py-0.5 rounded"
                 style={event.is_free
                   ? { backgroundColor: "#DCFCE7", color: "#166534" }
                   : { backgroundColor: "#FEF3C7", color: "#92400E" }}
@@ -177,27 +177,27 @@ const EventDetail = () => {
 
           {/* Date & location */}
           <div className="space-y-1.5 mb-3">
-            <p className="text-[12px] flex items-center gap-1.5" style={{ color: "#374151" }}>
+            <p className="text-xs flex items-center gap-1.5" style={{ color: "#374151" }}>
               📅 {formatEventDate(event.start_at)}
             </p>
             {event.end_at && (
-              <p className="text-[12px] flex items-center gap-1.5" style={{ color: "#94A3B8" }}>
+              <p className="text-xs flex items-center gap-1.5" style={{ color: "#64748B" }}>
                 🕐 {t("events.ends", "Ends:")} {formatEventDate(event.end_at)}
               </p>
             )}
             {(event.venue_name || event.address) && (
-              <p className="text-[12px] flex items-center gap-1.5" style={{ color: "#64748B" }}>
+              <p className="text-xs flex items-center gap-1.5" style={{ color: "#64748B" }}>
                 📍 {event.venue_name}{event.address ? `, ${event.address}` : ""}
               </p>
             )}
-            <p className="text-[12px] flex items-center gap-1.5" style={{ color: "#64748B" }}>
+            <p className="text-xs flex items-center gap-1.5" style={{ color: "#64748B" }}>
               👥 {attendeeCount} {t("events.attendees", "attendees")}
             </p>
           </div>
 
           {/* Description */}
           {event.description && (
-            <p className="text-[13px] mb-3" style={{ color: "#374151", lineHeight: "1.6", whiteSpace: "pre-wrap" }}>{event.description}</p>
+            <p className="text-sm mb-3" style={{ color: "#374151", lineHeight: "1.6", whiteSpace: "pre-wrap" }}>{event.description}</p>
           )}
 
           {/* Photos */}
@@ -242,8 +242,8 @@ const EventDetail = () => {
 
           {/* Creator info */}
           {event.user_id && (
-            <div className="flex items-center gap-1.5 text-[11px] pt-2" style={{ borderTop: "1px solid #E2EBFC", color: "#94A3B8" }}>
-              <UserName userId={event.user_id} showAvatar avatarSize="w-5 h-5" className="text-[11px]" />
+            <div className="flex items-center gap-1.5 text-xs pt-2" style={{ borderTop: "1px solid #E2EBFC", color: "#64748B" }}>
+              <UserName userId={event.user_id} showAvatar avatarSize="w-5 h-5" className="text-xs" />
               <span>{t("events.created_by", "created by")}</span>
             </div>
           )}
@@ -258,7 +258,7 @@ const EventDetail = () => {
             <div className="flex flex-wrap gap-2">
               {attendees.map((a: any) => (
                 <div key={a.user_id} className="flex items-center gap-1.5 rounded-full px-2 py-1" style={{ backgroundColor: "#EFF4FF" }}>
-                  <UserName userId={a.user_id} showAvatar avatarSize="w-5 h-5" className="text-[11px]" />
+                  <UserName userId={a.user_id} showAvatar avatarSize="w-5 h-5" className="text-xs" />
                 </div>
               ))}
             </div>

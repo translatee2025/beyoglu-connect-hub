@@ -107,7 +107,7 @@ export function UserName({ userId, showAvatar = false, avatarSize = "w-6 h-6", c
       {showAvatar && (
         <Avatar className={avatarSize}>
           <AvatarImage src={profile?.avatar_url || undefined} />
-          <AvatarFallback className="text-[10px] font-medium" style={{ backgroundColor: colors.bg, color: colors.text }}>{initials}</AvatarFallback>
+          <AvatarFallback className="text-xs font-medium" style={{ backgroundColor: colors.bg, color: colors.text }}>{initials}</AvatarFallback>
         </Avatar>
       )}
       <span>{name}</span>

@@ -115,7 +115,7 @@ const ClassifiedCard = ({ item, user, profilesMap, t, getMeta, getCatLabel, form
 
         <div className="flex items-center gap-2" style={{ marginBottom: 6 }}>
           {item.user_id && <ProfileInline userId={item.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-4 h-4" />}
-          <span style={{ fontSize: 11, color: "#94A3B8" }}>· {formatTimeAgo(item.created_at)}</span>
+          <span style={{ fontSize: 11, color: "#64748B" }}>· {formatTimeAgo(item.created_at)}</span>
         </div>
 
         <DistanceLabel lat={item.lat} lng={item.lng} neighborhood={item.neighborhood} />

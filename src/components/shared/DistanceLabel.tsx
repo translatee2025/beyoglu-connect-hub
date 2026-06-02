@@ -13,7 +13,7 @@ export function DistanceLabel({ lat, lng, neighborhood }: DistanceLabelProps) {
 
   if (distance) {
     return (
-      <span className="flex items-center gap-0.5" style={{ fontSize: 11, color: "#94A3B8" }}>
+      <span className="flex items-center gap-0.5" style={{ fontSize: 11, color: "#64748B" }}>
         <MapPin className="w-3 h-3" /> {distance}
       </span>
     );
@@ -21,7 +21,7 @@ export function DistanceLabel({ lat, lng, neighborhood }: DistanceLabelProps) {
 
   if (neighborhood) {
     return (
-      <span className="flex items-center gap-0.5" style={{ fontSize: 11, color: "#94A3B8" }}>
+      <span className="flex items-center gap-0.5" style={{ fontSize: 11, color: "#64748B" }}>
         <MapPin className="w-3 h-3" /> {neighborhood}
       </span>
     );

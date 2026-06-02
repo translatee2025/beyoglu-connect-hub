@@ -167,7 +167,7 @@ export function CommentsSection({ entityType, entityId }: CommentsProps) {
                 <Link to={`/profile/${comment.user_id}`} onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
                   <Avatar className="w-7 h-7">
                     <AvatarImage src={comment.profile?.avatar_url || undefined} />
-                    <AvatarFallback className="bg-primary text-primary-foreground text-[10px]">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                       {(comment.profile?.display_name || "U").slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -175,7 +175,7 @@ export function CommentsSection({ entityType, entityId }: CommentsProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <UserName userId={comment.user_id} className="text-xs" />
-                    <span className="text-[10px] text-muted-foreground">{timeAgo(comment.created_at)}</span>
+                    <span className="text-xs text-muted-foreground">{timeAgo(comment.created_at)}</span>
                   </div>
                   <p className="text-sm text-foreground">{comment.content}</p>
                 </div>

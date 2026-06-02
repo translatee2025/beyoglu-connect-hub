@@ -115,8 +115,8 @@ const VenueDetail = () => {
     onError: (e: any) => toast({ title: t("common.error", "Error"), description: e.message, variant: "destructive" }),
   });
 
-  if (isLoading) return <div className="flex justify-center py-20 text-[#94A3B8] text-sm">Yükleniyor...</div>;
-  if (!venue) return <div className="flex justify-center py-20 text-[#94A3B8] text-sm">Mekan bulunamadı</div>;
+  if (isLoading) return <div className="flex justify-center py-20 text-[#64748B] text-sm">Yükleniyor...</div>;
+  if (!venue) return <div className="flex justify-center py-20 text-[#64748B] text-sm">Mekan bulunamadı</div>;
 
   const typeName = (venue as any).venue_types?.name;
   const ph = getPlaceholder(typeName);
@@ -160,10 +160,10 @@ const VenueDetail = () => {
           <div className="flex items-start justify-between gap-2 mb-2">
             <h1 className="text-xl font-bold" style={{ color: "#1E3A5F" }}>{venue.name}</h1>
             <div className="flex items-center gap-1.5 flex-shrink-0">
-              {typeName && <Badge variant="outline" className="text-[10px]">{typeName}</Badge>}
+              {typeName && <Badge variant="outline" className="text-xs">{typeName}</Badge>}
               {openStatus !== null && (
                 <span
-                  className="text-[10px] font-medium px-2 py-0.5 rounded"
+                  className="text-xs font-medium px-2 py-0.5 rounded"
                   style={{
                     backgroundColor: openStatus ? "#DCFCE7" : "#FEF2F2",
                     color: openStatus ? "#166534" : "#DC2626",
@@ -180,17 +180,17 @@ const VenueDetail = () => {
           {/* Info section */}
           <div className="space-y-1.5 mb-3">
             {venue.address && (
-              <p className="text-[12px] flex items-center gap-1.5" style={{ color: "#64748B" }}>
+              <p className="text-xs flex items-center gap-1.5" style={{ color: "#64748B" }}>
                 <span>📍</span> {venue.address}
               </p>
             )}
             {venue.phone && (
-              <a href={`tel:${venue.phone}`} className="text-[12px] flex items-center gap-1.5" style={{ color: "#1E3A5F" }}>
+              <a href={`tel:${venue.phone}`} className="text-xs flex items-center gap-1.5" style={{ color: "#1E3A5F" }}>
                 <span>📞</span> {venue.phone}
               </a>
             )}
             {venue.website && (
-              <a href={venue.website} target="_blank" rel="noopener noreferrer" className="text-[12px] flex items-center gap-1.5 underline" style={{ color: "#1E3A5F" }}>
+              <a href={venue.website} target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1.5 underline" style={{ color: "#1E3A5F" }}>
                 <span>🌐</span> {venue.website}
               </a>
             )}
@@ -222,8 +222,8 @@ const VenueDetail = () => {
 
           {/* Added by */}
           {venue.created_by_user_id && (
-            <div className="flex items-center gap-1.5 text-[11px] mb-1" style={{ color: "#94A3B8" }}>
-              <UserName userId={venue.created_by_user_id} showAvatar avatarSize="w-4 h-4" className="text-[11px]" />
+            <div className="flex items-center gap-1.5 text-xs mb-1" style={{ color: "#64748B" }}>
+              <UserName userId={venue.created_by_user_id} showAvatar avatarSize="w-4 h-4" className="text-xs" />
               <span>{t("venues.added_by", "added")}</span>
             </div>
           )}
@@ -242,7 +242,7 @@ const VenueDetail = () => {
             <div>
             <h2 className="text-sm font-semibold" style={{ color: "#1E3A5F" }}>{t("venues.reviews", "Reviews")}</h2>
               {reviews.length > 0 && (
-                <p className="text-[11px] mt-0.5" style={{ color: "#94A3B8" }}>
+                <p className="text-xs mt-0.5" style={{ color: "#64748B" }}>
                   ⭐ {avgRating.toFixed(1)} · {reviews.length} {language === "tr" ? "yorum" : "reviews"}
                 </p>
               )}
@@ -251,28 +251,28 @@ const VenueDetail = () => {
 
           {reviews.length === 0 ? (
             <div className="text-center py-6">
-              <p className="text-sm mb-2" style={{ color: "#94A3B8" }}>{t("venues.no_reviews", "No reviews yet. Be the first!")}</p>
+              <p className="text-sm mb-2" style={{ color: "#64748B" }}>{t("venues.no_reviews", "No reviews yet. Be the first!")}</p>
             </div>
           ) : (
             <div className="space-y-3 mb-4">
               {reviews.map((review: any) => (
                 <div key={review.id} className="pb-3" style={{ borderBottom: "1px solid #E2EBFC" }}>
                   <div className="flex items-center justify-between mb-1">
-                    <UserName userId={review.user_id} showAvatar avatarSize="w-6 h-6" className="text-[12px]" />
+                    <UserName userId={review.user_id} showAvatar avatarSize="w-6 h-6" className="text-xs" />
                     <div className="flex items-center gap-0.5">
                       {[...Array(5)].map((_, i) => (
-                        <span key={i} className="text-[12px]">{i < review.rating ? "⭐" : "☆"}</span>
+                        <span key={i} className="text-xs">{i < review.rating ? "⭐" : "☆"}</span>
                       ))}
                     </div>
                   </div>
-                  {review.body && <p className="text-[12px] mt-1" style={{ color: "#374151", lineHeight: "1.5" }}>{review.body}</p>}
-                  <p className="text-[10px] mt-1" style={{ color: "#94A3B8" }}>
+                  {review.body && <p className="text-xs mt-1" style={{ color: "#374151", lineHeight: "1.5" }}>{review.body}</p>}
+                  <p className="text-xs mt-1" style={{ color: "#64748B" }}>
                     {new Date(review.created_at).toLocaleDateString(language === "tr" ? "tr-TR" : "en-US", { day: "numeric", month: "short", year: "numeric" })}
                   </p>
                   {review.reply_body && (
                     <div className="mt-2 pl-3" style={{ borderLeft: "2px solid #E2EBFC" }}>
-                      <p className="text-[10px] font-medium" style={{ color: "#94A3B8" }}>İşletme yanıtı:</p>
-                      <p className="text-[12px]" style={{ color: "#374151" }}>{review.reply_body}</p>
+                      <p className="text-xs font-medium" style={{ color: "#64748B" }}>İşletme yanıtı:</p>
+                      <p className="text-xs" style={{ color: "#374151" }}>{review.reply_body}</p>
                     </div>
                   )}
                 </div>
@@ -320,9 +320,9 @@ const VenueDetail = () => {
                 const h = hours[day];
                 const isToday = DAY_KEYS[new Date().getDay()] === day;
                 return (
-                  <div key={day} className="flex justify-between text-[12px]" style={{ fontWeight: isToday ? 600 : 400 }}>
+                  <div key={day} className="flex justify-between text-xs" style={{ fontWeight: isToday ? 600 : 400 }}>
                     <span style={{ color: isToday ? "#1E3A5F" : "#64748B" }}>{DAY_LABELS[day]}</span>
-                    <span style={{ color: h ? "#374151" : "#94A3B8" }}>{h ? `${h.open} – ${h.close}` : t("venues.closed", "Closed")}</span>
+                    <span style={{ color: h ? "#374151" : "#64748B" }}>{h ? `${h.open} – ${h.close}` : t("venues.closed", "Closed")}</span>
                   </div>
                 );
               })}
@@ -338,10 +338,10 @@ const VenueDetail = () => {
               {menuItems.map((item: any) => (
                 <div key={item.id} className="flex justify-between items-center py-1.5" style={{ borderBottom: "1px solid #E2EBFC" }}>
                   <div>
-                    <p className="text-[12px] font-medium" style={{ color: "#374151" }}>{item.item_name}</p>
-                    {item.description && <p className="text-[10px]" style={{ color: "#94A3B8" }}>{item.description}</p>}
+                    <p className="text-xs font-medium" style={{ color: "#374151" }}>{item.item_name}</p>
+                    {item.description && <p className="text-xs" style={{ color: "#64748B" }}>{item.description}</p>}
                   </div>
-                  {item.price && <span className="text-[12px] font-semibold" style={{ color: "#1E3A5F" }}>{item.currency || "₺"}{item.price}</span>}
+                  {item.price && <span className="text-xs font-semibold" style={{ color: "#1E3A5F" }}>{item.currency || "₺"}{item.price}</span>}
                 </div>
               ))}
             </div>
@@ -355,10 +355,10 @@ const VenueDetail = () => {
             {deals.map((deal: any) => (
               <div key={deal.id} className="py-2" style={{ borderBottom: "1px solid #E2EBFC" }}>
                 <div className="flex items-center gap-2 mb-0.5">
-                  {deal.discount_label && <Badge className="text-[9px] bg-[#E74C3C]">{deal.discount_label}</Badge>}
-                  <span className="text-[12px] font-medium" style={{ color: "#374151" }}>{deal.title}</span>
+                  {deal.discount_label && <Badge className="text-xs bg-[#E74C3C]">{deal.discount_label}</Badge>}
+                  <span className="text-xs font-medium" style={{ color: "#374151" }}>{deal.title}</span>
                 </div>
-                {deal.description && <p className="text-[11px]" style={{ color: "#94A3B8" }}>{deal.description}</p>}
+                {deal.description && <p className="text-xs" style={{ color: "#64748B" }}>{deal.description}</p>}
               </div>
             ))}
           </div>

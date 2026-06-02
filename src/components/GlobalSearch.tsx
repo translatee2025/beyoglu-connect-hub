@@ -77,7 +77,7 @@ export function GlobalSearchDesktop() {
   return (
     <div ref={ref} className="relative px-3 pb-3">
       <div className="relative">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "#94A3B8" }} />
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "#64748B" }} />
         <input
           value={query}
           onChange={e => { setQuery(e.target.value); setOpen(true); }}
@@ -88,7 +88,7 @@ export function GlobalSearchDesktop() {
         />
         {query && (
           <button onClick={() => { setQuery(""); setResults([]); setOpen(false); }} className="absolute right-2 top-1/2 -translate-y-1/2">
-            <X className="w-3 h-3" style={{ color: "#94A3B8" }} />
+            <X className="w-3 h-3" style={{ color: "#64748B" }} />
           </button>
         )}
       </div>
@@ -96,15 +96,15 @@ export function GlobalSearchDesktop() {
       {open && query.length >= 2 && (
         <div className="absolute left-3 right-3 top-full mt-1 bg-white rounded-lg shadow-lg border z-50 max-h-80 overflow-y-auto" style={{ borderColor: "#E2EBFC" }}>
           {loading ? (
-            <div className="p-4 text-center" style={{ fontSize: 12, color: "#94A3B8" }}>{t("common.searching", "Searching...")}</div>
+            <div className="p-4 text-center" style={{ fontSize: 12, color: "#64748B" }}>{t("common.searching", "Searching...")}</div>
           ) : results.length === 0 ? (
-            <div className="p-4 text-center" style={{ fontSize: 12, color: "#94A3B8" }}>{t("common.no_results", "No results found.")}</div>
+            <div className="p-4 text-center" style={{ fontSize: 12, color: "#64748B" }}>{t("common.no_results", "No results found.")}</div>
           ) : (
             Object.entries(grouped).map(([type, items]) => {
               const Icon = ICONS[type];
               return (
                 <div key={type}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8", padding: "8px 12px 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#64748B", padding: "8px 12px 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                     {getLabel(type)}
                   </div>
                   {items.map(item => (
@@ -116,7 +116,7 @@ export function GlobalSearchDesktop() {
                       <Icon className="w-4 h-4 flex-shrink-0" style={{ color: "#1E3A5F" }} />
                       <div className="min-w-0 flex-1">
                         <div className="truncate" style={{ fontSize: 13, color: "#1E3A5F", fontWeight: 500 }}>{item.title}</div>
-                        {item.subtitle && <div className="truncate" style={{ fontSize: 11, color: "#94A3B8" }}>{item.subtitle}</div>}
+                        {item.subtitle && <div className="truncate" style={{ fontSize: 11, color: "#64748B" }}>{item.subtitle}</div>}
                       </div>
                     </button>
                   ))}
@@ -187,7 +187,7 @@ export function GlobalSearchMobile() {
   return (
     <div className="fixed inset-0 z-[100] bg-white">
       <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: "1px solid #E2E8F0" }}>
-        <Search className="w-4 h-4 flex-shrink-0" style={{ color: "#94A3B8" }} />
+        <Search className="w-4 h-4 flex-shrink-0" style={{ color: "#64748B" }} />
         <input
           ref={inputRef}
           value={query}
@@ -201,15 +201,15 @@ export function GlobalSearchMobile() {
 
       <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 56px)" }}>
         {loading ? (
-          <div className="p-6 text-center" style={{ fontSize: 13, color: "#94A3B8" }}>{t("common.searching", "Searching...")}</div>
+          <div className="p-6 text-center" style={{ fontSize: 13, color: "#64748B" }}>{t("common.searching", "Searching...")}</div>
         ) : query.length >= 2 && results.length === 0 ? (
-          <div className="p-6 text-center" style={{ fontSize: 13, color: "#94A3B8" }}>{t("common.no_results", "No results found.")}</div>
+          <div className="p-6 text-center" style={{ fontSize: 13, color: "#64748B" }}>{t("common.no_results", "No results found.")}</div>
         ) : (
           Object.entries(grouped).map(([type, items]) => {
             const Icon = ICONS[type];
             return (
               <div key={type}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8", padding: "12px 16px 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#64748B", padding: "12px 16px 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                   {getLabel(type)}
                 </div>
                 {items.map(item => (
@@ -222,7 +222,7 @@ export function GlobalSearchMobile() {
                     <Icon className="w-5 h-5 flex-shrink-0" style={{ color: "#1E3A5F" }} />
                     <div className="min-w-0 flex-1">
                       <div className="truncate" style={{ fontSize: 14, color: "#1E3A5F", fontWeight: 500 }}>{item.title}</div>
-                      {item.subtitle && <div className="truncate" style={{ fontSize: 12, color: "#94A3B8" }}>{item.subtitle}</div>}
+                      {item.subtitle && <div className="truncate" style={{ fontSize: 12, color: "#64748B" }}>{item.subtitle}</div>}
                     </div>
                   </button>
                 ))}

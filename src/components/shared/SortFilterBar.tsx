@@ -106,7 +106,7 @@ const SortFilterBar = ({
           {filterActive && (
             <button
               onClick={onClearFilter}
-              style={{ fontSize: 11, color: "#94A3B8", display: "flex", alignItems: "center", gap: 2 }}
+              style={{ fontSize: 11, color: "#64748B", display: "flex", alignItems: "center", gap: 2 }}
             >
               <X className="w-3 h-3" /> {t("common.clear", "Clear")}
             </button>

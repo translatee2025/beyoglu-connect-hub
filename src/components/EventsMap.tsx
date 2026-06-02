@@ -69,7 +69,7 @@ const EventsMap = ({ events }: EventsMapProps) => {
             <div>
               <h3 style="font-weight:600;font-size:13px;margin:0 0 4px;color:#1E3A5F;">${event.title}</h3>
               <p style="font-size:11px;color:#64748B;margin:0 0 2px;">📅 ${event.date}</p>
-              ${event.location ? `<p style="font-size:11px;color:#94A3B8;margin:0 0 4px;">📍 ${event.location}</p>` : ""}
+              ${event.location ? `<p style="font-size:11px;color:#64748B;margin:0 0 4px;">📍 ${event.location}</p>` : ""}
               ${detailLink}
             </div>
           </div>

@@ -118,7 +118,7 @@ const EditProfile = () => {
               <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploading} />
             </label>
           </div>
-          <span style={{ fontSize: 12, color: "#94A3B8", marginTop: 8 }}>{t("profile.edit.change_photo", "Change Photo")}</span>
+          <span style={{ fontSize: 12, color: "#64748B", marginTop: 8 }}>{t("profile.edit.change_photo", "Change Photo")}</span>
         </div>
 
         <div className="space-y-4">

@@ -165,7 +165,7 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
         >
           {t("filter.price", "Filter Price")} {priceOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           {(appliedMin !== null || appliedMax !== null) && (
-            <Badge className="ml-1 text-[10px] px-1.5 py-0 h-4" style={{ backgroundColor: "#1E3A5F", color: "white" }}>✓</Badge>
+            <Badge className="ml-1 text-xs px-1.5 py-0 h-4" style={{ backgroundColor: "#1E3A5F", color: "white" }}>✓</Badge>
           )}
         </button>
         {priceOpen && (
@@ -187,7 +187,7 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
           <p className="text-sm font-medium" style={{ color: "#1E3A5F" }}>
             {serviceType === "sitting" ? t("pets.no_sitting_posts", "No pet sitting listings yet") : t("pets.no_walking_posts", "No pet walking listings yet")}
           </p>
-          <p className="text-xs mt-1" style={{ color: "#94A3B8" }}>{t("pets.be_first", "Be the first to post!")}</p>
+          <p className="text-xs mt-1" style={{ color: "#64748B" }}>{t("pets.be_first", "Be the first to post!")}</p>
           <Button size="sm" className="mt-3" style={{ backgroundColor: "#E74C3C" }} onClick={onCreatePost}>+ {t("pets.create_listing", "Create Listing")}</Button>
         </div>
       ) : (
@@ -204,14 +204,14 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
                 }}
               >
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <Badge className="text-[10px] px-1.5 py-0 h-4" style={{
+                  <Badge className="text-xs px-1.5 py-0 h-4" style={{
                     backgroundColor: serviceType === "sitting" ? "#EFF4FF" : "#F0FDF4",
                     color: serviceType === "sitting" ? "#1E3A5F" : "#166534",
                     border: "none",
                   }}>
                     {serviceType === "sitting" ? t("pets.pet_sitting", "Pet Sitting") : t("pets.pet_walking", "Pet Walking")}
                   </Badge>
-                  <Badge className="text-[10px] px-1.5 py-0 h-4" style={{
+                  <Badge className="text-xs px-1.5 py-0 h-4" style={{
                     backgroundColor: isOffer ? "#DCFCE7" : "#FEF3C7",
                     color: isOffer ? "#166534" : "#D97706",
                     border: "none",
@@ -219,23 +219,23 @@ const PetSittingWalkingSection = ({ onCreatePost }: Props) => {
                     {isOffer ? t("pets.i_offer", "I Offer") : t("pets.i_want", "I Want")}
                   </Badge>
                   {post.species && (
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">{post.species}</Badge>
+                    <Badge variant="outline" className="text-xs px-1.5 py-0 h-4">{post.species}</Badge>
                   )}
                 </div>
 
-                <p className="font-semibold text-[13px]" style={{ color: "#1E3A5F" }}>{post.title}</p>
-                {post.description && <p className="text-[11px] mt-0.5 line-clamp-2" style={{ color: "#64748B" }}>{post.description}</p>}
+                <p className="font-semibold text-sm" style={{ color: "#1E3A5F" }}>{post.title}</p>
+                {post.description && <p className="text-xs mt-0.5 line-clamp-2" style={{ color: "#64748B" }}>{post.description}</p>}
 
                 {post.price && (
-                  <p className="text-[13px] font-bold mt-1" style={{ color: "#1E3A5F" }}>
+                  <p className="text-sm font-bold mt-1" style={{ color: "#1E3A5F" }}>
                     {post.price}
-                    {post.price_type && <span className="font-normal text-[10px]" style={{ color: "#94A3B8" }}> / {post.price_type === "per_hour" ? t("pets.per_hour", "Per Hour") : t("pets.per_session", "Per Session")}</span>}
+                    {post.price_type && <span className="font-normal text-xs" style={{ color: "#64748B" }}> / {post.price_type === "per_hour" ? t("pets.per_hour", "Per Hour") : t("pets.per_session", "Per Session")}</span>}
                   </p>
                 )}
 
                 {post.user_id && <div className="mt-1"><UserName userId={post.user_id} showAvatar /></div>}
 
-                {post.address && <p className="text-[11px] mt-0.5" style={{ color: "#94A3B8" }}>📍 {post.address}</p>}
+                {post.address && <p className="text-xs mt-0.5" style={{ color: "#64748B" }}>📍 {post.address}</p>}
 
                 <button
                   onClick={() => post.user_id && handleContact(post.user_id)}

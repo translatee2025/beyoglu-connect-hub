@@ -223,16 +223,16 @@ const PostCard = ({ post, badgeLabel, isUrgent, onContact, speciesEmojiMap, prof
     </div>
     <CardHeader className="pb-2">
       <div className="flex items-center gap-2 mb-1 flex-wrap">
-        <Badge className="text-[10px] px-1.5 py-0 h-4" style={{ backgroundColor: "#EFF4FF", color: "#1E3A5F", border: "none" }}>{badgeLabel}</Badge>
-        {speciesLabel && <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">{emoji} {speciesLabel}</Badge>}
-        {post.breed && <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">{post.breed}</Badge>}
+        <Badge className="text-xs px-1.5 py-0 h-4" style={{ backgroundColor: "#EFF4FF", color: "#1E3A5F", border: "none" }}>{badgeLabel}</Badge>
+        {speciesLabel && <Badge variant="outline" className="text-xs px-1.5 py-0 h-4">{emoji} {speciesLabel}</Badge>}
+        {post.breed && <Badge variant="outline" className="text-xs px-1.5 py-0 h-4">{post.breed}</Badge>}
       </div>
       <CardTitle className="text-[15px]" style={{ color: "#1E3A5F" }}>{post.title}</CardTitle>
-      {post.description && <p className="text-[11px] mt-1 line-clamp-2" style={{ color: "#64748B" }}>{post.description}</p>}
-      {post.price && <p className="font-bold text-[13px] mt-1" style={{ color: "#1E3A5F" }}>{post.price}</p>}
+      {post.description && <p className="text-xs mt-1 line-clamp-2" style={{ color: "#64748B" }}>{post.description}</p>}
+      {post.price && <p className="font-bold text-sm mt-1" style={{ color: "#1E3A5F" }}>{post.price}</p>}
       {post.user_id && profilesMap && <div className="mt-1"><ProfileInline userId={post.user_id} profilesMap={profilesMap} showAvatar /></div>}
       {post.address && (
-        <div className="flex items-center gap-1 text-[11px] mt-1" style={{ color: "#94A3B8" }}>
+        <div className="flex items-center gap-1 text-xs mt-1" style={{ color: "#64748B" }}>
           <MapPin className="w-3 h-3" /> {post.address}
         </div>
       )}
@@ -256,7 +256,7 @@ const EmptyState = ({ emoji, title, subtitle, onAction }: { emoji: string; title
     <div className="text-center py-12">
       <span className="text-5xl block mb-4">{emoji}</span>
       <h3 className="text-lg font-semibold mb-2" style={{ color: "#1E3A5F" }}>{title}</h3>
-      <p className="mb-4" style={{ color: "#94A3B8" }}>{subtitle}</p>
+      <p className="mb-4" style={{ color: "#64748B" }}>{subtitle}</p>
       <Button style={{ backgroundColor: "#1E3A5F" }} onClick={onAction}><Plus className="w-4 h-4 mr-2" /> {t("pets.create_post", "Create Post")}</Button>
     </div>
   );

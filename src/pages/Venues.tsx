@@ -102,7 +102,7 @@ const Venues = () => {
             <h1 className="text-[15px] font-semibold text-foreground">{t("venues.title", "Venues")}</h1>
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#94A3B8]" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#64748B]" />
                 <Input placeholder={t("venues.search", "Search venues...")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 text-xs" />
               </div>
               <Dialog open={postOpen} onOpenChange={setPostOpen}>
@@ -179,7 +179,7 @@ const Venues = () => {
                         {/* Category badge */}
                         {typeName && (
                           <span
-                            className="absolute top-0 left-0 text-[10px] font-medium text-white"
+                            className="absolute top-0 left-0 text-xs font-medium text-white"
                             style={{ backgroundColor: "#1E3A5F", padding: "3px 8px", borderRadius: "0 0 6px 0" }}
                           >
                             {typeName}
@@ -188,7 +188,7 @@ const Venues = () => {
                         {/* Open/Closed badge */}
                         {openStatus !== null && (
                           <span
-                            className="absolute top-0 right-0 text-[10px] font-medium"
+                            className="absolute top-0 right-0 text-xs font-medium"
                             style={{
                               padding: "3px 8px",
                               borderRadius: "0 0 0 6px",
@@ -202,22 +202,22 @@ const Venues = () => {
                       </div>
                       {/* Card body */}
                       <div className="p-3">
-                        <h3 className="text-[13px] font-semibold mb-0.5" style={{ color: "#1E3A5F" }}>{venue.name}</h3>
+                        <h3 className="text-sm font-semibold mb-0.5" style={{ color: "#1E3A5F" }}>{venue.name}</h3>
                         {venue.address && (
-                          <p className="text-[11px] truncate mb-0.5" style={{ color: "#94A3B8" }}>{venue.address}</p>
+                          <p className="text-xs truncate mb-0.5" style={{ color: "#64748B" }}>{venue.address}</p>
                         )}
                         <div className="mb-1"><DistanceLabel lat={venue.lat} lng={venue.lng} neighborhood={venue.neighborhood} /></div>
                         {/* Rating row */}
                         {stats && (
                           <div className="flex items-center gap-1 mb-2">
-                            <span className="text-[12px]">⭐</span>
-                            <span className="text-[11px] font-semibold" style={{ color: "#1E3A5F" }}>{stats.avg.toFixed(1)}</span>
-                            <span className="text-[11px]" style={{ color: "#94A3B8" }}>({stats.count})</span>
+                            <span className="text-xs">⭐</span>
+                            <span className="text-xs font-semibold" style={{ color: "#1E3A5F" }}>{stats.avg.toFixed(1)}</span>
+                            <span className="text-xs" style={{ color: "#64748B" }}>({stats.count})</span>
                           </div>
                         )}
                         {/* CTA */}
                         <button
-                          className="w-full py-1.5 rounded-md text-white text-[10px] font-medium"
+                          className="w-full py-1.5 rounded-md text-white text-xs font-medium"
                           style={{ backgroundColor: "#E74C3C" }}
                           onClick={(e) => { e.stopPropagation(); }}
                         >
@@ -278,7 +278,7 @@ const VenuePostForm = ({ venueTypes, onSuccess }: { venueTypes: any[]; onSuccess
         <div className="h-[3px] flex-1 rounded-full" style={{ backgroundColor: "#E2EBFC" }}>
           <div className="h-full rounded-full transition-all" style={{ width: `${(step / 2) * 100}%`, backgroundColor: "#1E3A5F" }} />
         </div>
-        <span className="text-xxs text-[#94A3B8]">{step}/2</span>
+        <span className="text-xxs text-[#64748B]">{step}/2</span>
       </div>
 
       {step === 1 && (
@@ -313,7 +313,7 @@ const VenuePostForm = ({ venueTypes, onSuccess }: { venueTypes: any[]; onSuccess
                   <div key={d.key} className="flex items-center gap-1.5">
                     <span className="text-xs font-medium w-8">{d.label}</span>
                     <Input type="time" className="w-24 text-xs h-7" value={hours[d.key]?.open || "09:00"} onChange={(e) => setHours({ ...hours, [d.key]: { ...hours[d.key], open: e.target.value } })} />
-                    <span className="text-[#94A3B8]">–</span>
+                    <span className="text-[#64748B]">–</span>
                     <Input type="time" className="w-24 text-xs h-7" value={hours[d.key]?.close || "18:00"} onChange={(e) => setHours({ ...hours, [d.key]: { ...hours[d.key], close: e.target.value } })} />
                   </div>
                 ))}

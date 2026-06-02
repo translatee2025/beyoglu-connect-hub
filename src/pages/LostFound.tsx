@@ -37,7 +37,7 @@ const getAnimalEmoji = (category: string) => ANIMAL_EMOJI[category?.toLowerCase(
 const PIN_COLORS: Record<string, string> = {
   dog: "#F97316", cat: "#3B82F6", bird: "#22C55E",
 };
-const getColor = (cat: string) => PIN_COLORS[cat?.toLowerCase()] || "#94A3B8";
+const getColor = (cat: string) => PIN_COLORS[cat?.toLowerCase()] || "#64748B";
 
 function createColoredIcon(color: string) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="28" height="40"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24C24 5.4 18.6 0 12 0z" fill="${color}"/><circle cx="12" cy="12" r="5" fill="white"/></svg>`;
@@ -241,11 +241,11 @@ function PostCard({ post, isOwner }: { post: any; isOwner: boolean }) {
           <h3 className="flex-1 truncate" style={{ fontSize: 14, fontWeight: 600, color: "#1E3A5F" }}>{post.title}</h3>
         </div>
         {post.neighborhood && (
-          <div className="flex items-center gap-1" style={{ fontSize: 12, color: "#94A3B8" }}>
+          <div className="flex items-center gap-1" style={{ fontSize: 12, color: "#64748B" }}>
             <MapPin className="w-3 h-3" /> {post.neighborhood}
           </div>
         )}
-        <div style={{ fontSize: 11, color: "#94A3B8" }}>{timeAgo(post.created_at)}</div>
+        <div style={{ fontSize: 11, color: "#64748B" }}>{timeAgo(post.created_at)}</div>
         <div className="flex gap-2 pt-1">
           <Button size="sm" className="flex-1 gap-1" onClick={handleContact} style={{ background: "#E74C3C", color: "#fff", border: "none", fontSize: 12, borderRadius: 6 }}>
             <MessageCircle className="w-3.5 h-3.5" /> {t("common.contact", "Contact")}
@@ -304,7 +304,7 @@ function LostFoundMap({ posts }: { posts: any[] }) {
                   )}
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: "#1E3A5F" }}>{post.title}</div>
-                    <div style={{ fontSize: 11, color: "#94A3B8" }}>{new Date(post.created_at).toLocaleDateString()}</div>
+                    <div style={{ fontSize: 11, color: "#64748B" }}>{new Date(post.created_at).toLocaleDateString()}</div>
                   </div>
                 </div>
                 <button
@@ -393,7 +393,7 @@ const LostFound = () => {
               <h3 className="mt-3" style={{ fontSize: 15, fontWeight: 600, color: "#1E3A5F" }}>
                 {activeTab === "lost" ? t("lost_found.no_lost", "No lost reports yet") : t("lost_found.no_found", "No found reports yet")}
               </h3>
-              <p style={{ fontSize: 13, color: "#94A3B8", marginTop: 4 }}>
+              <p style={{ fontSize: 13, color: "#64748B", marginTop: 4 }}>
                 {activeTab === "lost" ? t("lost_found.no_lost_desc", "If you lost an animal, create a report with 'Report Lost'.") : t("lost_found.no_found_desc", "Found an animal? Reach the owner with 'Report Found'.")}
               </p>
             </div>

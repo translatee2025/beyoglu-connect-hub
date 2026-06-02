@@ -97,7 +97,7 @@ export function NotificationBell() {
         <button className="relative p-1.5 rounded transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>
           <Bell className="w-4 h-4" />
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-0.5">
+            <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs font-bold px-0.5">
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           )}

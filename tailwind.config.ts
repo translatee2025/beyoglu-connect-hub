@@ -60,13 +60,15 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'system-ui', 'sans-serif'],
+        sans: ['Manrope', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'system-ui', 'sans-serif'],
+        display: ['Manrope', 'system-ui', 'sans-serif'],
       },
       fontSize: {
-        'xxs': ['0.625rem', { lineHeight: '1rem' }],
-        'xs': ['0.6875rem', { lineHeight: '1rem' }],
-        'sm': ['0.8125rem', { lineHeight: '1.3rem' }],
-        'base': ['0.8125rem', { lineHeight: '1.3rem' }],
+        // Readable floor per UI Design Bible §7.1: never below 12px; body 14px+.
+        'xxs': ['0.75rem', { lineHeight: '1.05rem' }],
+        'xs': ['0.75rem', { lineHeight: '1.1rem' }],
+        'sm': ['0.875rem', { lineHeight: '1.35rem' }],
+        'base': ['0.9375rem', { lineHeight: '1.5rem' }],
       },
       backgroundImage: {
         'gradient-hero': 'var(--gradient-hero)',

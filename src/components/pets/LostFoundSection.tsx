@@ -226,14 +226,14 @@ const LostFoundSection = ({ onReport }: LostFoundSectionProps) => {
 
           {/* List */}
           {isLoading ? (
-            <div className="text-center py-12 text-sm" style={{ color: "#94A3B8" }}>Yükleniyor...</div>
+            <div className="text-center py-12 text-sm" style={{ color: "#64748B" }}>Yükleniyor...</div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-4xl mb-3">{typeFilter === "lost" ? "✅" : "📭"}</div>
               <p className="text-sm font-medium" style={{ color: "#1E3A5F" }}>
                 {typeFilter === "lost" ? "Kayıp hayvan yok" : "Bulunan hayvan yok"}
               </p>
-              <p className="text-xs mt-1" style={{ color: "#94A3B8" }}>Şu anda aktif ilan bulunmuyor.</p>
+              <p className="text-xs mt-1" style={{ color: "#64748B" }}>Şu anda aktif ilan bulunmuyor.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -262,11 +262,11 @@ const LostFoundSection = ({ onReport }: LostFoundSectionProps) => {
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-semibold text-[13px] truncate" style={{ color: "#1E3A5F" }}>
+                      <span className="font-semibold text-sm truncate" style={{ color: "#1E3A5F" }}>
                         {item.title}
                       </span>
                       <Badge
-                        className="text-[10px] px-1.5 py-0 h-4 flex-shrink-0"
+                        className="text-xs px-1.5 py-0 h-4 flex-shrink-0"
                         style={{
                           backgroundColor: item.type === "lost" ? "#FEE2E2" : "#DCFCE7",
                           color: item.type === "lost" ? "#DC2626" : "#16A34A",
@@ -278,18 +278,18 @@ const LostFoundSection = ({ onReport }: LostFoundSectionProps) => {
                     </div>
 
                     {(item.species || item.breed) && (
-                      <p className="text-[11px]" style={{ color: "#94A3B8" }}>
+                      <p className="text-xs" style={{ color: "#64748B" }}>
                         {[item.species, item.breed].filter(Boolean).join(" · ")}
                       </p>
                     )}
 
                     {item.location && (
-                      <p className="text-[11px] mt-0.5" style={{ color: "#94A3B8" }}>
+                      <p className="text-xs mt-0.5" style={{ color: "#64748B" }}>
                         📍 {item.location}
                       </p>
                     )}
 
-                    <p className="text-[11px] mt-0.5" style={{ color: "#94A3B8" }}>
+                    <p className="text-xs mt-0.5" style={{ color: "#64748B" }}>
                       {getTimeAgo(item.created_at)}
                     </p>
 
@@ -356,7 +356,7 @@ const LostFoundMap = ({
     items.forEach((item) => {
       if (!item.lat || !item.lng) return;
       const species = (item.species || "").toLowerCase();
-      const color = speciesPinColor[species] || "#94A3B8";
+      const color = speciesPinColor[species] || "#64748B";
       const emoji = speciesEmojiMap[species] || "🐾";
 
       const icon = L.divIcon({
@@ -386,8 +386,8 @@ const LostFoundMap = ({
             ${photoHtml}
             <div>
               <div style="font-weight:700;font-size:14px;color:#1E3A5F;">${item.title}</div>
-              <div style="font-size:11px;color:#94A3B8;">${item.species || ""}</div>
-              <div style="font-size:11px;color:#94A3B8;">${item.created_at ? getTimeAgo(item.created_at) : ""}</div>
+              <div style="font-size:11px;color:#64748B;">${item.species || ""}</div>
+              <div style="font-size:11px;color:#64748B;">${item.created_at ? getTimeAgo(item.created_at) : ""}</div>
             </div>
           </div>
           <button onclick="window.__lfContact__('${item.user_id}')" style="

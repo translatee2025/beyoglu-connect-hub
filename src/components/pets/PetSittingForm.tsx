@@ -110,7 +110,7 @@ const PetSittingForm = ({ onSuccess, onBack }: PetSittingFormProps) => {
         <div>
           <Label className="mb-2 block text-xs font-semibold" style={{ color: "#1E3A5F" }}>{t("pets.animal_type", "Animal Type")}</Label>
           {speciesLoading ? (
-            <p className="text-xs" style={{ color: "#94A3B8" }}>{t("common.loading", "Loading...")}</p>
+            <p className="text-xs" style={{ color: "#64748B" }}>{t("common.loading", "Loading...")}</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {speciesOptions.map((s) => (

@@ -327,7 +327,7 @@ const Reels = () => {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <UserName userId={c.user_id} showAvatar className="text-xs" />
-                          <span className="text-[10px] text-muted-foreground">{timeAgo(c.created_at)}</span>
+                          <span className="text-xs text-muted-foreground">{timeAgo(c.created_at)}</span>
                         </div>
                         <p className="text-sm text-foreground mt-0.5">{c.content}</p>
                       </div>

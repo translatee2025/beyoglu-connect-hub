@@ -69,7 +69,7 @@ const AppSidebar = () => {
               onClick={() => setLanguage(lang)}
               style={{
                 fontSize: 11, fontWeight: language === lang ? 600 : 400,
-                color: language === lang ? "#1E3A5F" : "#94A3B8",
+                color: language === lang ? "#1E3A5F" : "#64748B",
                 padding: "2px 6px", borderRadius: 4,
                 backgroundColor: language === lang ? "#EFF4FF" : "transparent",
                 border: language === lang ? "1px solid #E2EBFC" : "1px solid transparent",
@@ -109,7 +109,7 @@ const AppSidebar = () => {
             {si > 0 && <div style={{ height: 1, background: "#E2EBFC", margin: "10px 0" }} />}
             <div
               style={{
-                fontSize: 9, fontWeight: 700, color: "#94A3B8", letterSpacing: "0.07em",
+                fontSize: 9, fontWeight: 700, color: "#64748B", letterSpacing: "0.07em",
                 textTransform: "uppercase" as const, margin: "14px 0 5px 10px",
               }}
             >
@@ -150,7 +150,7 @@ const AppSidebar = () => {
               <div style={{ fontSize: 12, fontWeight: 500, color: "#1E3A5F" }} className="truncate">
                 {user.email?.split("@")[0]}
               </div>
-              <div style={{ fontSize: 11, color: "#94A3B8" }}>Beyoğlu</div>
+              <div style={{ fontSize: 11, color: "#64748B" }}>Beyoğlu</div>
             </div>
           </div>
         ) : (

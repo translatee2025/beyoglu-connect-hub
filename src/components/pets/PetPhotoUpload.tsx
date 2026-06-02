@@ -132,7 +132,7 @@ const PetPhotoUpload = ({ petId, photos, onPhotosChange, maxPhotos = 5 }: PetPho
               </button>
             </div>
             {i === 0 && (
-              <span className="absolute top-1 left-1 text-[10px] bg-yellow-500 text-white px-1.5 py-0.5 rounded-full font-medium">
+              <span className="absolute top-1 left-1 text-xs bg-yellow-500 text-white px-1.5 py-0.5 rounded-full font-medium">
                 Main
               </span>
             )}

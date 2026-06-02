@@ -212,9 +212,9 @@ export function PhotoUploader({
         disabled={isMaxReached || !user}
         className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
         style={{
-          border: "1px dashed #94A3B8",
+          border: "1px dashed #64748B",
           backgroundColor: isMaxReached ? "#F1F5F9" : "white",
-          color: isMaxReached ? "#94A3B8" : "#1E3A5F",
+          color: isMaxReached ? "#64748B" : "#1E3A5F",
           cursor: isMaxReached || !user ? "default" : "pointer",
           opacity: isMaxReached || !user ? 0.6 : 1,
           width: "100%",
