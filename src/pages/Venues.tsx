@@ -114,25 +114,39 @@ const Venues = () => {
             </div>
           </div>
 
-          {/* Category grid */}
-          <div className="grid grid-cols-4 gap-2 mb-4">
-            {venueTypes.map((vt: any) => (
-              <button
-                key={vt.id}
-                onClick={() => setSelectedType(selectedType === vt.id ? "all" : vt.id)}
-                className="rounded-xl text-center transition-all"
-                style={{
-                  border: selectedType === vt.id ? "2px solid #1E3A5F" : "1px solid #E2EBFC",
-                  backgroundColor: selectedType === vt.id ? "#EFF4FF" : "white",
-                  padding: "10px 4px",
-                }}
-              >
-                <span className="text-2xl block mb-1">{CATEGORY_EMOJI[vt.name] || vt.icon || "📍"}</span>
-                <span className="text-xs block" style={{ color: selectedType === vt.id ? "#1E3A5F" : "#64748B" }}>
-                  {language === "tr" ? ((vt as any).name_tr || vt.name) : vt.name}
-                </span>
-              </button>
-            ))}
+          {/* Category filter chips — compact, wrapping */}
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            <button
+              onClick={() => setSelectedType("all")}
+              className="inline-flex items-center gap-1 rounded-full text-xs font-medium transition-colors"
+              style={{
+                padding: "5px 11px",
+                border: selectedType === "all" ? "1px solid #1E3A5F" : "1px solid #E2EBFC",
+                backgroundColor: selectedType === "all" ? "#1E3A5F" : "white",
+                color: selectedType === "all" ? "white" : "#64748B",
+              }}
+            >
+              {t("venues.all", "All")}
+            </button>
+            {venueTypes.map((vt: any) => {
+              const active = selectedType === vt.id;
+              return (
+                <button
+                  key={vt.id}
+                  onClick={() => setSelectedType(active ? "all" : vt.id)}
+                  className="inline-flex items-center gap-1 rounded-full text-xs transition-colors"
+                  style={{
+                    padding: "5px 11px",
+                    border: active ? "1px solid #1E3A5F" : "1px solid #E2EBFC",
+                    backgroundColor: active ? "#1E3A5F" : "white",
+                    color: active ? "white" : "#64748B",
+                  }}
+                >
+                  <span>{vt.icon || "📍"}</span>
+                  <span>{language === "tr" ? ((vt as any).name_tr || vt.name) : vt.name}</span>
+                </button>
+              );
+            })}
           </div>
 
           {/* View mode */}
