@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useMemo, useCallback, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { MapPin, X } from "lucide-react";
 import { useLanguage } from "@/providers/LanguageProvider";
@@ -70,15 +70,17 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     setShowPrompt(false);
   };
 
-  const getDistance = (targetLat: number | null, targetLng: number | null): string | null => {
+  const getDistance = useCallback((targetLat: number | null, targetLng: number | null): string | null => {
     if (!granted || lat === null || lng === null || targetLat === null || targetLng === null) return null;
     const km = haversine(lat, lng, targetLat, targetLng);
     if (km < 1) return t("location.meters_away", `${Math.round(km * 1000)} m away`).replace("{n}", String(Math.round(km * 1000)));
     return t("location.km_away", `${km.toFixed(1)} km away`).replace("{n}", km.toFixed(1));
-  };
+  }, [granted, lat, lng, t]);
+
+  const value = useMemo(() => ({ lat, lng, granted, getDistance }), [lat, lng, granted, getDistance]);
 
   return (
-    <LocationContext.Provider value={{ lat, lng, granted, getDistance }}>
+    <LocationContext.Provider value={value}>
       {showPrompt && (
         <div className="fixed bottom-20 sm:bottom-6 right-4 left-4 sm:left-auto sm:right-6 z-[100] sm:max-w-sm">
           <div className="bg-white rounded-2xl p-4 shadow-xl border" style={{ borderColor: "#E2EBFC", animation: "slideUp 0.3s ease-out" }}>

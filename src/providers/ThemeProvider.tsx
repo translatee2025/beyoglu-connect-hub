@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useMemo, useCallback, ReactNode } from 'react';
 import { config } from '@/config';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -78,15 +78,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       });
   }, []);
 
-  const updateTheme = (colors: Partial<ThemeColors>) => {
-    const newTheme = { ...theme, ...colors };
-    setTheme(newTheme);
-    applyTheme(newTheme);
-  };
+  const updateTheme = useCallback((colors: Partial<ThemeColors>) => {
+    setTheme((prev) => {
+      const newTheme = { ...prev, ...colors };
+      applyTheme(newTheme);
+      return newTheme;
+    });
+  }, []);
 
-  return (
-    <ThemeContext.Provider value={{ theme, updateTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  const value = useMemo(() => ({ theme, updateTheme }), [theme, updateTheme]);
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

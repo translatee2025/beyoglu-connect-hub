@@ -99,7 +99,7 @@ export default function CreateEventForm({ open, onOpenChange }: Props) {
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger><SelectValue placeholder={t("events.select_category", "Select category")} /></SelectTrigger>
               <SelectContent>
-                {eventCats.map((c) => <SelectItem key={c.value} value={c.value}>{c.emoji ? `${c.emoji} ${c.label}` : c.label}</SelectItem>)}
+                {eventCats.filter((c) => c.value).map((c) => <SelectItem key={c.value} value={c.value}>{c.emoji ? `${c.emoji} ${c.label}` : c.label}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

@@ -14,27 +14,7 @@ import { MediaGrid } from "@/components/shared/MediaGrid";
 import { ReportDialog } from "@/components/shared/ReportDialog";
 import { useToast } from "@/hooks/use-toast";
 
-const CATEGORY_PLACEHOLDERS: Record<string, { bg: string; emoji: string }> = {
-  restaurant: { bg: "#FEF3C7", emoji: "🍽️" },
-  cafe: { bg: "#FEF3C7", emoji: "☕" },
-  bar: { bg: "#F5C4B3", emoji: "🍸" },
-  nightlife: { bg: "#F5C4B3", emoji: "🍸" },
-  health: { bg: "#E0F2FE", emoji: "🏥" },
-  pharmacy: { bg: "#E0F2FE", emoji: "🏥" },
-  culture: { bg: "#EDE9FE", emoji: "🎨" },
-  sports: { bg: "#DCFCE7", emoji: "💪" },
-  gym: { bg: "#DCFCE7", emoji: "💪" },
-  pets: { bg: "#DCFCE7", emoji: "🐾" },
-};
-
-const getPlaceholder = (typeName?: string) => {
-  if (!typeName) return { bg: "#EFF4FF", emoji: "📍" };
-  const key = typeName.toLowerCase();
-  for (const [k, v] of Object.entries(CATEGORY_PLACEHOLDERS)) {
-    if (key.includes(k)) return v;
-  }
-  return { bg: "#EFF4FF", emoji: "📍" };
-};
+import { getVenuePlaceholder as getPlaceholder } from "@/lib/categoryPlaceholders";
 
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 const DAY_LABELS_TR: Record<string, string> = { mon: "Pazartesi", tue: "Salı", wed: "Çarşamba", thu: "Perşembe", fri: "Cuma", sat: "Cumartesi", sun: "Pazar" };

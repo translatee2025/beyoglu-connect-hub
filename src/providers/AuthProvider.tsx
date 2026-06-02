@@ -1,8 +1,10 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useMemo, useCallback, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
-type AppRole = 'admin' | 'moderator' | 'vendor' | 'user';
+// 'banned' is assigned at runtime by the admin moderation flow (AdminReports),
+// so it belongs in the role model even though the generated DB enum may lag.
+type AppRole = 'admin' | 'moderator' | 'vendor' | 'user' | 'banned';
 
 interface AuthContextValue {
   user: User | null;
@@ -67,25 +69,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
     setRoles([]);
-  };
+  }, []);
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        session,
-        roles,
-        isAdmin: roles.includes('admin'),
-        loading,
-        signOut,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo<AuthContextValue>(
+    () => ({ user, session, roles, isAdmin: roles.includes('admin'), loading, signOut }),
+    [user, session, roles, loading, signOut]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

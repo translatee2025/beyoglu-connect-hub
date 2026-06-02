@@ -1,8 +1,8 @@
 import { useState, useRef } from "react";
 import { Camera, X, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/providers/AuthProvider";
 
 interface PetPhotoUploadProps {
   petId?: string;
@@ -13,12 +13,18 @@ interface PetPhotoUploadProps {
 
 const PetPhotoUpload = ({ petId, photos, onPhotosChange, maxPhotos = 5 }: PetPhotoUploadProps) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
+
+    if (!user) {
+      toast({ title: "Please log in to upload photos", variant: "destructive" });
+      return;
+    }
 
     if (photos.length + files.length > maxPhotos) {
       toast({ title: `Maximum ${maxPhotos} photos allowed`, variant: "destructive" });
@@ -39,21 +45,32 @@ const PetPhotoUpload = ({ petId, photos, onPhotosChange, maxPhotos = 5 }: PetPho
         continue;
       }
 
-      // Convert to base64 data URL for storage
-      const dataUrl = await fileToDataUrl(file);
-      newPhotos.push(dataUrl);
+      try {
+        // Resize for efficiency, then upload to Storage (instead of embedding a
+        // multi-hundred-KB base64 blob into the pet_profiles row, which bloated
+        // payloads and could break inserts).
+        const blob = await resizeToBlob(file);
+        const path = `${user.id}/pets/${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
+        const { error } = await supabase.storage
+          .from("user-media")
+          .upload(path, blob, { cacheControl: "3600", upsert: false, contentType: "image/jpeg" });
+        if (error) throw error;
+        const { data } = supabase.storage.from("user-media").getPublicUrl(path);
+        if (data?.publicUrl) newPhotos.push(data.publicUrl);
+      } catch (err: any) {
+        toast({ title: `Upload failed: ${file.name}`, description: err?.message, variant: "destructive" });
+      }
     }
 
-    onPhotosChange([...photos, ...newPhotos]);
+    if (newPhotos.length) onPhotosChange([...photos, ...newPhotos]);
     setUploading(false);
     if (fileRef.current) fileRef.current.value = "";
   };
 
-  const fileToDataUrl = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
+  const resizeToBlob = (file: File): Promise<Blob> =>
+    new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
-        // Resize image to max 800px for storage efficiency
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement("canvas");
@@ -66,14 +83,18 @@ const PetPhotoUpload = ({ petId, photos, onPhotosChange, maxPhotos = 5 }: PetPho
           canvas.width = w;
           canvas.height = h;
           canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
-          resolve(canvas.toDataURL("image/jpeg", 0.8));
+          canvas.toBlob(
+            (blob) => (blob ? resolve(blob) : reject(new Error("Image processing failed"))),
+            "image/jpeg",
+            0.8,
+          );
         };
+        img.onerror = reject;
         img.src = reader.result as string;
       };
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
-  };
 
   const removePhoto = (index: number) => {
     onPhotosChange(photos.filter((_, i) => i !== index));

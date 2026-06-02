@@ -22,19 +22,7 @@ const markerIcon = L.icon({
   iconAnchor: [12, 41],
 });
 
-const CATEGORY_PLACEHOLDERS: Record<string, { bg: string; emoji: string }> = {
-  sports: { bg: "#DCFCE7", emoji: "⚽" },
-  culture: { bg: "#EDE9FE", emoji: "🎨" },
-  art: { bg: "#EDE9FE", emoji: "🎨" },
-  music: { bg: "#FEF3C7", emoji: "🎵" },
-  community: { bg: "#E0F2FE", emoji: "👥" },
-  food: { bg: "#FEF3C7", emoji: "🍽️" },
-};
-
-const getPlaceholder = (category?: string | null) => {
-  if (!category) return { bg: "#EFF4FF", emoji: "📅" };
-  return CATEGORY_PLACEHOLDERS[category.toLowerCase()] || { bg: "#EFF4FF", emoji: "📅" };
-};
+import { getEventPlaceholder as getPlaceholder } from "@/lib/categoryPlaceholders";
 
 // formatEventDate moved inside component
 

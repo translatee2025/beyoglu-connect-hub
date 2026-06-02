@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import { useState, useEffect, type CSSProperties } from "react";
 
 interface SafeImageProps {
   src?: string | null;
@@ -31,6 +31,13 @@ export function SafeImage({
   placeholderClassName = "",
 }: SafeImageProps) {
   const [errored, setErrored] = useState(false);
+
+  // Reset the error state whenever the source changes, so a transient failure
+  // (slow network, one-off 4xx) never hides a now-valid image permanently
+  // across react-query refetches, list reorders, or filter changes.
+  useEffect(() => {
+    setErrored(false);
+  }, [src]);
 
   if (!src || errored) {
     return (

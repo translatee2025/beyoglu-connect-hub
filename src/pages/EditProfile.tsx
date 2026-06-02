@@ -64,7 +64,9 @@ const EditProfile = () => {
     if (!file) return;
     setUploading(true);
     const ext = file.name.split(".").pop();
-    const path = `avatars/${user.id}.${ext}`;
+    // First path segment must be the user's id to satisfy the user-media
+    // INSERT RLS policy (auth.uid() = foldername(name)[1]).
+    const path = `${user.id}/avatar.${ext}`;
     const { error } = await supabase.storage.from("user-media").upload(path, file, { upsert: true });
     if (error) { toast({ title: t("profile.edit.upload_failed", "Upload failed"), variant: "destructive" }); setUploading(false); return; }
     const { data: urlData } = supabase.storage.from("user-media").getPublicUrl(path);

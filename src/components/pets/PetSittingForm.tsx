@@ -22,7 +22,7 @@ const PetSittingForm = ({ onSuccess, onBack }: PetSittingFormProps) => {
   const [form, setForm] = useState({ title: "", description: "", price: "", address: "" });
   const { toast } = useToast();
   const { t } = useLanguage();
-  const { speciesOptions, isLoading: speciesLoading } = useSpecies();
+  const { speciesOptions, species, isLoading: speciesLoading } = useSpecies();
 
   const days = [
     { key: "mon", label: t("days.mon", "Mon") },
@@ -42,6 +42,9 @@ const PetSittingForm = ({ onSuccess, onBack }: PetSittingFormProps) => {
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error(t("common.login_required", "Please log in"));
+      // selectedSpecies holds a species UUID; store the canonical enum text
+      // (e.g. "dog") so name-keyed emoji/label maps keep working — never a raw UUID.
+      const resolvedSpecies = species.find((s) => s.id === selectedSpecies);
       const { error } = await supabase.from("pet_posts").insert({
         user_id: user.id,
         post_type: "pet_sitting" as any,
@@ -52,7 +55,7 @@ const PetSittingForm = ({ onSuccess, onBack }: PetSittingFormProps) => {
         price_type: priceType,
         address: form.address,
         is_offering: isOffering,
-        species: selectedSpecies || null,
+        species: resolvedSpecies ? resolvedSpecies.name_en.toLowerCase() : (selectedSpecies || null),
         available_days: selectedDays,
       } as any);
       if (error) throw error;
