@@ -226,7 +226,7 @@ const GroupDetail = () => {
           {group.description && <p style={{ fontSize: 13, color: "#64748B", marginBottom: 10, lineHeight: 1.5 }}>{group.description}</p>}
 
           <div className="flex flex-wrap items-center gap-2 mb-4">
-            <span style={{ fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 12, background: typeBadge.bg, color: typeBadge.color }}>{typeBadge.label}</span>
+            <span style={{ fontSize: 12, fontWeight: 600, padding: "3px 8px", borderRadius: 12, background: typeBadge.bg, color: typeBadge.color }}>{typeBadge.label}</span>
             <span style={{ fontSize: 12, color: "#64748B" }}>👥 {group.member_count} {language === "tr" ? "üye" : "members"}</span>
           </div>
 
@@ -265,7 +265,7 @@ const GroupDetail = () => {
                 <Link to={`/profile/${m.user_id}`}>
                   <Avatar className="w-8 h-8">
                     {m.profile?.avatar_url && <AvatarImage src={m.profile.avatar_url} />}
-                    <AvatarFallback style={{ background: "#1E3A5F", color: "#fff", fontSize: 10 }}>
+                    <AvatarFallback style={{ background: "#1E3A5F", color: "#fff", fontSize: 12 }}>
                       {(m.profile?.display_name || "U")[0].toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -329,7 +329,7 @@ const GroupDetail = () => {
                 <div key={post.id} className="rounded-xl" style={{ border: "1px solid #E2EBFC", padding: 12 }}>
                   <div className="flex items-center gap-2 mb-2">
                     {post.user_id && <UserName userId={post.user_id} showAvatar />}
-                    <span style={{ fontSize: 11, color: "#64748B" }}>{timeAgo(post.created_at)}</span>
+                    <span style={{ fontSize: 12, color: "#64748B" }}>{timeAgo(post.created_at)}</span>
                   </div>
                   <p style={{ fontSize: 13, color: "#1E3A5F", lineHeight: 1.5 }}>{post.content}</p>
                   {post.photos && post.photos.length > 0 && (
@@ -363,7 +363,7 @@ const GroupDetail = () => {
                   </Link>
                 </div>
                 {(member.role === "owner" || member.role === "admin") && (
-                  <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 10, background: "#EFF4FF", color: "#1E3A5F" }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, padding: "2px 8px", borderRadius: 10, background: "#EFF4FF", color: "#1E3A5F" }}>
                     {member.role === "owner" ? `👑 ${t("groups.admin", "Admin")}` : "Mod"}
                   </span>
                 )}

@@ -184,7 +184,7 @@ export function PhotoUploader({
                 borderRadius: "50%",
                 backgroundColor: "rgba(0,0,0,0.6)",
                 color: "white",
-                fontSize: 11,
+                fontSize: 12,
                 lineHeight: 1,
                 border: "none",
                 cursor: "pointer",

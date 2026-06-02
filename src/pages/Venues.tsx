@@ -217,8 +217,8 @@ const Venues = () => {
                         )}
                         {/* CTA */}
                         <button
-                          className="w-full py-1.5 rounded-md text-white text-xs font-medium"
-                          style={{ backgroundColor: "#E74C3C" }}
+                          className="w-full py-1.5 rounded-md text-xs font-medium"
+                          style={{ backgroundColor: "#EFF4FF", color: "#1E3A5F" }}
                           onClick={(e) => { e.stopPropagation(); }}
                         >
                           {t("common.send_message", "Send Message")}

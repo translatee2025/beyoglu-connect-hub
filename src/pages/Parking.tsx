@@ -143,10 +143,10 @@ const Parking = () => {
       ) : null}
       <div style={{ padding: 14 }}>
       <div className="flex items-center gap-2" style={{ marginBottom: 8 }}>
-        <Badge variant={item.listing_mode === "offering" ? "default" : "secondary"} style={{ fontSize: 11 }}>
+        <Badge variant={item.listing_mode === "offering" ? "default" : "secondary"} style={{ fontSize: 12 }}>
           {item.listing_mode === "offering" ? t("common.available", "Available") : t("common.looking_for", "Looking")}
         </Badge>
-        {item.category && <Badge variant="outline" style={{ fontSize: 11 }}>{getCatLabel(item.category)}</Badge>}
+        {item.category && <Badge variant="outline" style={{ fontSize: 12 }}>{getCatLabel(item.category)}</Badge>}
       </div>
 
       <div style={{ fontSize: 13, fontWeight: 600, color: "#1E3A5F", marginBottom: 4 }}>{item.title}</div>
@@ -165,7 +165,7 @@ const Parking = () => {
 
       <div className="flex items-center gap-2" style={{ marginBottom: 6 }}>
         {item.user_id && <ProfileInline userId={item.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-4 h-4" />}
-        <span style={{ fontSize: 11, color: "#64748B" }}>· {formatTimeAgo(item.created_at)}</span>
+        <span style={{ fontSize: 12, color: "#64748B" }}>· {formatTimeAgo(item.created_at)}</span>
       </div>
 
       <DistanceLabel lat={item.lat} lng={item.lng} neighborhood={item.neighborhood} />
@@ -173,7 +173,7 @@ const Parking = () => {
       <button
         onClick={() => item.user_id && handleContact(item.user_id)}
         style={{
-          width: "100%", marginTop: 10, padding: 8, backgroundColor: "#E74C3C", color: "white",
+          width: "100%", marginTop: 10, padding: 8, backgroundColor: "#EFF4FF", color: "#1E3A5F",
           fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer", borderRadius: 8,
         }}
       >

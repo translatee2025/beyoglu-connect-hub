@@ -104,7 +104,7 @@ export function GlobalSearchDesktop() {
               const Icon = ICONS[type];
               return (
                 <div key={type}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: "#64748B", padding: "8px 12px 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#64748B", padding: "8px 12px 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                     {getLabel(type)}
                   </div>
                   {items.map(item => (
@@ -116,7 +116,7 @@ export function GlobalSearchDesktop() {
                       <Icon className="w-4 h-4 flex-shrink-0" style={{ color: "#1E3A5F" }} />
                       <div className="min-w-0 flex-1">
                         <div className="truncate" style={{ fontSize: 13, color: "#1E3A5F", fontWeight: 500 }}>{item.title}</div>
-                        {item.subtitle && <div className="truncate" style={{ fontSize: 11, color: "#64748B" }}>{item.subtitle}</div>}
+                        {item.subtitle && <div className="truncate" style={{ fontSize: 12, color: "#64748B" }}>{item.subtitle}</div>}
                       </div>
                     </button>
                   ))}
@@ -209,7 +209,7 @@ export function GlobalSearchMobile() {
             const Icon = ICONS[type];
             return (
               <div key={type}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#64748B", padding: "12px 16px 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#64748B", padding: "12px 16px 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                   {getLabel(type)}
                 </div>
                 {items.map(item => (

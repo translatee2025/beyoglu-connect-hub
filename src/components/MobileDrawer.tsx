@@ -116,7 +116,7 @@ const MobileDrawer = ({ open, onClose }: { open: boolean; onClose: () => void })
               onClick={() => setActiveDistrict(d)}
               className="transition-colors"
               style={{
-                padding: "3px 12px", borderRadius: 20, fontSize: 11,
+                padding: "3px 12px", borderRadius: 20, fontSize: 12,
                 fontWeight: activeDistrict === d ? 500 : 400,
                 backgroundColor: activeDistrict === d ? "#1E3A5F" : "white",
                 color: activeDistrict === d ? "white" : "#64748B",
@@ -134,7 +134,7 @@ const MobileDrawer = ({ open, onClose }: { open: boolean; onClose: () => void })
               {si > 0 && <div style={{ height: 1, background: "#E2EBFC", margin: "10px 0" }} />}
               <div
                 style={{
-                  fontSize: 9, fontWeight: 700, color: "#64748B", letterSpacing: "0.07em",
+                  fontSize: 12, fontWeight: 700, color: "#64748B", letterSpacing: "0.07em",
                   textTransform: "uppercase" as const, margin: "14px 0 5px 10px",
                 }}
               >

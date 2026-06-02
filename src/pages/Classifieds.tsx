@@ -80,7 +80,7 @@ const ClassifiedCard = ({ item, user, profilesMap, t, getMeta, getCatLabel, form
         <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
           <div className="flex items-center gap-2">
             {item.category && (
-              <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 10, backgroundColor: "#F1F5F9", color: "#64748B" }}>
+              <span style={{ fontSize: 12, padding: "2px 8px", borderRadius: 10, backgroundColor: "#F1F5F9", color: "#64748B" }}>
                 {getCatLabel(item.category)}
               </span>
             )}
@@ -115,7 +115,7 @@ const ClassifiedCard = ({ item, user, profilesMap, t, getMeta, getCatLabel, form
 
         <div className="flex items-center gap-2" style={{ marginBottom: 6 }}>
           {item.user_id && <ProfileInline userId={item.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-4 h-4" />}
-          <span style={{ fontSize: 11, color: "#64748B" }}>· {formatTimeAgo(item.created_at)}</span>
+          <span style={{ fontSize: 12, color: "#64748B" }}>· {formatTimeAgo(item.created_at)}</span>
         </div>
 
         <DistanceLabel lat={item.lat} lng={item.lng} neighborhood={item.neighborhood} />
@@ -124,7 +124,7 @@ const ClassifiedCard = ({ item, user, profilesMap, t, getMeta, getCatLabel, form
       <button
         onClick={() => item.user_id && onContact(item.user_id)}
         style={{
-          width: "100%", padding: 8, backgroundColor: "#E74C3C", color: "white",
+          width: "100%", padding: 8, backgroundColor: "#EFF4FF", color: "#1E3A5F",
           fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer",
           borderRadius: "0 0 12px 12px",
         }}
@@ -280,7 +280,7 @@ const Classifieds = () => {
                   onClick={() => setSubCategory(subCategory === sub.value ? null : sub.value)}
                   className="flex-shrink-0 transition-colors"
                   style={{
-                    padding: "4px 12px", borderRadius: 16, fontSize: 11,
+                    padding: "4px 12px", borderRadius: 16, fontSize: 12,
                     fontWeight: subCategory === sub.value ? 500 : 400,
                     backgroundColor: subCategory === sub.value ? "#1E3A5F" : "white",
                     color: subCategory === sub.value ? "white" : "#64748B",

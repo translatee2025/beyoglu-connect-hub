@@ -240,8 +240,8 @@ const PostCard = ({ post, badgeLabel, isUrgent, onContact, speciesEmojiMap, prof
     <CardContent className="pt-0">
       <button
         onClick={() => post.user_id && onContact(post.user_id)}
-        className="w-full py-1.5 rounded-lg text-xs font-semibold text-white"
-        style={{ backgroundColor: "#E74C3C" }}
+        className="w-full py-1.5 rounded-lg text-xs font-semibold"
+        style={{ backgroundColor: "#EFF4FF", color: "#1E3A5F" }}
       >
         {t("common.contact", "Contact")}
       </button>

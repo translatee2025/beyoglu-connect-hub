@@ -462,7 +462,7 @@ const ListingCard = ({ item, badge, timeAgo, user, setReportTarget, t, profilesM
         <span className="text-xs text-[#64748B]">· {timeAgo(item.created_at)}</span>
       </div>
       {/* CTA */}
-      <button className="w-full mt-2.5 py-2 rounded-lg text-white text-xs font-medium" style={{ backgroundColor: '#E74C3C' }}>
+      <button className="w-full mt-2.5 py-2 rounded-lg text-xs font-medium" style={{ backgroundColor: '#EFF4FF', color: '#1E3A5F' }}>
         {t("common.send_message", "Send Message")}
       </button>
     </div>

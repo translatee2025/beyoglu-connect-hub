@@ -247,7 +247,7 @@ const Groups = () => {
                   <span style={{
                     position: "absolute", top: 8, left: 8,
                     background: badge.bg, color: badge.color,
-                    fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 12,
+                    fontSize: 12, fontWeight: 600, padding: "3px 8px", borderRadius: 12,
                   }}>
                     {badge.label}
                   </span>
@@ -388,7 +388,7 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
       <div className="mb-4">
         <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.description", "Description")} * <span style={{ color: "#64748B" }}>({t("groups.form.min_chars", "min 20 characters")})</span></Label>
         <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder={t("groups.form.desc_placeholder", "What is the group about?")} rows={3} style={{ fontSize: 13 }} />
-        <span style={{ fontSize: 11, color: form.description.length >= 20 ? "#16A34A" : "#64748B" }}>{form.description.length}/20</span>
+        <span style={{ fontSize: 12, color: form.description.length >= 20 ? "#16A34A" : "#64748B" }}>{form.description.length}/20</span>
       </div>
 
       {/* Category - tappable cards */}
@@ -403,11 +403,11 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
               style={{
                 border: form.category === c.key ? "2px solid #1E3A5F" : "1px solid #E2E8F0",
                 background: form.category === c.key ? "#EFF4FF" : "#fff",
-                fontSize: 11, color: "#1E3A5F",
+                fontSize: 12, color: "#1E3A5F",
               }}
             >
               <span style={{ fontSize: 20 }}>{c.emoji}</span>
-              <span style={{ fontWeight: form.category === c.key ? 600 : 400, lineHeight: 1.2, textAlign: "center", fontSize: 10 }}>{c.label}</span>
+              <span style={{ fontWeight: form.category === c.key ? 600 : 400, lineHeight: 1.2, textAlign: "center", fontSize: 12 }}>{c.label}</span>
             </button>
           ))}
         </div>
@@ -430,8 +430,8 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
                 }}
               >
                 <Icon className="w-5 h-5" style={{ color: gt.color }} />
-                <span style={{ fontSize: 11, fontWeight: 600, color: gt.color }}>{gt.label}</span>
-                <span style={{ fontSize: 9, color: "#64748B" }}>{gt.desc}</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: gt.color }}>{gt.label}</span>
+                <span style={{ fontSize: 12, color: "#64748B" }}>{gt.desc}</span>
               </button>
             );
           })}

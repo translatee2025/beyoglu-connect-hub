@@ -153,7 +153,7 @@ const Rentals = () => {
 
         <div style={{ padding: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: "#1E3A5F", marginBottom: 4 }}>{item.title}</div>
-          <div style={{ fontSize: 11, color: "#64748B", marginBottom: 6 }}>
+          <div style={{ fontSize: 12, color: "#64748B", marginBottom: 6 }}>
             {[item.category ? getCatLabel(item.category) : null, item.description?.match(/(\d+)\s*m²/)?.[0]].filter(Boolean).join(" · ")}
           </div>
           {item.description && (
@@ -163,7 +163,7 @@ const Rentals = () => {
           )}
           <div className="flex items-center gap-2" style={{ marginBottom: 8 }}>
             {item.user_id && <ProfileInline userId={item.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-4 h-4" />}
-            <span style={{ fontSize: 11, color: "#64748B" }}>· {formatTimeAgo(item.created_at)}</span>
+            <span style={{ fontSize: 12, color: "#64748B" }}>· {formatTimeAgo(item.created_at)}</span>
           </div>
           <DistanceLabel lat={item.lat} lng={item.lng} neighborhood={item.neighborhood} />
         </div>
@@ -171,7 +171,7 @@ const Rentals = () => {
         <button
           onClick={() => item.user_id && handleContact(item.user_id)}
           style={{
-            width: "100%", padding: 8, backgroundColor: "#E74C3C", color: "white",
+            width: "100%", padding: 8, backgroundColor: "#EFF4FF", color: "#1E3A5F",
             fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer",
             borderRadius: "0 0 12px 12px",
           }}

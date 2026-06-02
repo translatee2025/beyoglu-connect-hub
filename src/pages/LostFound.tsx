@@ -231,7 +231,7 @@ function PostCard({ post, isOwner }: { post: any; isOwner: boolean }) {
             <span style={{ fontSize: 32 }}>{emoji}</span>
           </div>
         )}
-        <div style={{ position: "absolute", top: 8, left: 8, background: "#1E3A5F", color: "#fff", fontSize: 10, fontWeight: 500, padding: "3px 8px", borderRadius: "0 0 6px 0" }}>
+        <div style={{ position: "absolute", top: 8, left: 8, background: "#1E3A5F", color: "#fff", fontSize: 12, fontWeight: 500, padding: "3px 8px", borderRadius: "0 0 6px 0" }}>
           {post.type === "lost" ? `🔴 ${t("lost_found.lost_tab", "Lost")}` : `🟢 ${t("lost_found.found_tab", "Found")}`}
         </div>
       </div>
@@ -245,9 +245,9 @@ function PostCard({ post, isOwner }: { post: any; isOwner: boolean }) {
             <MapPin className="w-3 h-3" /> {post.neighborhood}
           </div>
         )}
-        <div style={{ fontSize: 11, color: "#64748B" }}>{timeAgo(post.created_at)}</div>
+        <div style={{ fontSize: 12, color: "#64748B" }}>{timeAgo(post.created_at)}</div>
         <div className="flex gap-2 pt-1">
-          <Button size="sm" className="flex-1 gap-1" onClick={handleContact} style={{ background: "#E74C3C", color: "#fff", border: "none", fontSize: 12, borderRadius: 6 }}>
+          <Button size="sm" className="flex-1 gap-1" onClick={handleContact} style={{ background: "#EFF4FF", color: "#1E3A5F", border: "none", fontSize: 12, borderRadius: 6 }}>
             <MessageCircle className="w-3.5 h-3.5" /> {t("common.contact", "Contact")}
           </Button>
           {isOwner && (
@@ -304,7 +304,7 @@ function LostFoundMap({ posts }: { posts: any[] }) {
                   )}
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: "#1E3A5F" }}>{post.title}</div>
-                    <div style={{ fontSize: 11, color: "#64748B" }}>{new Date(post.created_at).toLocaleDateString()}</div>
+                    <div style={{ fontSize: 12, color: "#64748B" }}>{new Date(post.created_at).toLocaleDateString()}</div>
                   </div>
                 </div>
                 <button

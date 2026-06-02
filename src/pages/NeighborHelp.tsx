@@ -133,16 +133,16 @@ const NeighborHelp = () => {
                 {/* Badges row */}
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <span style={{
-                    fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 12,
+                    fontSize: 12, fontWeight: 600, padding: "3px 8px", borderRadius: 12,
                     background: isOffer ? "#DCFCE7" : "#FEF3C7",
                     color: isOffer ? "#16A34A" : "#D97706",
                   }}>
                     {isOffer ? t("help.i_can_help", "I Can Help") : t("help.i_need_help", "I Need Help")}
                   </span>
-                  <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 12, border: "1px solid #E2E8F0", color: "#64748B" }}>
+                  <span style={{ fontSize: 12, padding: "3px 8px", borderRadius: 12, border: "1px solid #E2E8F0", color: "#64748B" }}>
                     {getCategoryLabel(post.category)}
                   </span>
-                  <span style={{ fontSize: 11, color: "#64748B", marginLeft: "auto" }}>{timeAgo(post.created_at)}</span>
+                  <span style={{ fontSize: 12, color: "#64748B", marginLeft: "auto" }}>{timeAgo(post.created_at)}</span>
                 </div>
 
                 {/* Title */}
@@ -168,7 +168,7 @@ const NeighborHelp = () => {
                     <ProfileInline userId={post.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-5 h-5" className="text-xs" />
                   )}
                   {post.neighborhood && (
-                    <span className="flex items-center gap-0.5" style={{ color: "#64748B", fontSize: 11 }}>
+                    <span className="flex items-center gap-0.5" style={{ color: "#64748B", fontSize: 12 }}>
                       <MapPin className="w-3 h-3" /> {post.neighborhood}
                     </span>
                   )}
@@ -220,7 +220,7 @@ const HelpPostForm = ({ onSuccess }: { onSuccess: () => void }) => {
     <div style={{ padding: 4 }}>
       <DialogHeader><DialogTitle style={{ fontSize: 16, fontWeight: 700, color: "#1E3A5F" }}>{t("help.post_title", "Post Help Listing")}</DialogTitle></DialogHeader>
       <Progress value={(step / 2) * 100} className="h-1.5 mt-3" />
-      <p className="text-center mt-1 mb-4" style={{ fontSize: 11, color: "#64748B" }}>{step} / 2</p>
+      <p className="text-center mt-1 mb-4" style={{ fontSize: 12, color: "#64748B" }}>{step} / 2</p>
 
       {step === 1 && (
         <div className="space-y-4">

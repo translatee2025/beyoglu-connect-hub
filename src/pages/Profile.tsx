@@ -170,7 +170,7 @@ const Profile = () => {
             <Link key={u.user_id} to={`/profile/${u.user_id}`} className="flex items-center gap-3 hover:bg-muted/50 rounded-lg p-2" onClick={() => onClose()}>
               <Avatar className="w-8 h-8">
                 <AvatarImage src={u.avatar_url || undefined} />
-                <AvatarFallback style={{ background: "#1E3A5F", color: "#fff", fontSize: 11 }}>{(u.display_name || "U").slice(0, 2).toUpperCase()}</AvatarFallback>
+                <AvatarFallback style={{ background: "#1E3A5F", color: "#fff", fontSize: 12 }}>{(u.display_name || "U").slice(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
               <span style={{ fontSize: 13, fontWeight: 500, color: "#1E3A5F" }}>{u.display_name || t("common.user", "Kullanıcı")}</span>
             </Link>
@@ -196,7 +196,7 @@ const Profile = () => {
             </div>
           )}
           {profile.bio && <p className="mt-2" style={{ fontSize: 13, color: "#64748B", maxWidth: 400 }}>{profile.bio}</p>}
-          {memberSince && <p className="mt-1" style={{ fontSize: 11, color: "#64748B" }}>{t("profile.member_since", "Üye")}: {memberSince}</p>}
+          {memberSince && <p className="mt-1" style={{ fontSize: 12, color: "#64748B" }}>{t("profile.member_since", "Üye")}: {memberSince}</p>}
         </div>
 
         <div className="flex justify-center gap-0 mb-5">
@@ -207,7 +207,7 @@ const Profile = () => {
           ].map((s, i) => (
             <button key={i} onClick={s.onClick} className="flex flex-col items-center px-5" style={{ borderRight: i < 2 ? "1px solid #E2E8F0" : "none", cursor: s.onClick ? "pointer" : "default" }}>
               <span style={{ fontSize: 18, fontWeight: 700, color: "#1E3A5F" }}>{s.n}</span>
-              <span style={{ fontSize: 11, color: "#64748B" }}>{s.label}</span>
+              <span style={{ fontSize: 12, color: "#64748B" }}>{s.label}</span>
             </button>
           ))}
         </div>
@@ -243,7 +243,7 @@ const Profile = () => {
                 {posts.map(p => (
                   <Card key={p.id}><CardContent className="py-3 px-4">
                     <p style={{ fontSize: 13, color: "#1E3A5F" }}>{p.content}</p>
-                    <span style={{ fontSize: 11, color: "#64748B" }}>{new Date(p.created_at).toLocaleDateString("tr-TR")}</span>
+                    <span style={{ fontSize: 12, color: "#64748B" }}>{new Date(p.created_at).toLocaleDateString("tr-TR")}</span>
                   </CardContent></Card>
                 ))}
               </div>
@@ -255,7 +255,7 @@ const Profile = () => {
               <div className="space-y-3 mt-3">
                 {listings.map(l => (
                   <Card key={l.id}><CardContent className="py-3 px-4 flex items-center gap-3">
-                    <Badge variant="secondary" style={{ fontSize: 10 }}>{l.section}</Badge>
+                    <Badge variant="secondary" style={{ fontSize: 12 }}>{l.section}</Badge>
                     <span className="flex-1 truncate" style={{ fontSize: 13, color: "#1E3A5F" }}>{l.title}</span>
                     {l.price && <span style={{ fontSize: 12, fontWeight: 600, color: "#E74C3C" }}>{l.price} {l.currency}</span>}
                   </CardContent></Card>
@@ -273,14 +273,14 @@ const Profile = () => {
                       <Link to={`/profile/${r.reviewer_id}`} className="flex items-center gap-2">
                         <Avatar className="w-6 h-6">
                           <AvatarImage src={r.reviewer?.avatar_url} />
-                          <AvatarFallback style={{ fontSize: 9, background: "#1E3A5F", color: "#fff" }}>{(r.reviewer?.display_name || "U").slice(0, 2).toUpperCase()}</AvatarFallback>
+                          <AvatarFallback style={{ fontSize: 12, background: "#1E3A5F", color: "#fff" }}>{(r.reviewer?.display_name || "U").slice(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <span style={{ fontSize: 12, fontWeight: 500, color: "#1E3A5F" }}>{r.reviewer?.display_name || t("common.user", "Kullanıcı")}</span>
                       </Link>
                       <span style={{ fontSize: 12 }}>{"⭐".repeat(r.rating)}</span>
                     </div>
                     {r.comment && <p style={{ fontSize: 13, color: "#64748B" }}>{r.comment}</p>}
-                    <span style={{ fontSize: 11, color: "#64748B" }}>{new Date(r.created_at).toLocaleDateString("tr-TR")}</span>
+                    <span style={{ fontSize: 12, color: "#64748B" }}>{new Date(r.created_at).toLocaleDateString("tr-TR")}</span>
                   </CardContent></Card>
                 ))}
               </div>
@@ -296,9 +296,9 @@ const Profile = () => {
                       <Users className="w-5 h-5" style={{ color: "#1E3A5F" }} />
                       <div className="flex-1">
                         <span style={{ fontSize: 13, fontWeight: 600, color: "#1E3A5F" }}>{g.name}</span>
-                        <p style={{ fontSize: 11, color: "#64748B" }}>{g.member_count} {t("common.members", "üye")}</p>
+                        <p style={{ fontSize: 12, color: "#64748B" }}>{g.member_count} {t("common.members", "üye")}</p>
                       </div>
-                      <Badge variant="secondary" style={{ fontSize: 10 }}>{g.category}</Badge>
+                      <Badge variant="secondary" style={{ fontSize: 12 }}>{g.category}</Badge>
                     </CardContent></Card>
                   </Link>
                 ))}
