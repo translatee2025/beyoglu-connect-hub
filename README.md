@@ -1,73 +1,41 @@
-# Welcome to your Lovable project
+# Beyoğlu Connect
 
-## Project info
+A neighborhood community hub for **Beyoğlu, İstanbul** — a directory of real local
+venues (food & drink, health, shopping & services, pets, culture & leisure),
+plus events, classifieds, rentals, parking, lost & found, jobs, and a community feed.
 
-**URL**: https://lovable.dev/projects/47b5a049-0237-432c-a039-a0d2f7915cb9
+## Tech stack
+- **Vite + React 18 + TypeScript**, React Router, TanStack Query
+- **Tailwind CSS + shadcn/ui**, Leaflet maps
+- **Supabase** (Postgres, Auth, Storage, Realtime) — backend project **CityHub**
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/47b5a049-0237-432c-a039-a0d2f7915cb9) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
+## Develop
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+npm install
+npm run dev          # http://localhost:8080
 ```
 
-**Edit a file directly in GitHub**
+## Test
+```sh
+npm test             # Vitest unit tests
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Build / preview
+```sh
+npm run build        # outputs to dist/
+npm run preview
+```
 
-**Use GitHub Codespaces**
+## Environment
+The Supabase connection is read from `.env`:
+```
+VITE_SUPABASE_URL="https://<project-ref>.supabase.co"
+VITE_SUPABASE_PUBLISHABLE_KEY="<anon public key>"
+VITE_SUPABASE_PROJECT_ID="<project-ref>"
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/47b5a049-0237-432c-a039-a0d2f7915cb9) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Deploy
+Pushes to `main` auto-build and deploy to **GitHub Pages** via
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). The production
+site is served from the `/beyoglu-connect-hub/` base path (configured in
+`vite.config.ts` and the router `basename`).

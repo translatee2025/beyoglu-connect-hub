@@ -59,7 +59,7 @@ const PageFallback = () => (
 
 const App = () => (
   <HelmetProvider>
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <ThemeProvider>
         <QueryClientProvider client={queryClient}>
           <LanguageProvider>
