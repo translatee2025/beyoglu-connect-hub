@@ -56,6 +56,85 @@ const parsePrice = (p: string | null) => {
   return parseFloat(p.replace(/[^0-9.]/g, "")) || 0;
 };
 
+// Hoisted to module scope so React keeps a STABLE component type across
+// parent re-renders (typing in search, changing sort/filter). Defining it
+// inside the parent made React unmount+remount every card on each keystroke.
+const ClassifiedCard = ({ item, user, profilesMap, t, getMeta, getCatLabel, formatTimeAgo, onContact, onReport }: any) => {
+  const photo = parsePhotos(item.photos)[0] || null;
+  const meta = getMeta(item.category);
+
+  return (
+    <div style={{ borderRadius: 12, overflow: "hidden", backgroundColor: "white", border: "1px solid #E2EBFC" }}>
+      <div style={{ position: "relative", height: 140 }}>
+        <SafeImage
+          src={photo}
+          alt={item.title}
+          className="w-full h-full"
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          fallbackBg={meta.bg}
+          fallbackEmoji={meta.emoji}
+        />
+      </div>
+
+      <div style={{ padding: 12 }}>
+        <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+          <div className="flex items-center gap-2">
+            {item.category && (
+              <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 10, backgroundColor: "#F1F5F9", color: "#64748B" }}>
+                {getCatLabel(item.category)}
+              </span>
+            )}
+          </div>
+          {user && item.user_id && item.user_id !== user.id && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-1 text-muted-foreground hover:text-foreground"><MoreHorizontal className="w-3.5 h-3.5" /></button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onReport(item.id)}>
+                  <Flag className="w-4 h-4 mr-2" /> {t("common.report", "Report")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+
+        <div style={{ fontSize: 13, fontWeight: 600, color: "#1E3A5F", marginBottom: 4 }}>{item.title}</div>
+
+        {item.price && (
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#1E3A5F", marginBottom: 6 }}>
+            {item.currency || "₺"}{item.price}
+          </div>
+        )}
+
+        {item.description && (
+          <p style={{ fontSize: 12, color: "#64748B", marginBottom: 8, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+            {item.description}
+          </p>
+        )}
+
+        <div className="flex items-center gap-2" style={{ marginBottom: 6 }}>
+          {item.user_id && <ProfileInline userId={item.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-4 h-4" />}
+          <span style={{ fontSize: 11, color: "#94A3B8" }}>· {formatTimeAgo(item.created_at)}</span>
+        </div>
+
+        <DistanceLabel lat={item.lat} lng={item.lng} neighborhood={item.neighborhood} />
+      </div>
+
+      <button
+        onClick={() => item.user_id && onContact(item.user_id)}
+        style={{
+          width: "100%", padding: 8, backgroundColor: "#E74C3C", color: "white",
+          fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer",
+          borderRadius: "0 0 12px 12px",
+        }}
+      >
+        {t("common.message", "Message")}
+      </button>
+    </div>
+  );
+};
+
 const Classifieds = () => {
   const [reportTarget, setReportTarget] = useState<{ id: string } | null>(null);
   const [search, setSearch] = useState("");
@@ -149,82 +228,6 @@ const Classifieds = () => {
     return categoryOptions.find((o) => o.value === key)?.label || key;
   };
 
-  const ClassifiedCard = ({ item }: { item: any }) => {
-    const photo = parsePhotos(item.photos)[0] || null;
-    const meta = getMeta(item.category);
-
-    return (
-      <div style={{ borderRadius: 12, overflow: "hidden", backgroundColor: "white", border: "1px solid #E2EBFC" }}>
-        <div style={{ position: "relative", height: 140 }}>
-          <SafeImage
-            src={photo}
-            alt={item.title}
-            className="w-full h-full"
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            fallbackBg={meta.bg}
-            fallbackEmoji={meta.emoji}
-          />
-        </div>
-
-        <div style={{ padding: 12 }}>
-          <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
-            <div className="flex items-center gap-2">
-              {item.category && (
-                <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 10, backgroundColor: "#F1F5F9", color: "#64748B" }}>
-                  {getCatLabel(item.category)}
-                </span>
-              )}
-            </div>
-            {user && item.user_id && item.user_id !== user.id && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="p-1 text-muted-foreground hover:text-foreground"><MoreHorizontal className="w-3.5 h-3.5" /></button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setReportTarget({ id: item.id })}>
-                    <Flag className="w-4 h-4 mr-2" /> {t("common.report", "Report")}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
-
-          <div style={{ fontSize: 13, fontWeight: 600, color: "#1E3A5F", marginBottom: 4 }}>{item.title}</div>
-
-          {item.price && (
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#1E3A5F", marginBottom: 6 }}>
-              {item.currency || "₺"}{item.price}
-            </div>
-          )}
-
-          {item.description && (
-            <p style={{ fontSize: 12, color: "#64748B", marginBottom: 8, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-              {item.description}
-            </p>
-          )}
-
-          <div className="flex items-center gap-2" style={{ marginBottom: 6 }}>
-            {item.user_id && <ProfileInline userId={item.user_id} profilesMap={profilesMap} showAvatar avatarSize="w-4 h-4" />}
-            <span style={{ fontSize: 11, color: "#94A3B8" }}>· {formatTimeAgo(item.created_at)}</span>
-          </div>
-
-          <DistanceLabel lat={item.lat} lng={item.lng} neighborhood={item.neighborhood} />
-        </div>
-
-        <button
-          onClick={() => item.user_id && handleContact(item.user_id)}
-          style={{
-            width: "100%", padding: 8, backgroundColor: "#E74C3C", color: "white",
-            fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer",
-            borderRadius: "0 0 12px 12px",
-          }}
-        >
-          {t("common.message", "Message")}
-        </button>
-      </div>
-    );
-  };
-
   const processed = processItems();
 
   return (
@@ -306,7 +309,18 @@ const Classifieds = () => {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {processed.map((item: any) => (
-                <ClassifiedCard key={item.id} item={item} />
+                <ClassifiedCard
+                  key={item.id}
+                  item={item}
+                  user={user}
+                  profilesMap={profilesMap}
+                  t={t}
+                  getMeta={getMeta}
+                  getCatLabel={getCatLabel}
+                  formatTimeAgo={formatTimeAgo}
+                  onContact={handleContact}
+                  onReport={(id: string) => setReportTarget({ id })}
+                />
               ))}
             </div>
           )}

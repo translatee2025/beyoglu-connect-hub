@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo, useRef } from 'react';
 import { config } from '@/config';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
@@ -113,9 +113,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     return (translations as Record<string, string>)[key] || fallback || key;
   }, [translations]);
 
-  return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, languages, isLoading }}>
-      {children}
-    </LanguageContext.Provider>
+  const value = useMemo(
+    () => ({ language, setLanguage, t, languages, isLoading }),
+    [language, setLanguage, t, languages, isLoading]
   );
+
+  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }

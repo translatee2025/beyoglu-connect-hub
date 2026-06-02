@@ -187,7 +187,7 @@ const AddPetForm = ({ onSuccess }: AddPetFormProps) => {
           <Select value={form.breed} onValueChange={v => setForm({ ...form, breed: v })}>
             <SelectTrigger><SelectValue placeholder="Select breed..." /></SelectTrigger>
             <SelectContent>
-              {breedOptions.map(b => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}
+              {breedOptions.filter(b => b.value && String(b.value).trim()).map(b => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>

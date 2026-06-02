@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import PetSwipeCards from "./PetSwipeCards";
 import { useSpecies, useBreeds } from "@/hooks/useSpeciesBreeds";
+import { matchesSpeciesFilter, resolveSpecies } from "@/lib/petNormalization";
 
 const sizeOptions = [
   { value: "tiny", label: "Tiny (< 5kg)", emoji: "🐾" },
@@ -51,7 +52,7 @@ const FriendFinder = () => {
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"swipe" | "list">("swipe");
-  const { speciesOptions, speciesEmojiMap } = useSpecies();
+  const { speciesOptions, speciesEmojiMap, species } = useSpecies();
   const { breedOptions } = useBreeds(filters.species !== "all" ? filters.species : undefined);
 
   const { data: allPets = [], isLoading } = useQuery({
@@ -77,7 +78,7 @@ const FriendFinder = () => {
 
   const filteredPets = useMemo(() => {
     return allPets.filter((pet: any) => {
-      if (filters.species !== "all" && pet.species !== filters.species) return false;
+      if (!matchesSpeciesFilter(pet, filters.species, species)) return false;
       if (filters.breed !== "all" && pet.breed !== filters.breed) return false;
       if (filters.size !== "all" && pet.size !== filters.size) return false;
       if (filters.energy_level !== "all" && pet.energy_level !== filters.energy_level) return false;
@@ -286,7 +287,7 @@ const FriendFinder = () => {
 
         {activeFilterCount > 0 && (
           <div className="flex flex-wrap gap-1">
-            {filters.species !== "all" && <Badge variant="secondary" className="gap-1 cursor-pointer text-xs" onClick={() => setFilters(f => ({ ...f, species: "all", breed: "all" }))}>{speciesEmojiMap[filters.species] || "🐾"} {filters.species} <X className="w-3 h-3" /></Badge>}
+            {filters.species !== "all" && <Badge variant="secondary" className="gap-1 cursor-pointer text-xs" onClick={() => setFilters(f => ({ ...f, species: "all", breed: "all" }))}>{speciesOptions.find(o => o.value === filters.species)?.label || filters.species} <X className="w-3 h-3" /></Badge>}
             {filters.breed !== "all" && <Badge variant="secondary" className="gap-1 cursor-pointer text-xs" onClick={() => setFilters(f => ({ ...f, breed: "all" }))}>Breed: {filters.breed} <X className="w-3 h-3" /></Badge>}
             {filters.size !== "all" && <Badge variant="secondary" className="gap-1 cursor-pointer text-xs" onClick={() => setFilters(f => ({ ...f, size: "all" }))}>Size: {filters.size} <X className="w-3 h-3" /></Badge>}
           </div>
@@ -309,7 +310,7 @@ const FriendFinder = () => {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredPets.map((pet: any) => (
-            <FriendCard key={pet.id} pet={pet} onWoof={handleWoof} speciesEmojiMap={speciesEmojiMap} />
+            <FriendCard key={pet.id} pet={pet} onWoof={handleWoof} speciesEmojiMap={speciesEmojiMap} species={species} />
           ))}
         </div>
       )}
@@ -328,13 +329,13 @@ const personalityColors: Record<string, string> = {
   independent: "bg-gray-100 text-gray-800 border-gray-200",
 };
 
-const FriendCard = ({ pet, onWoof, speciesEmojiMap }: { pet: any; onWoof: (pet: any) => void; speciesEmojiMap: Record<string, string> }) => (
+const FriendCard = ({ pet, onWoof, speciesEmojiMap, species }: { pet: any; onWoof: (pet: any) => void; speciesEmojiMap: Record<string, string>; species: any[] }) => (
   <Card className="hover:shadow-lg transition-all hover:-translate-y-0.5 overflow-hidden" style={{ border: "1px solid #E2EBFC" }}>
     <div className="relative aspect-[4/3]" style={{ backgroundColor: "#F8FAFF" }}>
       {pet.photo_url ? (
         <img src={pet.photo_url} alt={pet.name} className="w-full h-full object-cover" />
       ) : (
-        <div className="w-full h-full flex items-center justify-center text-5xl">{speciesEmojiMap[pet.species] || "🐾"}</div>
+        <div className="w-full h-full flex items-center justify-center text-5xl">{resolveSpecies(pet, species)?.emoji || speciesEmojiMap[pet.species] || "🐾"}</div>
       )}
       <div className="absolute top-2 left-2 flex gap-1">
         {pet.gender && <span className="text-xs bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full font-medium">{pet.gender === "male" ? "♂" : "♀"}</span>}

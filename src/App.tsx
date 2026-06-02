@@ -4,47 +4,58 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+import { lazy, Suspense } from "react";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { LanguageProvider } from "@/providers/LanguageProvider";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { LocationProvider } from "@/providers/LocationProvider";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import PublicLayout from "./components/PublicLayout";
-import Index from "./pages/Index";
-import Groups from "./pages/Groups";
-import Events from "./pages/Events";
-import EventDetail from "./pages/EventDetail";
-import Classifieds from "./pages/Classifieds";
-import Rentals from "./pages/Rentals";
-import Parking from "./pages/Parking";
-import Wall from "./pages/Wall";
-import GroupDetail from "./pages/GroupDetail";
-import Pets from "./pages/Pets";
-import Venues from "./pages/Venues";
-import NeighborHelp from "./pages/NeighborHelp";
-import Auth from "./pages/Auth";
-import Profile from "./pages/Profile";
-import EditProfile from "./pages/EditProfile";
-import Messages from "./pages/Messages";
-import VenueCharts from "./pages/VenueCharts";
-import VenueDetail from "./pages/VenueDetail";
-import Reels from "./pages/Reels";
-import LostFound from "./pages/LostFound";
-import Jobs from "./pages/Jobs";
-import Families from "./pages/Families";
-import AdminLayout from "./pages/admin/AdminLayout";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminModules from "./pages/admin/AdminModules";
-import AdminTheme from "./pages/admin/AdminTheme";
-import AdminSettings from "./pages/admin/AdminSettings";
-import AdminAI from "./pages/admin/AdminAI";
-import AdminReports from "./pages/admin/AdminReports";
-import NotFound from "./pages/NotFound";
+
+// Route components are code-split so the initial bundle stays small; each page
+// (and the heavy libs it pulls in, e.g. leaflet) loads on demand.
+const Index = lazy(() => import("./pages/Index"));
+const Groups = lazy(() => import("./pages/Groups"));
+const Events = lazy(() => import("./pages/Events"));
+const EventDetail = lazy(() => import("./pages/EventDetail"));
+const Classifieds = lazy(() => import("./pages/Classifieds"));
+const Rentals = lazy(() => import("./pages/Rentals"));
+const Parking = lazy(() => import("./pages/Parking"));
+const Wall = lazy(() => import("./pages/Wall"));
+const GroupDetail = lazy(() => import("./pages/GroupDetail"));
+const Pets = lazy(() => import("./pages/Pets"));
+const Venues = lazy(() => import("./pages/Venues"));
+const NeighborHelp = lazy(() => import("./pages/NeighborHelp"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Profile = lazy(() => import("./pages/Profile"));
+const EditProfile = lazy(() => import("./pages/EditProfile"));
+const Messages = lazy(() => import("./pages/Messages"));
+const VenueCharts = lazy(() => import("./pages/VenueCharts"));
+const VenueDetail = lazy(() => import("./pages/VenueDetail"));
+const Reels = lazy(() => import("./pages/Reels"));
+const LostFound = lazy(() => import("./pages/LostFound"));
+const Jobs = lazy(() => import("./pages/Jobs"));
+const Families = lazy(() => import("./pages/Families"));
+const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminModules = lazy(() => import("./pages/admin/AdminModules"));
+const AdminTheme = lazy(() => import("./pages/admin/AdminTheme"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const AdminAI = lazy(() => import("./pages/admin/AdminAI"));
+const AdminReports = lazy(() => import("./pages/admin/AdminReports"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { staleTime: 1000 * 60 * 5, retry: 0, refetchOnWindowFocus: false },
   },
 });
+
+const PageFallback = () => (
+  <div className="flex min-h-screen items-center justify-center">
+    <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-primary" />
+  </div>
+);
 
 const App = () => (
   <HelmetProvider>
@@ -57,6 +68,8 @@ const App = () => (
               <TooltipProvider>
                 <Toaster />
                 <Sonner />
+                <ErrorBoundary>
+                <Suspense fallback={<PageFallback />}>
                 <Routes>
                   {/* Admin routes */}
                   <Route path="/admin" element={<AdminLayout />}>
@@ -98,6 +111,8 @@ const App = () => (
 
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+                </Suspense>
+                </ErrorBoundary>
               </TooltipProvider>
               </LocationProvider>
             </AuthProvider>
@@ -109,4 +124,3 @@ const App = () => (
 );
 
 export default App;
-

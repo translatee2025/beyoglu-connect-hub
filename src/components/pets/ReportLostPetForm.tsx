@@ -18,7 +18,7 @@ const ReportLostPetForm = ({ onSuccess }: ReportLostPetFormProps) => {
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<"my_pet" | "found">("my_pet");
-  const [form, setForm] = useState({ name: "", species: "dog", breed: "", gender: "", photo_url: "", lost_location: "", lost_details: "", contact_info: "" });
+  const [form, setForm] = useState({ name: "", species: "", breed: "", gender: "", photo_url: "", lost_location: "", lost_details: "", contact_info: "" });
 
   const { speciesOptions } = useSpecies();
   const { options: neighborhoodOptions } = useAppOptions("neighborhoods");
@@ -74,9 +74,9 @@ const ReportLostPetForm = ({ onSuccess }: ReportLostPetFormProps) => {
         <div className="col-span-2"><Label>{t("pets.pet_name_label", "Pet Name *")}</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required /></div>
         <div><Label>{t("pets.species", "Species")}</Label>
           <Select value={form.species} onValueChange={(v) => setForm({ ...form, species: v, breed: "" })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger><SelectValue placeholder={t("common.select", "Select...")} /></SelectTrigger>
             <SelectContent>
-              {speciesOptions.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+              {speciesOptions.filter(s => s.value).map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
@@ -84,7 +84,7 @@ const ReportLostPetForm = ({ onSuccess }: ReportLostPetFormProps) => {
           <Select value={form.breed} onValueChange={(v) => setForm({ ...form, breed: v })}>
             <SelectTrigger><SelectValue placeholder={t("common.select", "Select...")} /></SelectTrigger>
             <SelectContent>
-              {breedOptions.map(b => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}
+              {breedOptions.filter(b => b.value && String(b.value).trim()).map(b => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
@@ -97,7 +97,7 @@ const ReportLostPetForm = ({ onSuccess }: ReportLostPetFormProps) => {
         <div><Label>{t("pets.last_seen", "Last Seen Location *")}</Label>
           <Select value={form.lost_location} onValueChange={(v) => setForm({ ...form, lost_location: v })}>
             <SelectTrigger><SelectValue placeholder={t("pets.select_neighborhood", "Select neighborhood...")} /></SelectTrigger>
-            <SelectContent>{neighborhoodOptions.map((n) => <SelectItem key={n.value} value={n.label}>{n.label}</SelectItem>)}</SelectContent>
+            <SelectContent>{neighborhoodOptions.filter((n) => n.label && n.label.trim()).map((n) => <SelectItem key={n.value} value={n.label}>{n.label}</SelectItem>)}</SelectContent>
           </Select>
         </div>
       </div>

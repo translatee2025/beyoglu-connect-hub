@@ -22,6 +22,7 @@ const Profile = () => {
   const isOwn = user?.id === userId;
   const [followersModal, setFollowersModal] = useState(false);
   const [followingModal, setFollowingModal] = useState(false);
+  const [tab, setTab] = useState("posts");
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["profile", userId],
@@ -89,7 +90,7 @@ const Profile = () => {
       const { data } = await supabase.from("classifieds").select("*").eq("user_id", userId!).order("created_at", { ascending: false }).limit(20);
       return data || [];
     },
-    enabled: !!userId,
+    enabled: !!userId && tab === "listings",
   });
 
   const { data: reviews = [] } = useQuery({
@@ -102,7 +103,7 @@ const Profile = () => {
       const pMap = Object.fromEntries((profiles || []).map(p => [p.user_id, p]));
       return data.map(r => ({ ...r, reviewer: pMap[r.reviewer_id] }));
     },
-    enabled: !!userId,
+    enabled: !!userId && tab === "reviews",
   });
 
   const { data: groups = [] } = useQuery({
@@ -114,7 +115,7 @@ const Profile = () => {
       const { data } = await supabase.from("groups").select("*").in("id", gIds);
       return data || [];
     },
-    enabled: !!userId,
+    enabled: !!userId && tab === "groups",
   });
 
   const { data: districtName } = useQuery({
@@ -228,7 +229,7 @@ const Profile = () => {
           )}
         </div>
 
-        <Tabs defaultValue="posts" className="w-full">
+        <Tabs value={tab} onValueChange={setTab} className="w-full">
           <TabsList className="w-full grid grid-cols-4">
             <TabsTrigger value="posts" style={{ fontSize: 12 }}>{t("profile.tab.posts", "Gönderiler")}</TabsTrigger>
             <TabsTrigger value="listings" style={{ fontSize: 12 }}>{t("profile.tab.listings", "İlanlar")}</TabsTrigger>

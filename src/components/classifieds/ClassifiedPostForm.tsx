@@ -91,7 +91,7 @@ const ClassifiedPostForm = ({ categoryOptions, onSuccess }: ClassifiedPostFormPr
                 {categoryOptions.length === 0 ? (
                   <SelectItem value="__loading" disabled>Loading...</SelectItem>
                 ) : (
-                  categoryOptions.map((c) => (
+                  categoryOptions.filter((c) => c.value).map((c) => (
                     <SelectItem key={c.value} value={c.value}>
                       {c.emoji ? `${c.emoji} ${c.label}` : c.label}
                     </SelectItem>

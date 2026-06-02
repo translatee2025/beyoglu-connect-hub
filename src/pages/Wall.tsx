@@ -10,7 +10,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { LikeButton } from "@/components/social/LikeButton";
-import { type EntityType } from "@/hooks/useLikes";
+import { useEntityLikesMap, type EntityType } from "@/hooks/useLikes";
 import { PhotoUploader } from "@/components/shared/PhotoUploader";
 import { MediaGrid } from "@/components/shared/MediaGrid";
 import { ProfileInline } from "@/components/shared/ProfileInline";
@@ -243,6 +243,9 @@ const Wall = () => {
   // Batch-load all profile data for visible feed items in ONE query
   const { profilesMap } = useProfilesMap(allItems.map((i) => i.user_id));
 
+  // Batch-load likes for all social cards in ONE query (avoids per-card N+1)
+  const likesMap = useEntityLikesMap(allItems.filter((i) => i.cardStyle === "social").map((i) => i.id));
+
   const filteredItems = allItems.filter((item) => {
     if (activeFilter === "all") return true;
     if (activeFilter === "rentals") return ["rental", "parking", "classified"].includes(item.badge);
@@ -411,7 +414,7 @@ const Wall = () => {
               if (item.cardStyle === "listing") {
                 return <ListingCard key={`${item.source}-${item.id}`} item={item} badge={badge} timeAgo={timeAgo} user={user} setReportTarget={setReportTarget} t={t} profilesMap={profilesMap} />;
               }
-              return <SocialCard key={`${item.source}-${item.id}`} item={item} badge={badge} timeAgo={timeAgo} user={user} setReportTarget={setReportTarget} t={t} profilesMap={profilesMap} />;
+              return <SocialCard key={`${item.source}-${item.id}`} item={item} badge={badge} timeAgo={timeAgo} user={user} setReportTarget={setReportTarget} t={t} profilesMap={profilesMap} likesMap={likesMap} />;
             })}
           </div>
         )}
@@ -469,7 +472,7 @@ const ListingCard = ({ item, badge, timeAgo, user, setReportTarget, t, profilesM
 );
 
 /* ── Social Card ── */
-const SocialCard = ({ item, badge, timeAgo, user, setReportTarget, t, profilesMap }: any) => (
+const SocialCard = ({ item, badge, timeAgo, user, setReportTarget, t, profilesMap, likesMap }: any) => (
   <div className="bg-card rounded-xl p-3.5 transition-colors hover:bg-[#FAFCFF]" style={{ border: '1px solid #E2EBFC' }}>
     {/* Header */}
     <div className="flex items-start justify-between">
@@ -493,7 +496,7 @@ const SocialCard = ({ item, badge, timeAgo, user, setReportTarget, t, profilesMa
     )}
     {/* Actions */}
     <div className="flex items-center gap-3.5 mt-2.5 pt-2" style={{ borderTop: '1px solid #E2EBFC' }}>
-      <LikeButton entityType={item.entityType} entityId={item.id} />
+      <LikeButton entityType={item.entityType} entityId={item.id} initialLikes={likesMap?.[item.id]} />
       <CommentsSection entityType={item.entityType} entityId={item.id} />
       <button className="text-[11px] font-medium ml-auto" style={{ color: '#94A3B8' }}>{t("common.send_message", "Send Message")}</button>
     </div>
