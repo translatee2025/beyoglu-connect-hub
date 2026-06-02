@@ -78,7 +78,7 @@ const Wall = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogPost, setDialogPost] = useState("");
   const [dialogPhotos, setDialogPhotos] = useState<string[]>([]);
-  const [selectedDistrict, setSelectedDistrict] = useState<string | null>("49d72979-361f-422b-b3fd-0407b947ee94");
+  const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -119,8 +119,8 @@ const Wall = () => {
         "wall_posts",
       );
       return data.map((item: any) => ({
-        id: item.id, source: "wall", title: item.content?.slice(0, 80),
-        description: item.content?.length > 80 ? item.content : undefined,
+        id: item.id, source: "wall", title: "",
+        description: item.content,
         photos: item.photos || [], created_at: item.created_at,
         badge: "post", icon: MessageSquare, entityType: "wall_post" as EntityType,
         user_id: item.user_id, cardStyle: "social" as const,
@@ -229,14 +229,15 @@ const Wall = () => {
         (payload) => {
           const row = payload.new as any;
           if (row.group_id) return;
-          const newItem: FeedItem = { id: row.id, source: "wall", title: row.content?.slice(0, 80), description: row.content?.length > 80 ? row.content : undefined, photos: row.photos || [], created_at: row.created_at, badge: "post", icon: MessageSquare, entityType: "wall_post" as EntityType, user_id: row.user_id, cardStyle: "social" };
+          const newItem: FeedItem = { id: row.id, source: "wall", title: "", description: row.content, photos: row.photos || [], created_at: row.created_at, badge: "post", icon: MessageSquare, entityType: "wall_post" as EntityType, user_id: row.user_id, cardStyle: "social" };
           queryClient.setQueryData<FeedItem[]>(["wall-posts"], (old) => old ? [newItem, ...old] : [newItem]);
         }
       ).subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [queryClient, selectedDistrict]);
 
-  const allItems: FeedItem[] = [...wallPosts, ...classifieds, ...petPosts, ...venues, ...helpPosts]
+  // Venues are a directory (see /venues), not social posts — keep them out of the feed.
+  const allItems: FeedItem[] = [...wallPosts, ...classifieds, ...petPosts, ...helpPosts]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 50);
 
@@ -250,7 +251,7 @@ const Wall = () => {
     if (activeFilter === "all") return true;
     if (activeFilter === "rentals") return ["rental", "parking", "classified"].includes(item.badge);
     if (activeFilter === "events") return item.badge === "event" || item.source === "events";
-    if (activeFilter === "community") return ["post", "pet", "helper", "venue"].includes(item.badge);
+    if (activeFilter === "community") return ["post", "pet", "helper"].includes(item.badge);
     return true;
   });
 
@@ -283,9 +284,9 @@ const Wall = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Scope selector bar */}
-      <div className="sticky top-[48px] z-40 bg-card" style={{ padding: '8px 16px', borderBottom: '1px solid #E2EBFC' }}>
-        <div className="flex gap-2 justify-center max-w-[680px] mx-auto">
+      <div className="mx-auto px-4 py-4" style={{ maxWidth: '680px' }}>
+        {/* District scope chips (in-flow, scrolls horizontally) */}
+        <div className="flex gap-2 mb-3 overflow-x-auto scrollbar-hide">
           <button
             onClick={() => setSelectedDistrict(null)}
             className="flex-shrink-0 transition-all text-xs"
@@ -315,9 +316,6 @@ const Wall = () => {
             </button>
           ))}
         </div>
-      </div>
-
-      <div className="mx-auto px-4 py-4" style={{ maxWidth: '680px' }}>
         {/* Filter bar */}
         <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide">
           {FILTER_KEYS.map((f) => (
