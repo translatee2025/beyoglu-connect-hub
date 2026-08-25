@@ -39,3 +39,6 @@ Pushes to `main` auto-build and deploy to **GitHub Pages** via
 [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). The production
 site is served from the `/beyoglu-connect-hub/` base path (configured in
 `vite.config.ts` and the router `basename`).
+
+## Documentation
+See [DOCUMENTATION.md](DOCUMENTATION.md) for the full feature, data-model and workflow reference.
