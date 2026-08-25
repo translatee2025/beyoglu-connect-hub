@@ -25,30 +25,12 @@ const adminNav = [
 const AdminLayout = () => {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
-  const [adminExists, setAdminExists] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    // Check if any admin exists
-    supabase
-      .from('user_roles')
-      .select('id')
-      .eq('role', 'admin')
-      .limit(1)
-      .then(({ data }) => {
-        setAdminExists(data && data.length > 0);
-      });
-  }, [user]);
-
-  if (loading || adminExists === null) {
+  if (loading) {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
   }
 
-  // No admin exists → show setup form
-  if (!adminExists) {
-    return <AdminSetup />;
-  }
-
-  // User not logged in or not admin
+  // Admin status comes from the server-side role table via AuthProvider.
   if (!user || !isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 bg-background">
@@ -60,6 +42,7 @@ const AdminLayout = () => {
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-background">
