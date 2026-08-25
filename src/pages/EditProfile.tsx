@@ -23,7 +23,7 @@ const EditProfile = () => {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    display_name: "", bio: "", district_id: "", gender: "", age: "",
+    display_name: "", bio: "", district_id: "", gender: "", age: "", phone: "",
     photo_public: true, messages_public: true, age_public: false,
   });
 
@@ -31,6 +31,21 @@ const EditProfile = () => {
     queryKey: ["profile", user?.id],
     queryFn: async () => {
       const { data } = await supabase.from("profiles").select("*").eq("user_id", user!.id).maybeSingle();
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Phone and age live in a private, owner-only table so they are never
+  // readable by other members or anonymous visitors.
+  const { data: contactInfo } = useQuery({
+    queryKey: ["contact-info", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("user_contact_info")
+        .select("phone, age")
+        .eq("user_id", user!.id)
+        .maybeSingle();
       return data;
     },
     enabled: !!user,
@@ -46,16 +61,27 @@ const EditProfile = () => {
 
   useEffect(() => {
     if (profile) {
-      setForm({
+      setForm((f) => ({
+        ...f,
         display_name: profile.display_name || "", bio: profile.bio || "",
         district_id: profile.district_id || "", gender: (profile as any).gender || "",
-        age: (profile as any).age?.toString() || "",
         photo_public: (profile as any).photo_public ?? true,
         messages_public: (profile as any).messages_public ?? true,
         age_public: (profile as any).age_public ?? false,
-      });
+      }));
     }
   }, [profile]);
+
+  useEffect(() => {
+    if (contactInfo) {
+      setForm((f) => ({
+        ...f,
+        age: contactInfo.age?.toString() || "",
+        phone: contactInfo.phone || "",
+      }));
+    }
+  }, [contactInfo]);
+
 
   if (!user) { navigate("/auth"); return null; }
 
