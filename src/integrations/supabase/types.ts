@@ -1290,7 +1290,6 @@ export type Database = {
       }
       profiles: {
         Row: {
-          age: number | null
           age_public: boolean
           avatar_url: string | null
           bio: string | null
@@ -1302,7 +1301,6 @@ export type Database = {
           language_preference: string | null
           messages_public: boolean
           neighborhood: string | null
-          phone: string | null
           photo_public: boolean
           updated_at: string
           user_id: string
@@ -1310,7 +1308,6 @@ export type Database = {
           verified: boolean | null
         }
         Insert: {
-          age?: number | null
           age_public?: boolean
           avatar_url?: string | null
           bio?: string | null
@@ -1322,7 +1319,6 @@ export type Database = {
           language_preference?: string | null
           messages_public?: boolean
           neighborhood?: string | null
-          phone?: string | null
           photo_public?: boolean
           updated_at?: string
           user_id: string
@@ -1330,7 +1326,6 @@ export type Database = {
           verified?: boolean | null
         }
         Update: {
-          age?: number | null
           age_public?: boolean
           avatar_url?: string | null
           bio?: string | null
@@ -1342,7 +1337,6 @@ export type Database = {
           language_preference?: string | null
           messages_public?: boolean
           neighborhood?: string | null
-          phone?: string | null
           photo_public?: boolean
           updated_at?: string
           user_id?: string
@@ -1567,6 +1561,30 @@ export type Database = {
             referencedColumns: ["code"]
           },
         ]
+      }
+      user_contact_info: {
+        Row: {
+          age: number | null
+          created_at: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age?: number | null
+          created_at?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age?: number | null
+          created_at?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_follows: {
         Row: {
