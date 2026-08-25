@@ -314,8 +314,11 @@ function CreateGroupForm({ onSuccess }: { onSuccess: () => void }) {
     if (!file || !user) return;
     setUploading(true);
     const ext = file.name.split(".").pop();
-    const path = `covers/${user.id}-${Date.now()}.${ext}`;
+    // First path segment must be the user's id to satisfy the `groups` bucket
+    // INSERT/UPDATE policies (auth.uid() = foldername(name)[1]).
+    const path = `${user.id}/covers/${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("groups").upload(path, file, { upsert: true });
+
     if (error) { toast({ title: t("common.upload_failed", "Upload failed"), variant: "destructive" }); setUploading(false); return; }
     const { data: urlData } = supabase.storage.from("groups").getPublicUrl(path);
     setForm(f => ({ ...f, coverPhoto: urlData.publicUrl }));
