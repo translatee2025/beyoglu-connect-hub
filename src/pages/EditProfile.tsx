@@ -189,6 +189,14 @@ const EditProfile = () => {
             <Label style={{ fontSize: 12, color: "#64748B" }}>{t("profile.edit.age", "Age")}</Label>
             <Input type="number" value={form.age} onChange={e => setForm({ ...form, age: e.target.value })} placeholder={t("profile.edit.age_optional", "Optional")} min={13} max={120} />
           </div>
+          <div>
+            <Label style={{ fontSize: 12, color: "#64748B" }}>{t("common.phone", "Phone")}</Label>
+            <Input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+90 5xx xxx xx xx" />
+            <p style={{ fontSize: 11, color: "#64748B", marginTop: 4 }}>
+              {t("profile.edit.phone_private", "Only visible to you")}
+            </p>
+          </div>
+
 
           <div className="space-y-3 pt-2" style={{ borderTop: "1px solid #E2E8F0" }}>
             <p style={{ fontSize: 13, fontWeight: 600, color: "#1E3A5F" }}>{t("profile.edit.privacy", "Privacy")}</p>
