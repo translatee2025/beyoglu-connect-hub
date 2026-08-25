@@ -107,19 +107,28 @@ const EditProfile = () => {
     const updateData: any = {
       display_name: form.display_name, bio: form.bio,
       district_id: form.district_id || null, gender: form.gender || null,
-      age: form.age ? parseInt(form.age) : null,
       photo_public: form.photo_public, messages_public: form.messages_public, age_public: form.age_public,
     };
     const { error } = await supabase.from("profiles").update(updateData).eq("user_id", user.id);
-    if (error) {
+    const { error: contactError } = await supabase.from("user_contact_info").upsert(
+      {
+        user_id: user.id,
+        phone: form.phone || null,
+        age: form.age ? parseInt(form.age) : null,
+      },
+      { onConflict: "user_id" }
+    );
+    if (error || contactError) {
       toast({ title: t("profile.edit.save_failed", "Save failed"), variant: "destructive" });
     } else {
       queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["contact-info", user.id] });
       toast({ title: t("profile.edit.saved", "Profile updated") });
       navigate(`/profile/${user.id}`);
     }
     setSaving(false);
   };
+
 
   const initials = (profile?.display_name || "U").slice(0, 2).toUpperCase();
 
