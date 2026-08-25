@@ -55,8 +55,11 @@ const Auth = () => {
       });
       if (error) throw error;
       if (data.user) {
-        await supabase.from('profiles').update({ phone, display_name: displayName || email.split('@')[0] }).eq('user_id', data.user.id);
+        await supabase.from('profiles').update({ display_name: displayName || email.split('@')[0] }).eq('user_id', data.user.id);
+        // Phone is private: it lives in an owner-only table, never on the public profile.
+        await supabase.from('user_contact_info').upsert({ user_id: data.user.id, phone }, { onConflict: 'user_id' });
       }
+
       toast({ title: t('auth.check_email', 'Check your email'), description: t('auth.verification_sent', 'We sent you a verification link to complete your signup.') });
       setStep(1);
       setIsLogin(true);
